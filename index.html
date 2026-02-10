@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marco OS Central de Comando Full PRD</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "header-bg": "#121212","bg-base": "#0D0D0F","surface": "#1C1C1C","surface-hover": "#252525",
+                        "border-panel": "#2A2A2A",
+                        "border-card": "#2A2A2A",
+                        "text-primary": "#E1E1E1","text-secondary": "#8E8E93","accent-blue": "#0A84FF",
+                        "accent-blue-dim": "#406B94",
+                        "accent-green": "#00FF95","accent-red": "#FF453A",
+                        "accent-orange": "#FF9F0A",
+                        "accent-purple": "#BF5AF2",
+                        "brand-mint": "#00FF95","brand-flame": "#FF5500"
+                    },
+                    fontFamily: {
+                        "sans": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0D0D0F;
+            color: #E1E1E1;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0D0D0F;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2A2A2A;
+            border-radius: 10px;
+        }.layered-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        }
+        .pill-radius {
+            border-radius: 4px;
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }.nav-item-active {
+            background-color: #1C1C1C;
+            color: #00FF95;
+            border-left: 2px solid #00FF95;
+        }
+        .nav-item-inactive {
+            color: #8E8E93;
+            border-left: 2px solid transparent;
+        }
+        .nav-item-inactive:hover {
+            color: #E1E1E1;
+            background-color: #1C1C1C;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/"
+  }
+}
+</script>
+</head>
+<body class="antialiased overflow-hidden h-screen flex flex-col selection:bg-brand-mint selection:text-black">
+    <div id="root"></div>
+</body>
+</html>
