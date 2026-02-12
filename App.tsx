@@ -5,13 +5,14 @@ import Health from './components/Health';
 import Learning from './components/Learning';
 import CRM from './components/CRM';
 import Settings from './components/Settings';
+import AgentCenter from './components/AgentCenter';
 import MissionModal from './components/MissionModal';
 import MissionDetail from './components/MissionDetail';
 import { Icon, Badge, SectionLabel, StatusDot } from './components/ui';
 import { cn } from './utils/cn';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'crm' | 'settings' | 'mission-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'crm' | 'agents' | 'settings' | 'mission-detail';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -55,6 +56,7 @@ const App: React.FC = () => {
     health: 'Saúde',
     learning: 'Aprendizado',
     crm: 'Rede',
+    agents: 'Agentes',
     settings: 'Config',
     'mission-detail': 'Missão'
   };
@@ -255,6 +257,7 @@ const App: React.FC = () => {
                     { id: 'health', icon: 'monitor_heart', label: 'Saúde' },
                     { id: 'learning', icon: 'school', label: 'Aprendizado' },
                     { id: 'crm', icon: 'contacts', label: 'Gestão de Contatos' },
+                    { id: 'agents', icon: 'smart_toy', label: 'Agent Center' },
                     { id: 'settings', icon: 'settings', label: 'Configurações' },
                   ].map((item) => (
                     <button
@@ -356,6 +359,7 @@ const App: React.FC = () => {
             {currentView === 'health' && <Health />}
             {currentView === 'learning' && <Learning />}
             {currentView === 'crm' && <CRM />}
+            {currentView === 'agents' && <AgentCenter />}
             {currentView === 'settings' && <Settings />}
             {currentView === 'mission-detail' && <MissionDetail onBack={() => setCurrentView('dashboard')} />}
           </div>
@@ -500,6 +504,7 @@ const App: React.FC = () => {
                 {[
                     { id: 'learning', icon: 'school', label: 'Aprendizado' },
                     { id: 'crm', icon: 'contacts', label: 'Rede (CRM)' },
+                    { id: 'agents', icon: 'smart_toy', label: 'Agent Center' },
                     { id: 'settings', icon: 'settings', label: 'Configurações' }
                 ].map(item => (
                     <button 
@@ -541,8 +546,8 @@ const App: React.FC = () => {
               </button>
 
               <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
-                <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning', 'crm', 'settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
-                <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning', 'crm', 'settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
+                <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning', 'crm', 'agents', 'settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
+                <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning', 'crm', 'agents', 'settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
               </button>
            </div>
         </div>
