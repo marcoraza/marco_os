@@ -1,0 +1,8 @@
+/*
+  Vite CSS entrypoint.
+  Mantemos o Tailwind via CDN no index.html (estética atual),
+  mas importamos este arquivo via Vite para evitar warnings e
+  permitir extensões futuras.
+*/
+
+/* (intencionalmente vazio) */
