@@ -15,7 +15,7 @@ import { Icon, Badge, SectionLabel, StatusDot } from './components/ui';
 import { cn } from './utils/cn';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'agent-detail' | 'settings' | 'mission-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm'|'settings' | 'mission-detail';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -86,7 +86,6 @@ const App: React.FC = () => {
     learning: 'Aprendizado',
     planner: 'Planejador',
     crm: 'Rede',
-    'agent-detail': 'Agentes',
     settings: 'Config',
     'mission-detail': 'Missão',
   };
@@ -163,7 +162,7 @@ const App: React.FC = () => {
       avatarIcon: 'code',
     },
   ]);
-  const [selectedAgentId, setSelectedAgentId] = useState<string>('frank');
+  const [activeAgentId, setActiveAgentId] = useState<string>('frank');
   const [isAddAgentOpen, setIsAddAgentOpen] = useState(false);
 
   // ─── Tasks (projectId replaces context) ────────────────────────────────────
@@ -305,8 +304,8 @@ const App: React.FC = () => {
         onClose={() => setIsAddAgentOpen(false)}
         onCreate={(agent) => {
           setAgentRoster(prev => [agent, ...prev]);
-          setSelectedAgentId(agent.id);
-          setCurrentView('agent-detail');
+          setActiveAgentId(agent.id);
+          setCurrentView('settings');
         }}
       />
 
@@ -318,16 +317,21 @@ const App: React.FC = () => {
               <Icon name="grid_view" className="text-text-primary text-2xl" />
               <h2 className="text-text-primary text-[10px] font-black tracking-widest uppercase hidden sm:block">Marco OS</h2>
             </div>
-            {/* Live agent indicator */}
+            {/* Active agent indicator */}
             <div className="hidden md:flex items-center gap-3 bg-surface/50 border border-border-panel px-3 py-1.5 rounded-sm">
-              <div className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-mint opacity-75"></span>
-                <StatusDot color="mint" className="relative" />
-              </div>
-              <div className="flex items-center gap-2 border-l border-border-panel pl-2 ml-1">
-                <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Agentes Online:</span>
-                <span className="text-[9px] font-black text-brand-mint">2</span>
-              </div>
+              {(() => {
+                const a = agentRoster.find(x => x.id === activeAgentId) || agentRoster[0];
+                const dot = a?.status === 'online' ? 'mint' : a?.status === 'busy' ? 'orange' : a?.status === 'idle' ? 'blue' : 'red';
+                return (
+                  <>
+                    <StatusDot color={dot as any} glow={a?.status !== 'offline'} className="relative" />
+                    <div className="flex items-center gap-2 border-l border-border-panel pl-2 ml-1">
+                      <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">Perfil Ativo:</span>
+                      <span className="text-[9px] font-black text-brand-mint">{a?.name}</span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
 
@@ -429,12 +433,11 @@ const App: React.FC = () => {
                     <div
                       key={agent.id}
                       onClick={() => {
-                        setSelectedAgentId(agent.id);
-                        setCurrentView('agent-detail');
+                        setActiveAgentId(agent.id);
                       }}
                       className={cn(
                         'p-2 rounded-md flex items-center gap-3 transition-all cursor-pointer group border',
-                        selectedAgentId === agent.id
+                        activeAgentId === agent.id
                           ? 'bg-surface border-brand-mint/30'
                           : 'bg-bg-base/0 hover:bg-surface border-border-card'
                       )}
@@ -531,9 +534,6 @@ const App: React.FC = () => {
               />
             )}
             {currentView === 'crm'             && <CRM />}
-            {currentView === 'agent-detail'    && (
-              <AgentCenter selectedAgentId={selectedAgentId} roster={agentRoster} />
-            )}
             {currentView === 'settings'        && <Settings />}
             {currentView === 'mission-detail'  && <MissionDetail onBack={() => setCurrentView('dashboard')} />}
           </div>
@@ -804,8 +804,8 @@ const App: React.FC = () => {
               <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>Saúde</span>
             </button>
             <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
-              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','crm','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','crm','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
+              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','crm','settings','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','crm','settings','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
             </button>
           </div>
         </div>
