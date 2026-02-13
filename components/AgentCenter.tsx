@@ -119,7 +119,7 @@ const memoryBadge: Record<MemoryArtifact['kind'], { variant: 'mint' | 'orange' |
 };
 
 const tabs: Tab[] = [
-  { id: 'agents', label: 'Agentes', icon: 'groups' },
+  { id: 'agents', label: 'Dashboard Agentes', icon: 'monitoring' },
   { id: 'mission-control', label: 'Mission Control', icon: 'hub' },
   { id: 'cron-jobs', label: 'Cron Jobs', icon: 'schedule' },
   { id: 'heartbeat', label: 'Heartbeat Monitor', icon: 'monitor_heart' },
@@ -478,386 +478,157 @@ export default function AgentCenter() {
       {/* Body */}
       <div className="flex-grow overflow-y-auto overflow-x-hidden p-6">
         {activeTab === 'agents' && (
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Roster */}
-            <Card className="xl:col-span-1 p-4">
-              <div className="flex items-center justify-between mb-4">
-                <SectionLabel icon="groups">AGENTES</SectionLabel>
-                <Badge variant="neutral" size="xs">
-                  <Icon name="badge" className="text-[10px]" /> {roster.length}
-                </Badge>
-              </div>
+          <div className="space-y-6">
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { icon: 'smart_toy', label: 'Agentes Ativos', value: String(roster.filter(a => a.status !== 'offline').length), color: 'text-brand-mint' },
+                { icon: 'rocket_launch', label: 'Missões em Execução', value: '3', color: 'text-accent-orange' },
+                { icon: 'timer', label: 'Uptime Médio', value: '14d 03h', color: 'text-accent-blue' },
+                { icon: 'task_alt', label: 'Tasks Concluídas', value: '47', color: 'text-brand-mint' },
+              ].map(stat => (
+                <Card key={stat.label} className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={cn('size-10 rounded-md border border-border-panel bg-surface flex items-center justify-center', stat.color)}>
+                      <Icon name={stat.icon} size="lg" />
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-text-secondary">{stat.label}</p>
+                      <p className={cn('text-xl font-black mt-1', stat.color)}>{stat.value}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
 
-              <div className="space-y-2">
-                {roster.map(agent => (
-                  <div
-                    key={agent.id}
-                    className="p-3 rounded-md border border-border-card bg-bg-base/40 hover:bg-surface-hover transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={cn(
-                          'size-9 rounded-md border flex items-center justify-center shrink-0',
-                          agent.role === 'coordinator' && 'bg-accent-purple/10 border-accent-purple/20 text-accent-purple',
-                          agent.role === 'sub-agent' && 'bg-brand-mint/10 border-brand-mint/20 text-brand-mint',
-                          agent.role === 'integration' && 'bg-accent-blue/10 border-accent-blue/20 text-accent-blue'
-                        )}
-                      >
-                        <Icon
-                          name={agent.avatarIcon || (agent.role === 'integration' ? 'link' : agent.role === 'coordinator' ? 'shield' : 'psychology')}
-                          size="lg"
-                        />
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              {/* Activity Chart (CSS-only) */}
+              <Card className="xl:col-span-2 p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <SectionLabel icon="bar_chart">Atividade Semanal</SectionLabel>
+                  <Badge variant="neutral" size="xs"><Icon name="calendar_today" className="text-[10px]" /> 7 dias</Badge>
+                </div>
+                <div className="flex items-end gap-2 h-40 px-2">
+                  {[
+                    { day: 'Seg', h: 65, tasks: 8 },
+                    { day: 'Ter', h: 80, tasks: 11 },
+                    { day: 'Qua', h: 45, tasks: 5 },
+                    { day: 'Qui', h: 90, tasks: 14 },
+                    { day: 'Sex', h: 70, tasks: 9 },
+                    { day: 'Sáb', h: 30, tasks: 3 },
+                    { day: 'Dom', h: 20, tasks: 2 },
+                  ].map(d => (
+                    <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
+                      <span className="text-[9px] font-bold text-brand-mint">{d.tasks}</span>
+                      <div className="w-full rounded-t-sm bg-brand-mint/20 relative overflow-hidden" style={{ height: `${d.h}%` }}>
+                        <div className="absolute inset-0 bg-brand-mint/40 rounded-t-sm" style={{ height: `${Math.min(100, d.h + 10)}%` }} />
                       </div>
+                      <span className="text-[9px] font-black uppercase tracking-wider text-text-secondary">{d.day}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
 
-                      <div className="flex-grow min-w-0">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <p className="text-xs font-black text-text-primary truncate">{agent.name}</p>
-                          <Badge
-                            variant={agent.role === 'coordinator' ? 'purple' : agent.role === 'integration' ? 'blue' : 'mint'}
-                            size="xs"
-                          >
-                            {agent.domain || (agent.role === 'coordinator' ? 'COORDENADOR' : agent.role === 'integration' ? 'INTEGRATION' : 'SUB-AGENT')}
-                          </Badge>
+              {/* Timeline */}
+              <Card className="p-4">
+                <SectionLabel icon="history" className="mb-4">Eventos Recentes</SectionLabel>
+                <div className="space-y-0">
+                  {[
+                    { agent: 'Frank', action: 'Mergeou PR #7 (Agent Roster)', time: '14:18', color: 'bg-accent-purple' },
+                    { agent: 'Frank', action: 'Atualizou preview GitHub Pages', time: '14:39', color: 'bg-accent-purple' },
+                    { agent: 'Agente E2', action: 'Novo lead qualificado no CRM', time: '09:45', color: 'bg-brand-mint' },
+                    { agent: 'System', action: 'Backup diário realizado', time: '08:00', color: 'bg-text-secondary' },
+                    { agent: 'Frank', action: 'Heartbeat check: email + calendar', time: '07:30', color: 'bg-accent-purple' },
+                  ].map((ev, i) => (
+                    <div key={i} className="flex gap-3 py-2">
+                      <div className="flex flex-col items-center">
+                        <div className={cn('size-2 rounded-full shrink-0 mt-1.5', ev.color)} />
+                        {i < 4 && <div className="w-px flex-1 bg-border-panel mt-1" />}
+                      </div>
+                      <div className="min-w-0 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black text-text-primary">{ev.agent}</span>
+                          <span className="text-[9px] font-mono text-text-secondary">{ev.time}</span>
                         </div>
+                        <p className="text-[10px] text-text-secondary font-bold mt-0.5">{ev.action}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
 
-                        {agent.handle && (
-                          <p className="text-[10px] text-text-secondary font-bold mt-1 truncate">{agent.handle}</p>
-                        )}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {/* Agent Performance Cards */}
+              {roster.slice(0, 4).map(agent => (
+                <Card key={agent.id} className="p-4">
+                  <div className="flex items-start gap-4">
+                    <div className={cn(
+                      'size-12 rounded-md border flex items-center justify-center shrink-0',
+                      agent.role === 'coordinator' && 'bg-accent-purple/10 border-accent-purple/20 text-accent-purple',
+                      agent.role === 'sub-agent' && 'bg-brand-mint/10 border-brand-mint/20 text-brand-mint',
+                      agent.role === 'integration' && 'bg-accent-blue/10 border-accent-blue/20 text-accent-blue'
+                    )}>
+                      <Icon name={agent.avatarIcon || (agent.role === 'coordinator' ? 'shield' : 'psychology')} className="text-2xl" />
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-black text-text-primary">{agent.name}</p>
+                        <Badge variant={agent.role === 'coordinator' ? 'purple' : 'mint'} size="xs">
+                          {agent.domain || (agent.role === 'coordinator' ? 'COORDENADOR' : 'SUB-AGENT')}
+                        </Badge>
+                        <StatusDot color={statusDot[agent.status].color} glow={agent.status !== 'offline'} />
+                      </div>
+                      {agent.handle && <p className="text-[10px] text-text-secondary font-bold mt-1">{agent.handle}</p>}
+                      <div className="mt-3 grid grid-cols-3 gap-3">
+                        <div className="p-2 rounded-md border border-border-panel bg-bg-base/40 text-center">
+                          <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Missões</p>
+                          <p className="text-sm font-black text-brand-mint mt-1">{agent.role === 'coordinator' ? '24' : '12'}</p>
+                        </div>
+                        <div className="p-2 rounded-md border border-border-panel bg-bg-base/40 text-center">
+                          <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Tempo Médio</p>
+                          <p className="text-sm font-black text-accent-blue mt-1">{agent.role === 'coordinator' ? '18m' : '25m'}</p>
+                        </div>
+                        <div className="p-2 rounded-md border border-border-panel bg-bg-base/40 text-center">
+                          <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Uptime</p>
+                          <p className="text-sm font-black text-text-primary mt-1">{agent.uptime}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
 
-                        <div className="mt-2 flex items-center gap-2">
-                          <StatusDot color={statusDot[agent.status].color} glow={agent.status !== 'offline'} />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">
-                            {statusDot[agent.status].label}
+            {/* Integrations Status */}
+            <Card className="p-4">
+              <SectionLabel icon="extension" className="mb-4">Integrações Ativas</SectionLabel>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { name: 'Gmail', icon: 'mail', connected: true, color: '#EA4335' },
+                  { name: 'Calendar', icon: 'calendar_today', connected: true, color: '#4285F4' },
+                  { name: 'GitHub', icon: 'code', connected: true, color: '#FFFFFF' },
+                  { name: 'ClawDeck', icon: 'dashboard', connected: true, color: '#00FF95' },
+                ].map(intg => (
+                  <div key={intg.name} className="p-3 rounded-md border border-border-panel bg-bg-base/40 hover:bg-surface-hover transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="size-8 rounded-md flex items-center justify-center border border-border-panel" style={{ color: intg.color, backgroundColor: `${intg.color}10`, borderColor: `${intg.color}30` }}>
+                        <Icon name={intg.icon} />
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-black text-text-primary">{intg.name}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className={cn('size-1.5 rounded-full', intg.connected ? 'bg-brand-mint' : 'bg-accent-red')} />
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-text-secondary">
+                            {intg.connected ? 'Conectado' : 'Desconectado'}
                           </span>
-                          {agent.model && (
-                            <Badge variant="neutral" size="xs">
-                              <Icon name="bolt" className="text-[10px]" /> {agent.model}
-                            </Badge>
-                          )}
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-
-              <button
-                onClick={() => {
-                  resetAddAgent();
-                  setIsAddAgentOpen(true);
-                }}
-                className="mt-4 w-full px-3 py-2 rounded-md border border-border-panel bg-surface hover:bg-surface-hover transition-colors text-[11px] font-black uppercase tracking-[0.2em] text-text-secondary hover:text-text-primary flex items-center justify-center gap-2"
-              >
-                <Icon name="add" size="sm" /> + ADICIONAR AGENTE
-              </button>
             </Card>
-
-            {/* Details / placeholder */}
-            <Card className="xl:col-span-2 p-4">
-              <div className="flex items-center justify-between mb-4">
-                <SectionLabel icon="dashboard">Resumo</SectionLabel>
-                <Badge variant="neutral" size="xs">
-                  <Icon name="info" className="text-[10px]" /> UI mock
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 rounded-md border border-border-card bg-bg-base/40">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Ativo agora</p>
-                  <p className="mt-2 text-sm font-black text-text-primary">{roster.filter(a => a.status !== 'offline').length}</p>
-                </div>
-                <div className="p-3 rounded-md border border-border-card bg-bg-base/40">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Integrações</p>
-                  <p className="mt-2 text-sm font-black text-text-primary">Gmail • Calendar • GitHub</p>
-                </div>
-              </div>
-
-              <p className="mt-4 text-[10px] text-text-secondary font-bold leading-relaxed">
-                Esta aba é apenas front-end/state local. O roster e o modal de criação são mockados para alinhar com o layout do print.
-              </p>
-            </Card>
-
-            {/* Add Agent Modal */}
-            {isAddAgentOpen && (
-              <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4">
-                <div
-                  className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
-                  onClick={() => setIsAddAgentOpen(false)}
-                />
-
-                <div className="relative w-full md:max-w-2xl bg-surface rounded-t-xl md:rounded-xl border-t md:border border-border-panel shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 md:slide-in-from-bottom-0 md:zoom-in-95 duration-200 max-h-[90vh] md:max-h-[85vh] flex flex-col">
-                  {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-4 md:px-6 md:py-5 border-b border-border-panel shrink-0">
-                    <h2 className="text-base md:text-lg font-black tracking-tight text-text-primary flex items-center gap-2">
-                      <Icon name="person_add" className="text-brand-mint" />
-                      ADICIONAR AGENTE
-                    </h2>
-                    <button
-                      onClick={() => setIsAddAgentOpen(false)}
-                      className="text-text-secondary hover:text-text-primary transition-colors p-1 rounded-full hover:bg-border-panel"
-                    >
-                      <Icon name="close" />
-                    </button>
-                  </div>
-
-                  {/* Body */}
-                  <div className="p-4 md:p-6 overflow-y-auto custom-scrollbar flex-1">
-                    {addAgentStep === 'choose' && (
-                      <div className="space-y-3">
-                        <div className="p-3 rounded-md border border-border-card bg-bg-base/40">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Opções</p>
-                          <p className="mt-1 text-xs text-text-secondary font-bold">Selecione como deseja adicionar um agente ao roster.</p>
-                        </div>
-
-                        <button
-                          onClick={() => setAddAgentStep('integrate')}
-                          className="w-full text-left p-4 rounded-md border border-border-panel bg-bg-base/40 hover:bg-surface-hover transition-colors"
-                          type="button"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="size-9 rounded-md bg-accent-blue/10 border border-accent-blue/20 text-accent-blue flex items-center justify-center shrink-0">
-                              <Icon name="link" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-black text-text-primary">Integrar agente</p>
-                              <p className="text-[10px] text-text-secondary font-bold mt-1">Placeholder (em breve): conectar agentes existentes / integrações.</p>
-                            </div>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={() => setAddAgentStep('create')}
-                          className="w-full text-left p-4 rounded-md border border-brand-mint/30 bg-brand-mint/5 hover:bg-brand-mint/10 transition-colors"
-                          type="button"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="size-9 rounded-md bg-brand-mint/10 border border-brand-mint/20 text-brand-mint flex items-center justify-center shrink-0">
-                              <Icon name="add_circle" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-black text-text-primary">Criar agente do zero</p>
-                              <p className="text-[10px] text-text-secondary font-bold mt-1">Define nome, role, modelo, API key e tools (state local).</p>
-                            </div>
-                          </div>
-                        </button>
-                      </div>
-                    )}
-
-                    {addAgentStep === 'integrate' && (
-                      <div className="space-y-4">
-                        <div className="p-4 rounded-md border border-border-card bg-bg-base/40">
-                          <div className="flex items-start gap-3">
-                            <div className="size-9 rounded-md bg-accent-blue/10 border border-accent-blue/20 text-accent-blue flex items-center justify-center shrink-0">
-                              <Icon name="construction" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-black text-text-primary">Integrar agente</p>
-                              <p className="text-[10px] text-text-secondary font-bold mt-1">Placeholder por enquanto.</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => setAddAgentStep('choose')}
-                          className="px-3 py-2 rounded-md border border-border-panel bg-surface hover:bg-surface-hover transition-colors text-[11px] font-black uppercase tracking-[0.2em] text-text-secondary hover:text-text-primary flex items-center gap-2"
-                          type="button"
-                        >
-                          <Icon name="arrow_back" size="sm" /> Voltar
-                        </button>
-                      </div>
-                    )}
-
-                    {addAgentStep === 'create' && (
-                      <form
-                        className="space-y-5"
-                        onSubmit={(e) => {
-                          e.preventDefault();
-
-                          const tools = addAgentForm.tools;
-                          const toolTags = [
-                            tools.gmail ? 'gmail' : null,
-                            tools.calendar ? 'calendar' : null,
-                            tools.github ? 'github' : null,
-                            tools.clawDeck ? 'clawdeck' : null,
-                          ].filter(Boolean) as string[];
-
-                          const newAgent: Agent = {
-                            id: `${addAgentForm.name || 'agent'}-${Date.now()}`, 
-                            name: addAgentForm.name || 'Novo agente',
-                            role: addAgentForm.role,
-                            model: addAgentForm.model,
-                            owner: 'Frank',
-                            status: 'online',
-                            lastHeartbeat: 'agora',
-                            uptime: '0m',
-                            tags: toolTags.length ? toolTags : ['custom'],
-                            domain: addAgentForm.domain ? addAgentForm.domain.toUpperCase() : undefined,
-                            handle: addAgentForm.handle || undefined,
-                            avatarIcon: addAgentForm.role === 'integration' ? 'link' : addAgentForm.role === 'coordinator' ? 'shield' : 'psychology',
-                          };
-
-                          setRoster(prev => [newAgent, ...prev]);
-                          setIsAddAgentOpen(false);
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Criar agente do zero</p>
-                          <button
-                            type="button"
-                            onClick={() => setAddAgentStep('choose')}
-                            className="text-[10px] font-black uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors"
-                          >
-                            Voltar
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Nome</label>
-                            <input
-                              value={addAgentForm.name}
-                              onChange={(e) => setAddAgentForm(s => ({ ...s, name: e.target.value }))}
-                              type="text"
-                              placeholder="Ex: Agente E3"
-                              className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary focus:outline-none focus:border-brand-mint transition-colors placeholder-text-secondary focus:ring-1 focus:ring-brand-mint"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Role</label>
-                            <div className="relative">
-                              <select
-                                value={addAgentForm.role}
-                                onChange={(e) => setAddAgentForm(s => ({ ...s, role: e.target.value as AgentRole }))}
-                                className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary appearance-none focus:outline-none focus:border-brand-mint cursor-pointer"
-                              >
-                                <option value="coordinator">Coordinator</option>
-                                <option value="sub-agent">Sub-agent</option>
-                                <option value="integration">Integration</option>
-                              </select>
-                              <Icon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none text-sm" />
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Domínio</label>
-                            <input
-                              value={addAgentForm.domain}
-                              onChange={(e) => setAddAgentForm(s => ({ ...s, domain: e.target.value }))}
-                              type="text"
-                              placeholder="Ex: OPERAÇÕES"
-                              className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary focus:outline-none focus:border-brand-mint transition-colors placeholder-text-secondary focus:ring-1 focus:ring-brand-mint"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Handle</label>
-                            <input
-                              value={addAgentForm.handle}
-                              onChange={(e) => setAddAgentForm(s => ({ ...s, handle: e.target.value }))}
-                              type="text"
-                              placeholder="Ex: @emilizaremba"
-                              className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary focus:outline-none focus:border-brand-mint transition-colors placeholder-text-secondary focus:ring-1 focus:ring-brand-mint"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Instruções</label>
-                          <textarea
-                            value={addAgentForm.instructions}
-                            onChange={(e) => setAddAgentForm(s => ({ ...s, instructions: e.target.value }))}
-                            placeholder="Descreva como o agente deve agir, limites, objetivos, etc..."
-                            rows={4}
-                            className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary focus:outline-none focus:border-brand-mint transition-colors placeholder-text-secondary resize-none focus:ring-1 focus:ring-brand-mint"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Modelo</label>
-                            <div className="relative">
-                              <select
-                                value={addAgentForm.model}
-                                onChange={(e) => setAddAgentForm(s => ({ ...s, model: e.target.value }))}
-                                className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary appearance-none focus:outline-none focus:border-brand-mint cursor-pointer"
-                              >
-                                <option>Opus</option>
-                                <option>Sonnet</option>
-                                <option>GPT-5.2</option>
-                                <option>Gemini</option>
-                                <option>Claude</option>
-                              </select>
-                              <Icon name="expand_more" className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none text-sm" />
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">API Key</label>
-                            <input
-                              value={addAgentForm.apiKey}
-                              onChange={(e) => setAddAgentForm(s => ({ ...s, apiKey: e.target.value }))}
-                              type="password"
-                              placeholder="••••••••••••••"
-                              className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary focus:outline-none focus:border-brand-mint transition-colors placeholder-text-secondary focus:ring-1 focus:ring-brand-mint"
-                            />
-                            <p className="text-[9px] text-text-secondary font-bold">Armazenado apenas em state local (mock). Não persiste.</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Tools / Integrações</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            {(
-                              [
-                                { k: 'gmail', label: 'Gmail' },
-                                { k: 'calendar', label: 'Calendar' },
-                                { k: 'github', label: 'GitHub' },
-                                { k: 'clawDeck', label: 'ClawDeck' },
-                              ] as const
-                            ).map(opt => (
-                              <label
-                                key={opt.k}
-                                className="flex items-center gap-2 p-3 rounded-md border border-border-panel bg-bg-base/40 hover:bg-surface-hover transition-colors cursor-pointer"
-                              >
-                                <input
-                                  checked={addAgentForm.tools[opt.k]}
-                                  onChange={(e) =>
-                                    setAddAgentForm(s => ({
-                                      ...s,
-                                      tools: { ...s.tools, [opt.k]: e.target.checked },
-                                    }))
-                                  }
-                                  type="checkbox"
-                                  className="accent-brand-mint"
-                                />
-                                <span className="text-[11px] font-black uppercase tracking-wider text-text-secondary">{opt.label}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="pt-4 border-t border-border-panel flex items-center justify-end gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setIsAddAgentOpen(false)}
-                            className="px-4 py-2 rounded-sm text-xs font-bold uppercase text-text-secondary hover:text-text-primary hover:bg-border-panel transition-colors"
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            type="submit"
-                            className="px-6 py-2 rounded-sm bg-brand-mint text-black text-xs font-bold uppercase hover:bg-brand-mint/80 transition-colors shadow-lg shadow-brand-mint/20"
-                          >
-                            Salvar
-                          </button>
-                        </div>
-                      </form>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
         {activeTab === 'mission-control' && (
