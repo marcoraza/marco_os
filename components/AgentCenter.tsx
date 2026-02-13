@@ -3,27 +3,7 @@ import { Badge, Card, Icon, SectionLabel, StatusDot, TabNav } from './ui';
 import type { Tab } from './ui/TabNav';
 import { cn } from '../utils/cn';
 
-type AgentStatus = 'online' | 'busy' | 'idle' | 'offline';
-
-type AgentRole = 'coordinator' | 'sub-agent' | 'integration';
-
-interface Agent {
-  id: string;
-  name: string;
-  role: AgentRole;
-  model?: string;
-  owner?: string;
-  status: AgentStatus;
-  lastHeartbeat: string;
-  uptime: string;
-  currentMission?: string;
-  tags: string[];
-
-  // roster meta
-  domain?: string;    // ex: OPERAÇÕES
-  handle?: string;    // ex: @emilizaremba
-  avatarIcon?: string; // material-symbols
-}
+import type { Agent, AgentStatus, AgentRole } from '../types/agents';
 
 interface PullRequest {
   id: string;
@@ -119,7 +99,7 @@ const memoryBadge: Record<MemoryArtifact['kind'], { variant: 'mint' | 'orange' |
 };
 
 const tabs: Tab[] = [
-  { id: 'agents', label: 'Dashboard Agentes', icon: 'monitoring' },
+  { id: 'agents', label: 'Centro de Agentes', icon: 'monitoring' },
   { id: 'mission-control', label: 'Mission Control', icon: 'hub' },
   { id: 'cron-jobs', label: 'Cron Jobs', icon: 'schedule' },
   { id: 'heartbeat', label: 'Heartbeat Monitor', icon: 'monitor_heart' },
@@ -127,71 +107,17 @@ const tabs: Tab[] = [
   { id: 'comms', label: 'Communication Log', icon: 'forum' },
 ];
 
-export default function AgentCenter() {
+type AgentCenterProps = {
+  selectedAgentId: string;
+  roster: Agent[];
+};
+
+export default function AgentCenter({ selectedAgentId, roster }: AgentCenterProps) {
   const [activeTab, setActiveTab] = useState<string>('agents');
 
-  // Local-only roster state (UI mock)
-  const [roster, setRoster] = useState<Agent[]>(() => [
-    {
-      id: 'frank-roster',
-      name: 'Frank',
-      role: 'coordinator',
-      model: 'OpenClaw',
-      owner: '@marco',
-      status: 'online',
-      lastHeartbeat: '22:51:58Z',
-      uptime: '14d 03h',
-      tags: ['orchestrator'],
-      domain: 'COORDENADOR',
-      avatarIcon: 'shield',
-    },
-    {
-      id: 'e2',
-      name: 'Agente E2',
-      role: 'sub-agent',
-      model: 'Opus',
-      owner: 'Frank',
-      status: 'online',
-      lastHeartbeat: '22:51:12Z',
-      uptime: '6h 44m',
-      tags: ['ops'],
-      domain: 'OPERAÇÕES',
-      handle: '@emilizaremba',
-      avatarIcon: 'psychology',
-    },
-  ]);
+  const selectedAgent = roster.find(a => a.id === selectedAgentId) || roster[0];
 
-  const [isAddAgentOpen, setIsAddAgentOpen] = useState(false);
-  const [addAgentStep, setAddAgentStep] = useState<'choose' | 'integrate' | 'create'>('choose');
-  const [addAgentForm, setAddAgentForm] = useState({
-    name: '',
-    role: 'sub-agent' as AgentRole,
-    domain: '',
-    handle: '',
-    instructions: '',
-    model: 'Opus',
-    apiKey: '',
-    tools: {
-      gmail: false,
-      calendar: false,
-      github: false,
-      clawDeck: false,
-    },
-  });
-
-  const resetAddAgent = () => {
-    setAddAgentStep('choose');
-    setAddAgentForm({
-      name: '',
-      role: 'sub-agent',
-      domain: '',
-      handle: '',
-      instructions: '',
-      model: 'Opus',
-      apiKey: '',
-      tools: { gmail: false, calendar: false, github: false, clawDeck: false },
-    });
-  };
+  // NOTE: Roster + add-agent modal now live in the left sidebar (App.tsx).
 
   // Mock data (realistic to OpenClaw/Frank setup)
   const agents: Agent[] = useMemo(
@@ -477,8 +403,50 @@ export default function AgentCenter() {
 
       {/* Body */}
       <div className="flex-grow overflow-y-auto overflow-x-hidden p-6">
-        {activeTab === 'agents' && (
+        {activeTab === 'agents' && selectedAgent && (
           <div className="space-y-6">
+            <Card className="p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 min-w-0">
+                  <div className={cn(
+                    'size-12 rounded-md border flex items-center justify-center shrink-0',
+                    selectedAgent.role === 'coordinator' && 'bg-accent-purple/10 border-accent-purple/20 text-accent-purple',
+                    selectedAgent.role === 'sub-agent' && 'bg-brand-mint/10 border-brand-mint/20 text-brand-mint',
+                    selectedAgent.role === 'integration' && 'bg-accent-blue/10 border-accent-blue/20 text-accent-blue'
+                  )}>
+                    <Icon name={selectedAgent.avatarIcon || (selectedAgent.role === 'coordinator' ? 'shield' : selectedAgent.role === 'integration' ? 'link' : 'psychology')} size="lg" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-black text-text-primary truncate">{selectedAgent.name}</p>
+                      <Badge variant={selectedAgent.role === 'coordinator' ? 'purple' : selectedAgent.role === 'integration' ? 'blue' : 'mint'} size="xs">
+                        {(selectedAgent.domain || (selectedAgent.role === 'coordinator' ? 'COORDENADOR' : selectedAgent.role === 'integration' ? 'INTEGRAÇÃO' : 'SUB-AGENT')).toUpperCase()}
+                      </Badge>
+                      <StatusDot color={statusDot[selectedAgent.status].color} glow={selectedAgent.status !== 'offline'} />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">
+                        {statusDot[selectedAgent.status].label}
+                      </span>
+                      {selectedAgent.model && (
+                        <Badge variant="neutral" size="xs"><Icon name="bolt" className="text-[10px]" /> {selectedAgent.model}</Badge>
+                      )}
+                    </div>
+                    {selectedAgent.handle && (
+                      <p className="text-[10px] text-text-secondary font-bold mt-1 truncate">{selectedAgent.handle}</p>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <Badge variant="neutral" size="xs"><Icon name="timer" className="text-[10px]" /> Uptime {selectedAgent.uptime}</Badge>
+                      <Badge variant="neutral" size="xs"><Icon name="favorite" className="text-[10px]" /> HB {selectedAgent.lastHeartbeat}</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="shrink-0 text-right">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Centro de Agentes</p>
+                  <p className="text-[10px] text-text-secondary font-bold mt-1">Painel do agente selecionado</p>
+                </div>
+              </div>
+            </Card>
             {/* Stats Row */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
