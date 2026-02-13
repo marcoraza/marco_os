@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard';
 import Finance from './components/Finance';
 import Health from './components/Health';
 import Learning from './components/Learning';
+import Planner from './components/Planner';
 import CRM from './components/CRM';
 import Settings from './components/Settings';
 import AgentCenter from './components/AgentCenter';
@@ -12,7 +13,7 @@ import { Icon, Badge, SectionLabel, StatusDot } from './components/ui';
 import { cn } from './utils/cn';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'crm' | 'agents' | 'settings' | 'mission-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'agents' | 'settings' | 'mission-detail';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -81,6 +82,7 @@ const App: React.FC = () => {
     finance: 'Finanças',
     health: 'Saúde',
     learning: 'Aprendizado',
+    planner: 'Planejador',
     crm: 'Rede',
     agents: 'Agentes',
     settings: 'Config',
@@ -195,6 +197,16 @@ const App: React.FC = () => {
     setIsMissionModalOpen(false);
   };
 
+  const addTasks = (newTasks: Omit<Task, 'id' | 'assignee' | 'dependencies'>[]) => {
+    const adapted: Task[] = newTasks.map((t, i) => ({
+      ...t,
+      id: Date.now() + i,
+      assignee: 'MA',
+      dependencies: 0,
+    }));
+    setTasks(prev => [...prev, ...adapted]);
+  };
+
   const handleTaskClick = () => setCurrentView('mission-detail');
 
   // ─── Active task counts per project ─────────────────────────────────────────
@@ -298,6 +310,7 @@ const App: React.FC = () => {
                     { id: 'finance',   icon: 'payments',       label: 'Finanças' },
                     { id: 'health',    icon: 'monitor_heart',  label: 'Saúde' },
                     { id: 'learning',  icon: 'school',         label: 'Aprendizado' },
+                    { id: 'planner',   icon: 'event_note',     label: 'Planejador' },
                     { id: 'crm',       icon: 'contacts',       label: 'Gestão de Contatos' },
                     { id: 'agents',    icon: 'smart_toy',      label: 'Agent Center' },
                     { id: 'settings',  icon: 'settings',       label: 'Configurações' },
@@ -395,6 +408,13 @@ const App: React.FC = () => {
             {currentView === 'finance'         && <Finance />}
             {currentView === 'health'          && <Health />}
             {currentView === 'learning'        && <Learning />}
+            {currentView === 'planner'         && (
+              <Planner
+                projects={projects}
+                activeProjectId={activeProjectId}
+                addTasks={addTasks}
+              />
+            )}
             {currentView === 'crm'             && <CRM />}
             {currentView === 'agents'          && <AgentCenter />}
             {currentView === 'settings'        && <Settings />}
@@ -626,7 +646,8 @@ const App: React.FC = () => {
           {isMobileMoreOpen && (
             <div className="absolute bottom-[60px] right-2 mb-[env(safe-area-inset-bottom)] bg-surface border border-border-panel rounded-md shadow-2xl py-1 min-w-[160px] animate-in zoom-in-95 origin-bottom-right duration-200">
               {[
-                { id: 'learning', icon: 'school',     label: 'Aprendizado' },
+                { id: 'learning', icon: 'school',      label: 'Aprendizado' },
+                { id: 'planner',  icon: 'event_note', label: 'Planejador'  },
                 { id: 'crm',      icon: 'contacts',   label: 'Rede (CRM)'  },
                 { id: 'agents',   icon: 'smart_toy',  label: 'Agent Center' },
                 { id: 'settings', icon: 'settings',   label: 'Configurações' },
@@ -666,8 +687,8 @@ const App: React.FC = () => {
               <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>Saúde</span>
             </button>
             <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
-              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','crm','agents','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','crm','agents','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
+              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','crm','agents','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','crm','agents','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
             </button>
           </div>
         </div>
