@@ -345,6 +345,13 @@ const App: React.FC = () => {
                 <span className="text-[9px] font-black text-brand-mint">{agentsOnlineCount}</span>
               </div>
             </div>
+            <button
+              onClick={() => setCurrentView("agent-center")}
+              className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-surface/50 border border-border-panel hover:border-brand-mint/30 rounded-sm transition-all group cursor-pointer"
+            >
+              <Icon name="hub" size="lg" className="text-brand-mint group-hover:rotate-12 transition-transform" />
+              <span className="text-[9px] font-bold text-text-primary uppercase tracking-widest">Mission Control</span>
+            </button>
           </div>
 
           {/* Mobile View Title */}
@@ -450,12 +457,21 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <button
+                    onClick={() => setCurrentView("agent-center")}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-[10px] font-bold uppercase tracking-wide transition-all duration-300 ease-out mb-2",
+                      currentView === "agent-center" ? "nav-item-active" : "nav-item-inactive"
+                    )}
+                  >
+                    <Icon name="hub" size="lg" />
+                    Mission Control
+                  </button>
                   {agentRoster.map(agent => (
                     <div
                       key={agent.id}
                       onClick={() => {
                         setActiveAgentId(agent.id);
-                        setCurrentView('agent-center');
                       }}
                       className={cn(
                         'p-2 rounded-md flex items-center gap-3 transition-all cursor-pointer group border',
