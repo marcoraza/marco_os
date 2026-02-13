@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Task } from '../App';
+import { Task, Project } from '../App';
 import { Icon, Badge, Card, SectionLabel, StatusDot } from './ui';
 import { cn } from '../utils/cn';
 
@@ -7,11 +7,13 @@ interface DashboardProps {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   onTaskClick?: (taskId: number) => void;
-  activeContext: string;
+  activeProjectId: string;
+  projects: Project[];
   onAddTask?: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, activeContext, onAddTask }) => {
+const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask }) => {
+  const activeProject = projects.find(p => p.id === activeProjectId);
   // Widget States
   const [missionView, setMissionView] = useState<'hoje' | 'semana' | 'mes'>('hoje');
   const [pointsView, setPointsView] = useState<'diario' | 'semanal'>('diario');
@@ -31,10 +33,8 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
   // Unique tags for filter list
   const availableTags = Array.from(new Set(tasks.map(t => t.tag))).sort();
 
-  // Filter Tasks based on Context AND Filter Type
-  const contextTasks = activeContext === 'GERAL' 
-    ? tasks 
-    : tasks.filter(t => t.context === activeContext);
+  // Filter Tasks based on active project
+  const contextTasks = tasks.filter(t => t.projectId === activeProjectId);
 
   const displayTasks = contextTasks.filter(task => {
     // 1. Assignee Filter
@@ -120,7 +120,12 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
               <Icon name="layers" size="lg" className="text-brand-mint" />
               <div>
                   <SectionLabel className="text-[12px] tracking-[0.1em] text-text-primary">Fila de Missões</SectionLabel>
-                  <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest">{activeContext}</p>
+                  <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest flex items-center gap-1.5">
+                    {activeProject && (
+                      <span className="size-1.5 rounded-full inline-block" style={{ backgroundColor: activeProject.color }}></span>
+                    )}
+                    {activeProject?.name ?? '–'}
+                  </p>
               </div>
             </div>
             
@@ -266,9 +271,9 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                         <div className="flex justify-between items-center">
                             {getPriorityBadge(task.priority)}
                             
-                            {/* Context/Tag Badge inline with priority for cleaner look */}
+                            {/* Tag Badge */}
                             <span className="text-[7px] font-bold text-text-secondary bg-bg-base px-1.5 py-0.5 rounded-sm border border-border-panel uppercase tracking-wide truncate max-w-[60px]">
-                                {activeContext === 'GERAL' ? task.context : task.tag}
+                                {task.tag}
                             </span>
                         </div>
 
