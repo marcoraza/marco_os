@@ -4,18 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Marco OS Central de Comando Full PRD</title>
-    <script>
-        // Anti-flash script to set theme before rendering
-        (function() {
-            try {
-                var localTheme = localStorage.getItem('marco-os-theme');
-                var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
-                if (!localTheme && supportDarkMode) localTheme = 'dark';
-                if (!localTheme) localTheme = 'light';
-                document.documentElement.setAttribute('data-theme', localTheme);
-            } catch (e) {}
-        })();
+    <script id="theme-boot">
+      (function(){
+        try {
+          var stored = localStorage.getItem('marco-os-theme');
+          var theme = stored || 'system';
+          var effective = theme;
+          if (theme === 'system') {
+            effective = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.classList.toggle('dark', effective === 'dark');
+          document.documentElement.setAttribute('data-theme', effective);
+        } catch (e) {}
+      })();
     </script>
+
+
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
