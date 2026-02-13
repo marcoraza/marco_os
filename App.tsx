@@ -7,13 +7,15 @@ import Planner from './components/Planner';
 import CRM from './components/CRM';
 import Settings from './components/Settings';
 import AgentCenter from './components/AgentCenter';
+import AgentAddModal from './components/AgentAddModal';
+import type { Agent } from './types/agents';
 import MissionModal from './components/MissionModal';
 import MissionDetail from './components/MissionDetail';
 import { Icon, Badge, SectionLabel, StatusDot } from './components/ui';
 import { cn } from './utils/cn';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'agents' | 'settings' | 'mission-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'agent-detail' | 'settings' | 'mission-detail';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -84,10 +86,85 @@ const App: React.FC = () => {
     learning: 'Aprendizado',
     planner: 'Planejador',
     crm: 'Rede',
-    agents: 'Agentes',
+    'agent-detail': 'Agentes',
     settings: 'Config',
     'mission-detail': 'Missão',
   };
+
+  // ─── Centro de Agentes (sidebar) ───────────────────────────────────────────
+  const [agentRoster, setAgentRoster] = useState<Agent[]>(() => [
+    {
+      id: 'frank',
+      name: 'Frank',
+      role: 'coordinator',
+      model: 'OpenClaw',
+      owner: '@marco',
+      status: 'online',
+      lastHeartbeat: 'agora',
+      uptime: '14d 03h',
+      tags: ['orchestrator'],
+      domain: 'COORDENADOR',
+      avatarIcon: 'shield',
+    },
+    {
+      id: 'e1',
+      name: 'Agente E1',
+      role: 'sub-agent',
+      model: 'Opus',
+      owner: 'Frank',
+      status: 'online',
+      lastHeartbeat: 'agora',
+      uptime: '0h 12m',
+      tags: ['ops'],
+      domain: 'OPERAÇÕES',
+      handle: '@agente-e1',
+      avatarIcon: 'engineering',
+    },
+    {
+      id: 'e2',
+      name: 'Agente E2',
+      role: 'sub-agent',
+      model: 'Opus',
+      owner: 'Frank',
+      status: 'online',
+      lastHeartbeat: 'agora',
+      uptime: '6h 44m',
+      tags: ['ops'],
+      domain: 'OPERAÇÕES',
+      handle: '@emilizaremba',
+      avatarIcon: 'engineering',
+    },
+    {
+      id: 'e3',
+      name: 'Agente E3',
+      role: 'sub-agent',
+      model: 'Sonnet',
+      owner: 'Frank',
+      status: 'idle',
+      lastHeartbeat: 'agora',
+      uptime: '0h 02m',
+      tags: ['qa'],
+      domain: 'QUALIDADE',
+      handle: '@agente-e3',
+      avatarIcon: 'psychology',
+    },
+    {
+      id: 'e4',
+      name: 'Agente E4',
+      role: 'sub-agent',
+      model: 'GPT-5.2',
+      owner: 'Frank',
+      status: 'offline',
+      lastHeartbeat: '—',
+      uptime: '—',
+      tags: ['dev'],
+      domain: 'ENGENHARIA',
+      handle: '@agente-e4',
+      avatarIcon: 'code',
+    },
+  ]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('frank');
+  const [isAddAgentOpen, setIsAddAgentOpen] = useState(false);
 
   // ─── Tasks (projectId replaces context) ────────────────────────────────────
   const [tasks, setTasks] = useState<Task[]>([
@@ -223,6 +300,15 @@ const App: React.FC = () => {
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex h-screen w-full flex-col bg-bg-base text-text-primary overflow-hidden font-sans transition-colors duration-300">
+      <AgentAddModal
+        open={isAddAgentOpen}
+        onClose={() => setIsAddAgentOpen(false)}
+        onCreate={(agent) => {
+          setAgentRoster(prev => [agent, ...prev]);
+          setSelectedAgentId(agent.id);
+          setCurrentView('agent-detail');
+        }}
+      />
 
       {currentView !== 'mission-detail' && (
         <header className="h-16 bg-header-bg border-b border-border-panel px-6 flex items-center justify-between shrink-0 gap-4 z-30 relative transition-colors duration-300">
@@ -312,7 +398,7 @@ const App: React.FC = () => {
                     { id: 'learning',  icon: 'school',         label: 'Aprendizado' },
                     { id: 'planner',   icon: 'event_note',     label: 'Planejador' },
                     { id: 'crm',       icon: 'contacts',       label: 'Gestão de Contatos' },
-                    { id: 'agents',    icon: 'smart_toy',      label: 'Agent Center' },
+                    // Agent Center moved to sidebar lower "Agentes" section
                     { id: 'settings',  icon: 'settings',       label: 'Configurações' },
                   ].map(item => (
                     <button
@@ -334,33 +420,62 @@ const App: React.FC = () => {
               {/* Agents */}
               <div className="px-4">
                 <div className="flex items-center justify-between mb-4 px-1">
-                  <SectionLabel>Agentes</SectionLabel>
-                  <span className="text-[9px] font-bold text-text-secondary/50 bg-surface px-2 py-0.5 rounded-sm border border-border-panel">2</span>
+                  <SectionLabel>Centro de Agentes</SectionLabel>
+                  <span className="text-[9px] font-bold text-text-secondary/50 bg-surface px-2 py-0.5 rounded-sm border border-border-panel">{agentRoster.length}</span>
                 </div>
+
                 <div className="space-y-2">
-                  <div className="p-2 bg-surface border border-border-card rounded-md flex items-center gap-3 hover:border-brand-mint/30 cursor-pointer transition-all">
-                    <div className="size-8 rounded-sm bg-accent-purple/10 flex items-center justify-center text-accent-purple shrink-0">
-                      <Icon name="smart_toy" size="lg" />
-                    </div>
-                    <div className="flex-grow overflow-hidden">
-                      <div className="flex items-center gap-2">
-                        <p className="text-[10px] font-bold text-text-primary truncate">Frank</p>
-                        <Badge variant="orange" size="xs">COORDENADOR</Badge>
+                  {agentRoster.map(agent => (
+                    <div
+                      key={agent.id}
+                      onClick={() => {
+                        setSelectedAgentId(agent.id);
+                        setCurrentView('agent-detail');
+                      }}
+                      className={cn(
+                        'p-2 rounded-md flex items-center gap-3 transition-all cursor-pointer group border',
+                        selectedAgentId === agent.id
+                          ? 'bg-surface border-brand-mint/30'
+                          : 'bg-bg-base/0 hover:bg-surface border-border-card'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'size-8 rounded-sm flex items-center justify-center shrink-0 border',
+                          agent.role === 'coordinator'
+                            ? 'bg-accent-purple/10 text-accent-purple border-accent-purple/20'
+                            : 'bg-surface text-text-secondary group-hover:text-text-primary border-border-panel'
+                        )}
+                      >
+                        <Icon name={agent.avatarIcon || (agent.role === 'coordinator' ? 'shield' : 'engineering')} size="lg" />
                       </div>
+
+                      <div className="flex-grow min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <p className="text-[10px] font-bold text-text-primary truncate">{agent.name}</p>
+                          <Badge variant={agent.role === 'coordinator' ? 'orange' : 'mint'} size="xs">
+                            {(agent.domain || (agent.role === 'coordinator' ? 'COORDENADOR' : 'AGENTE')).toUpperCase()}
+                          </Badge>
+                        </div>
+                        {agent.handle && (
+                          <p className="text-[8px] text-text-secondary font-semibold uppercase tracking-tight truncate">
+                            {agent.handle}
+                          </p>
+                        )}
+                      </div>
+
+                      <StatusDot
+                        color={agent.status === 'online' ? 'mint' : agent.status === 'busy' ? 'orange' : agent.status === 'idle' ? 'blue' : 'red'}
+                        glow={agent.status !== 'offline'}
+                        className={agent.status === 'online' ? 'shadow-[0_0_6px_rgba(0,255,149,0.4)]' : ''}
+                      />
                     </div>
-                    <StatusDot color="mint" glow />
-                  </div>
-                  <div className="p-2 hover:bg-surface rounded-md flex items-center gap-3 transition-all cursor-pointer group">
-                    <div className="size-8 rounded-sm bg-surface flex items-center justify-center text-text-secondary group-hover:text-text-primary border border-border-panel shrink-0">
-                      <Icon name="engineering" size="lg" />
-                    </div>
-                    <div className="flex-grow">
-                      <p className="text-[10px] font-bold text-text-primary">Agente E2</p>
-                      <p className="text-[8px] text-text-secondary font-semibold uppercase tracking-tight">Operações @emilizaremba</p>
-                    </div>
-                    <StatusDot color="mint" glow className="shadow-[0_0_6px_rgba(0,255,149,0.4)]" />
-                  </div>
-                  <button className="w-full mt-4 flex items-center gap-2 text-brand-mint hover:text-text-primary transition-colors cursor-pointer py-2 px-1">
+                  ))}
+
+                  <button
+                    onClick={() => setIsAddAgentOpen(true)}
+                    className="w-full mt-4 flex items-center gap-2 text-brand-mint hover:text-text-primary transition-colors cursor-pointer py-2 px-1"
+                  >
                     <Icon name="add" size="md" />
                     <span className="text-[10px] font-black uppercase tracking-widest">Adicionar Agente</span>
                   </button>
@@ -416,7 +531,9 @@ const App: React.FC = () => {
               />
             )}
             {currentView === 'crm'             && <CRM />}
-            {currentView === 'agents'          && <AgentCenter />}
+            {currentView === 'agent-detail'    && (
+              <AgentCenter selectedAgentId={selectedAgentId} roster={agentRoster} />
+            )}
             {currentView === 'settings'        && <Settings />}
             {currentView === 'mission-detail'  && <MissionDetail onBack={() => setCurrentView('dashboard')} />}
           </div>
@@ -649,7 +766,7 @@ const App: React.FC = () => {
                 { id: 'learning', icon: 'school',      label: 'Aprendizado' },
                 { id: 'planner',  icon: 'event_note', label: 'Planejador'  },
                 { id: 'crm',      icon: 'contacts',   label: 'Rede (CRM)'  },
-                { id: 'agents',   icon: 'smart_toy',  label: 'Agent Center' },
+                // Agent Center moved to sidebar lower "Agentes" section
                 { id: 'settings', icon: 'settings',   label: 'Configurações' },
               ].map(item => (
                 <button
@@ -687,8 +804,8 @@ const App: React.FC = () => {
               <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>Saúde</span>
             </button>
             <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
-              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','crm','agents','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','crm','agents','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
+              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','crm','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','crm','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
             </button>
           </div>
         </div>
