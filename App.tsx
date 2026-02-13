@@ -7,6 +7,7 @@ import Planner from './components/Planner';
 import CRM from './components/CRM';
 import Settings from './components/Settings';
 import AgentAddModal from './components/AgentAddModal';
+import AgentCenter from './components/AgentCenter';
 import type { Agent } from './types/agents';
 import MissionModal from './components/MissionModal';
 import MissionDetail from './components/MissionDetail';
@@ -14,7 +15,7 @@ import { Icon, Badge, SectionLabel, StatusDot } from './components/ui';
 import { cn } from './utils/cn';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'settings' | 'mission-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'settings' | 'agent-center' | 'mission-detail';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -86,6 +87,7 @@ const App: React.FC = () => {
     planner: 'Planejador',
     crm: 'Rede',
     settings: 'Config',
+    'agent-center': 'Agentes',
     'mission-detail': 'Missão',
   };
 
@@ -453,6 +455,7 @@ const App: React.FC = () => {
                       key={agent.id}
                       onClick={() => {
                         setActiveAgentId(agent.id);
+                        setCurrentView('agent-center');
                       }}
                       className={cn(
                         'p-2 rounded-md flex items-center gap-3 transition-all cursor-pointer group border',
@@ -554,6 +557,7 @@ const App: React.FC = () => {
             )}
             {currentView === 'crm'             && <CRM />}
             {currentView === 'settings'        && <Settings />}
+            {currentView === 'agent-center'    && <AgentCenter selectedAgentId={activeAgentId} roster={agentRoster} />}
             {currentView === 'mission-detail'  && <MissionDetail onBack={() => setCurrentView('dashboard')} />}
           </div>
 
