@@ -15,11 +15,12 @@ import AgentCenter from './components/AgentCenter';
 import type { Agent } from './types/agents';
 import MissionModal from './components/MissionModal';
 import MissionDetail from './components/MissionDetail';
+import NotesPanel from './components/NotesPanel';
 import { Icon, Badge, SectionLabel, StatusDot, ToastContainer, showToast } from './components/ui';
 import { cn } from './utils/cn';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'settings' | 'agent-center' | 'mission-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'notes' | 'settings' | 'agent-center' | 'mission-detail';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -75,6 +76,50 @@ const DEFAULT_TASKS: Task[] = [
   { id: 15, title: 'Newsletter Semanal',        tag: 'MKT',      projectId: 'pessoal',        status: 'done',        priority: 'medium', deadline: '2d atrás',      assignee: 'https://i.pravatar.cc/150?u=5', dependencies: 0 },
 ];
 
+// ─── StoredAgent ↔ Agent conversion ──────────────────────────────────────────
+function storedAgentToAgent(s: StoredAgent): Agent {
+  return {
+    id: s.id,
+    name: s.name,
+    role: s.role,
+    model: s.model,
+    owner: s.owner,
+    status: s.status,
+    lastHeartbeat: s.lastHeartbeat || s.lastSeen,
+    uptime: s.uptime || '—',
+    tags: s.tags || s.capabilities || [],
+    domain: s.domain,
+    handle: s.handle,
+    avatarIcon: s.avatarIcon,
+    currentMission: s.currentMission,
+  };
+}
+
+function agentToStoredAgent(a: Agent): StoredAgent {
+  const now = new Date().toISOString();
+  return {
+    id: a.id,
+    name: a.name,
+    role: a.role,
+    status: a.status,
+    tools: [],
+    model: a.model || '',
+    lastSeen: now,
+    notes: '',
+    capabilities: [],
+    owner: a.owner,
+    domain: a.domain,
+    handle: a.handle,
+    avatarIcon: a.avatarIcon,
+    currentMission: a.currentMission,
+    tags: a.tags,
+    uptime: a.uptime,
+    lastHeartbeat: a.lastHeartbeat,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
@@ -113,6 +158,7 @@ const App: React.FC = () => {
     health: 'Saúde',
     learning: 'Aprendizado',
     planner: 'Planejador',
+    notes: 'Notas',
     crm: 'Rede',
     settings: 'Config',
     'agent-center': 'Agentes',
@@ -192,6 +238,7 @@ const App: React.FC = () => {
     (async () => {
       try {
         await bootstrapIfEmpty({ projects: DEFAULT_PROJECTS, tasks: DEFAULT_TASKS, notes: [], events: [] });
+        await bootstrapAgentsIfEmpty(defaultAgents);
         const { projects: p, tasks: t, notes: n, events: e } = await loadAll();
         if (p.length) setProjects(p);
         if (t.length) setTasks(t);
@@ -199,6 +246,12 @@ const App: React.FC = () => {
         setEvents(e);
         // ensure active project stays valid
         if (p.length && !p.some(x => x.id === activeProjectId)) setActiveProjectId(p[0].id);
+        // Load agents from IndexedDB
+        const agents = await loadAgents();
+        if (agents.length) {
+          setAgentRoster(agents.map(storedAgentToAgent));
+          if (!agents.some(a => a.id === activeAgentId)) setActiveAgentId(agents[0].id);
+        }
       } finally {
         didHydrateRef.current = true;
       }
@@ -358,6 +411,8 @@ const App: React.FC = () => {
         open={isAddAgentOpen}
         onClose={() => setIsAddAgentOpen(false)}
         onCreate={(agent) => {
+          const stored = agentToStoredAgent(agent);
+          putAgent(stored);
           setAgentRoster(prev => [agent, ...prev]);
           setActiveAgentId(agent.id);
         }}
@@ -478,6 +533,7 @@ const App: React.FC = () => {
                     { id: 'health',    icon: 'monitor_heart',  label: 'Saúde' },
                     { id: 'learning',  icon: 'school',         label: 'Aprendizado' },
                     { id: 'planner',   icon: 'event_note',     label: 'Planejador' },
+                    { id: 'notes',     icon: 'sticky_note_2',  label: 'Notas' },
                     { id: 'crm',       icon: 'contacts',       label: 'Gestão de Contatos' },
                     // Agent Center moved to sidebar lower "Agentes" section
                     { id: 'settings',  icon: 'settings',       label: 'Configurações' },
