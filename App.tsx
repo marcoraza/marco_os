@@ -664,6 +664,8 @@ const App: React.FC = () => {
                 activeProjectId={activeProjectId}
                 projects={projects}
                 onAddTask={() => setIsMissionModalOpen(true)}
+                events={events}
+                setEvents={setEvents}
               />
             )}
             {currentView === 'finance'         && <Finance />}

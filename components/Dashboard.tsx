@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Task, Project } from '../App';
+import type { StoredEvent } from '../data/models';
 import { Icon, Badge, Card, SectionLabel, StatusDot } from './ui';
 import { cn } from '../utils/cn';
+import AgendaWidget from './AgendaWidget';
 
 interface DashboardProps {
   tasks: Task[];
@@ -10,9 +12,11 @@ interface DashboardProps {
   activeProjectId: string;
   projects: Project[];
   onAddTask?: () => void;
+  events: StoredEvent[];
+  setEvents: React.Dispatch<React.SetStateAction<StoredEvent[]>>;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask }) => {
+const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask, events, setEvents }) => {
   const activeProject = projects.find(p => p.id === activeProjectId);
   // Quick Capture
   const [quickCapture, setQuickCapture] = useState('');
@@ -512,6 +516,11 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                     <StatusDot color="red" />
                     <span className="text-[9px] font-black text-accent-red tracking-widest uppercase">Transmitindo</span>
                 </div>
+            </div>
+
+            {/* Slot 0: Agenda Widget */}
+            <div className="p-4 border-b border-border-panel">
+                <AgendaWidget events={events} setEvents={setEvents} activeProjectId={activeProjectId} />
             </div>
 
             {/* Slot 1: Frank's Last Report */}
