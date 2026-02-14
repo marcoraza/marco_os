@@ -40,3 +40,44 @@ export interface StoredEvent {
   createdAt: string; // ISO
   updatedAt: string; // ISO
 }
+
+// ─── Agents ───────────────────────────────────────────────────────────────────
+export type StoredAgentStatus = 'online' | 'busy' | 'idle' | 'offline';
+export type StoredAgentRole = 'coordinator' | 'sub-agent' | 'integration';
+
+export interface StoredAgent {
+  id: string;
+  name: string;
+  role: StoredAgentRole;
+  status: StoredAgentStatus;
+  tools: string[];
+  model: string;
+  lastSeen: string; // ISO
+  notes: string;
+  capabilities: string[];
+  // UI extras (carried from types/agents.ts)
+  owner?: string;
+  domain?: string;
+  handle?: string;
+  avatarIcon?: string;
+  currentMission?: string;
+  tags?: string[];
+  uptime?: string;
+  lastHeartbeat?: string;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+}
+
+export type StoredAgentRunStatus = 'running' | 'done' | 'failed' | 'queued';
+
+export interface StoredAgentRun {
+  id: string;
+  agentId: string;
+  name: string;
+  status: StoredAgentRunStatus;
+  startedAt: string; // ISO
+  finishedAt?: string; // ISO
+  duration: string;
+  output?: string;
+  createdAt: string; // ISO
+}
