@@ -371,8 +371,14 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                 
                 {/* Empty State */}
                 {displayTasks.filter(t => t.status === col.id).length === 0 && (
-                  <div className="h-20 border-2 border-dashed border-border-panel rounded flex items-center justify-center text-[9px] text-text-secondary font-bold uppercase tracking-widest opacity-30">
-                    Sem Tarefas
+                  <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-border-panel/50 rounded-md py-8 px-4 min-h-[120px]">
+                    <Icon name={col.id === 'done' ? 'celebration' : col.id === 'standby' ? 'pause_circle' : 'inbox'} size="lg" className="text-text-secondary/30 mb-2" />
+                    <p className="text-[10px] font-bold text-text-secondary/40 uppercase tracking-widest text-center">
+                      {col.id === 'done' ? 'Nenhuma concluída' : col.id === 'standby' ? 'Nada em espera' : 'Sem tarefas'}
+                    </p>
+                    <p className="text-[8px] text-text-secondary/25 mt-1 text-center">
+                      Arraste ou crie uma nova
+                    </p>
                   </div>
                 )}
 

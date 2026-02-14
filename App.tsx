@@ -119,79 +119,9 @@ const App: React.FC = () => {
     'mission-detail': 'Missão',
   };
 
-  // ─── Centro de Agentes (sidebar) ───────────────────────────────────────────
-  const [agentRoster, setAgentRoster] = useState<Agent[]>(() => [
-    {
-      id: 'frank',
-      name: 'Frank',
-      role: 'coordinator',
-      model: 'OpenClaw',
-      owner: '@marco',
-      status: 'online',
-      lastHeartbeat: 'agora',
-      uptime: '14d 03h',
-      tags: ['orchestrator'],
-      domain: 'COORDENADOR',
-      avatarIcon: 'shield',
-    },
-    {
-      id: 'e1',
-      name: 'Agente E1',
-      role: 'sub-agent',
-      model: 'Opus',
-      owner: 'Frank',
-      status: 'online',
-      lastHeartbeat: 'agora',
-      uptime: '0h 12m',
-      tags: ['ops'],
-      domain: 'OPERAÇÕES',
-      handle: '@agente-e1',
-      avatarIcon: 'engineering',
-    },
-    {
-      id: 'e2',
-      name: 'Agente E2',
-      role: 'sub-agent',
-      model: 'Opus',
-      owner: 'Frank',
-      status: 'online',
-      lastHeartbeat: 'agora',
-      uptime: '6h 44m',
-      tags: ['ops'],
-      domain: 'OPERAÇÕES',
-      handle: '@emilizaremba',
-      avatarIcon: 'engineering',
-    },
-    {
-      id: 'e3',
-      name: 'Agente E3',
-      role: 'sub-agent',
-      model: 'Sonnet',
-      owner: 'Frank',
-      status: 'idle',
-      lastHeartbeat: 'agora',
-      uptime: '0h 02m',
-      tags: ['qa'],
-      domain: 'QUALIDADE',
-      handle: '@agente-e3',
-      avatarIcon: 'psychology',
-    },
-    {
-      id: 'e4',
-      name: 'Agente E4',
-      role: 'sub-agent',
-      model: 'GPT-5.2',
-      owner: 'Frank',
-      status: 'offline',
-      lastHeartbeat: '—',
-      uptime: '—',
-      tags: ['dev'],
-      domain: 'ENGENHARIA',
-      handle: '@agente-e4',
-      avatarIcon: 'code',
-    },
-  ]);
-  const [activeAgentId, setActiveAgentId] = useState<string>('frank');
+  // ─── Centro de Agentes (sidebar) — persisted in IndexedDB ───────────────────
+  const [agentRoster, setAgentRoster] = useState<Agent[]>([]);
+  const [activeAgentId, setActiveAgentId] = useState<string>('frank-opus');
   const [isAddAgentOpen, setIsAddAgentOpen] = useState(false);
 
   const activeAgent = agentRoster.find(a => a.id === activeAgentId) ?? agentRoster[0];
