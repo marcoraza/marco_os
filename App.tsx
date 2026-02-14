@@ -7,6 +7,7 @@ import Health from './components/Health';
 import Learning from './components/Learning';
 import Planner from './components/Planner';
 import CRM from './components/CRM';
+import CommandPalette from './components/CommandPalette';
 import Settings from './components/Settings';
 import AgentAddModal from './components/AgentAddModal';
 import AgentCenter from './components/AgentCenter';
@@ -76,6 +77,7 @@ const DEFAULT_TASKS: Task[] = [
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [uptime, setUptime] = useState(0);
   const [uptimeView, setUptimeView] = useState<UptimeView>('24H');
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -205,11 +207,27 @@ const App: React.FC = () => {
   // ─── Tasks (projectId replaces context) ────────────────────────────────────
   const [tasks, setTasks] = useState<Task[]>(DEFAULT_TASKS);
 
+  // ─── Notes & Events (persisted; used by Command Palette) ───────────────────
+  const [notes, setNotes] = useState<StoredNote[]>([]);
+  const [events, setEvents] = useState<StoredEvent[]>([]);
+
   // ─── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => {
     const uptimeInterval = setInterval(() => setUptime(prev => prev + 1), 1000);
     const clockInterval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => { clearInterval(uptimeInterval); clearInterval(clockInterval); };
+  }, []);
+
+  // Cmd/Ctrl+K opens command palette
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   useEffect(() => {
@@ -228,6 +246,54 @@ const App: React.FC = () => {
       addInputRef.current.focus();
     }
   }, [isAddingProject]);
+
+  // ─── Local persistence (IndexedDB via idb) ─────────────────────────────────
+  const didHydrateRef = useRef(false);
+  const persistTimersRef = useRef<Record<string, ReturnType<typeof setTimeout> | undefined>>({});
+
+  const schedulePersist = (key: string, fn: () => void, delayMs = 350) => {
+    const prev = persistTimersRef.current[key];
+    if (prev) clearTimeout(prev);
+    persistTimersRef.current[key] = setTimeout(fn, delayMs);
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await bootstrapIfEmpty({ projects: DEFAULT_PROJECTS, tasks: DEFAULT_TASKS, notes: [], events: [] });
+        const { projects: p, tasks: t, notes: n, events: e } = await loadAll();
+        if (p.length) setProjects(p);
+        if (t.length) setTasks(t);
+        setNotes(n);
+        setEvents(e);
+        // ensure active project stays valid
+        if (p.length && !p.some(x => x.id === activeProjectId)) setActiveProjectId(p[0].id);
+      } finally {
+        didHydrateRef.current = true;
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!didHydrateRef.current) return;
+    schedulePersist('projects', () => { void saveProjects(projects); });
+  }, [projects]);
+
+  useEffect(() => {
+    if (!didHydrateRef.current) return;
+    schedulePersist('tasks', () => { void saveTasks(tasks); });
+  }, [tasks]);
+
+  useEffect(() => {
+    if (!didHydrateRef.current) return;
+    schedulePersist('notes', () => { void saveNotes(notes); });
+  }, [notes]);
+
+  useEffect(() => {
+    if (!didHydrateRef.current) return;
+    schedulePersist('events', () => { void saveEvents(events); });
+  }, [events]);
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
   const cycleUptimeView = () => {
@@ -301,6 +367,46 @@ const App: React.FC = () => {
     setTasks(prev => [...prev, ...adapted]);
   };
 
+  const createTaskFromPalette = (title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    setTasks(prev => [...prev, {
+      id: Date.now(),
+      title: trimmed,
+      tag: 'GERAL',
+      projectId: activeProjectId,
+      status: 'assigned',
+      priority: 'medium',
+      deadline: 'A definir',
+      assignee: 'MA',
+      dependencies: 0,
+    }]);
+    setCurrentView('dashboard');
+  };
+
+  const createNoteFromPalette = (title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const now = new Date().toISOString();
+    const id = (typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? crypto.randomUUID() : `note-${Date.now()}`;
+    setNotes(prev => [{ id, title: trimmed, body: '', createdAt: now, updatedAt: now, projectId: activeProjectId }, ...prev]);
+  };
+
+  const createEventFromPalette = (title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const now = new Date();
+    const iso = now.toISOString();
+    const id = (typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? crypto.randomUUID() : `event-${Date.now()}`;
+    const date = iso.slice(0, 10);
+    setEvents(prev => [{ id, title: trimmed, date, createdAt: iso, updatedAt: iso, projectId: activeProjectId }, ...prev]);
+  };
+
+  const openTaskFromPalette = (_taskId: number, projectId: string) => {
+    setActiveProjectId(projectId);
+    setCurrentView('dashboard');
+  };
+
   const handleTaskClick = () => setCurrentView('mission-detail');
 
   // ─── Active task counts per project ─────────────────────────────────────────
@@ -370,9 +476,15 @@ const App: React.FC = () => {
             <Icon name="search" size="lg" className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
             <input
               type="text"
-              placeholder="Buscar missões, agentes ou logs..."
-              className="w-full bg-bg-base border border-border-panel rounded-md pl-11 pr-4 py-2.5 text-xs text-text-primary focus:outline-none focus:border-brand-mint transition-colors placeholder:text-text-secondary/40"
+              readOnly
+              onFocus={() => setIsPaletteOpen(true)}
+              onClick={() => setIsPaletteOpen(true)}
+              placeholder="Cmd/Ctrl+K • Buscar / criar…"
+              className="w-full bg-bg-base border border-border-panel rounded-md pl-11 pr-28 py-2.5 text-xs text-text-primary focus:outline-none focus:border-brand-mint transition-colors placeholder:text-text-secondary/40 cursor-pointer"
             />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase tracking-widest text-text-secondary/70 border border-border-panel bg-surface px-2 py-1 rounded-sm">
+              ⌘K
+            </div>
           </div>
 
           {/* Right Actions */}
@@ -855,6 +967,18 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      <CommandPalette
+        open={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        tasks={tasks}
+        notes={notes}
+        events={events}
+        onOpenTask={openTaskFromPalette}
+        onCreateTask={createTaskFromPalette}
+        onCreateNote={createNoteFromPalette}
+        onCreateEvent={createEventFromPalette}
+      />
 
       {/* Mission Modal */}
       {isMissionModalOpen && (
