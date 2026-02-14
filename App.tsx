@@ -676,6 +676,7 @@ const App: React.FC = () => {
                 addTasks={addTasks}
               />
             )}
+            {currentView === 'notes'           && <NotesPanel notes={notes} setNotes={setNotes} activeProjectId={activeProjectId} />}
             {currentView === 'crm'             && <CRM />}
             {currentView === 'settings'        && <Settings />}
             {currentView === 'agent-center'    && <AgentCenter selectedAgentId={activeAgentId} roster={agentRoster} />}
@@ -909,6 +910,7 @@ const App: React.FC = () => {
               {[
                 { id: 'learning', icon: 'school',      label: 'Aprendizado' },
                 { id: 'planner',  icon: 'event_note', label: 'Planejador'  },
+                { id: 'notes',    icon: 'sticky_note_2', label: 'Notas'    },
                 { id: 'crm',      icon: 'contacts',   label: 'Rede (CRM)'  },
                 // Agent Center moved to sidebar lower "Agentes" section
                 { id: 'settings', icon: 'settings',   label: 'Configurações' },
@@ -948,8 +950,8 @@ const App: React.FC = () => {
               <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>Saúde</span>
             </button>
             <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
-              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','crm','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','crm','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
+              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','notes','crm','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','notes','crm','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
             </button>
           </div>
         </div>
