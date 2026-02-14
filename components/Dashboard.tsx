@@ -14,6 +14,24 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask }) => {
   const activeProject = projects.find(p => p.id === activeProjectId);
+  // Quick Capture
+  const [quickCapture, setQuickCapture] = useState('');
+  const handleQuickCapture = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && quickCapture.trim()) {
+      setTasks(prev => [...prev, {
+        id: Date.now(),
+        title: quickCapture.trim(),
+        tag: 'GERAL',
+        projectId: activeProjectId,
+        status: 'assigned' as const,
+        priority: 'medium' as const,
+        deadline: 'A definir',
+        assignee: 'MA',
+        dependencies: 0,
+      }]);
+      setQuickCapture('');
+    }
+  };
   // Widget States
   const [missionView, setMissionView] = useState<'hoje' | 'semana' | 'mes'>('hoje');
   const [pointsView, setPointsView] = useState<'diario' | 'semanal'>('diario');
@@ -129,6 +147,19 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
               </div>
             </div>
             
+            {/* Quick Capture */}
+            <div className="flex-grow max-w-sm relative hidden sm:block">
+              <Icon name="bolt" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-mint" />
+              <input
+                type="text"
+                value={quickCapture}
+                onChange={e => setQuickCapture(e.target.value)}
+                onKeyDown={handleQuickCapture}
+                placeholder="Captura rápida… Enter para criar"
+                className="w-full bg-bg-base border border-border-panel rounded-md pl-9 pr-3 py-2 text-[11px] text-text-primary focus:outline-none focus:border-brand-mint/50 transition-colors placeholder:text-text-secondary/40"
+              />
+            </div>
+
             {/* Filter Controls with Optimized Animation */}
             <div className="flex bg-header-bg p-1 rounded-md border border-border-panel hidden sm:flex relative">
               {filters.map((filter) => (
