@@ -327,11 +327,28 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                                 </div>
                             ) : null}
                             
-                            {/* Time Remaining Mock */}
-                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-sm border ${task.deadline === 'Hoje' ? 'text-accent-red bg-accent-red/10 border-accent-red/20' : 'text-text-secondary bg-bg-base border-border-panel'}`}>
+                            {/* Time Remaining / Triage */}
+                            {(task.deadline === 'A definir' || task.deadline === 'Indef.') ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setTasks(prev => prev.map(t => t.id === task.id ? { ...t, deadline: 'Hoje' } : t)); }}
+                                  className="px-1.5 py-0.5 rounded-sm border border-brand-mint/30 bg-brand-mint/10 text-brand-mint text-[8px] font-bold uppercase hover:bg-brand-mint/20 transition-colors"
+                                >
+                                  Hoje
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setTasks(prev => prev.map(t => t.id === task.id ? { ...t, deadline: 'Amanhã' } : t)); }}
+                                  className="px-1.5 py-0.5 rounded-sm border border-accent-blue/30 bg-accent-blue/10 text-accent-blue text-[8px] font-bold uppercase hover:bg-accent-blue/20 transition-colors"
+                                >
+                                  Amanhã
+                                </button>
+                              </div>
+                            ) : (
+                              <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-sm border ${task.deadline === 'Hoje' ? 'text-accent-red bg-accent-red/10 border-accent-red/20' : 'text-text-secondary bg-bg-base border-border-panel'}`}>
                                 <Icon name="schedule" className="text-[10px]" />
                                 <span className="text-[8px] font-bold uppercase">{task.deadline}</span>
-                            </div>
+                              </div>
+                            )}
                         </div>
 
                         {/* Card Bottom: Assignee & Menu */}

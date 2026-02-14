@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { StoredEvent, StoredNote } from './data/models';
-import { bootstrapIfEmpty, loadAll, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
+import type { StoredAgent, StoredEvent, StoredNote } from './data/models';
+import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, putAgent, saveAgents, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
+import { defaultAgents } from './data/agentsSeed';
 import Dashboard from './components/Dashboard';
 import Finance from './components/Finance';
 import Health from './components/Health';
