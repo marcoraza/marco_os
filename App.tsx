@@ -14,7 +14,7 @@ import AgentCenter from './components/AgentCenter';
 import type { Agent } from './types/agents';
 import MissionModal from './components/MissionModal';
 import MissionDetail from './components/MissionDetail';
-import { Icon, Badge, SectionLabel, StatusDot } from './components/ui';
+import { Icon, Badge, SectionLabel, StatusDot, ToastContainer, showToast } from './components/ui';
 import { cn } from './utils/cn';
 
 // Types
@@ -277,22 +277,22 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!didHydrateRef.current) return;
-    schedulePersist('projects', () => { void saveProjects(projects); });
+    schedulePersist('projects', () => { void saveProjects(projects).then(() => showToast('Salvo')); });
   }, [projects]);
 
   useEffect(() => {
     if (!didHydrateRef.current) return;
-    schedulePersist('tasks', () => { void saveTasks(tasks); });
+    schedulePersist('tasks', () => { void saveTasks(tasks).then(() => showToast('Salvo')); });
   }, [tasks]);
 
   useEffect(() => {
     if (!didHydrateRef.current) return;
-    schedulePersist('notes', () => { void saveNotes(notes); });
+    schedulePersist('notes', () => { void saveNotes(notes).then(() => showToast('Salvo')); });
   }, [notes]);
 
   useEffect(() => {
     if (!didHydrateRef.current) return;
-    schedulePersist('events', () => { void saveEvents(events); });
+    schedulePersist('events', () => { void saveEvents(events).then(() => showToast('Salvo')); });
   }, [events]);
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -984,6 +984,8 @@ const App: React.FC = () => {
       {isMissionModalOpen && (
         <MissionModal onClose={() => setIsMissionModalOpen(false)} onSave={addTask} />
       )}
+
+      <ToastContainer />
     </div>
   );
 };
