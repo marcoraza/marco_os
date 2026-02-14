@@ -1,4 +1,4 @@
-import type { StoredEvent, StoredNote, StoredProject, StoredTask } from './models';
+import type { StoredAgent, StoredAgentRun, StoredEvent, StoredNote, StoredProject, StoredTask } from './models';
 import { getDb } from './db';
 
 export type BootstrapPayload = {
@@ -89,4 +89,70 @@ export async function saveEvents(events: StoredEvent[]) {
   await tx.store.clear();
   for (const e of events) await tx.store.put(e);
   await tx.done;
+}
+
+// ─── Agents CRUD ──────────────────────────────────────────────────────────────
+
+export async function loadAgents(): Promise<StoredAgent[]> {
+  const db = await getDb();
+  const all = await db.getAll('agents');
+  all.sort((a, b) => a.name.localeCompare(b.name));
+  return all;
+}
+
+export async function saveAgents(agents: StoredAgent[]) {
+  const db = await getDb();
+  const tx = db.transaction('agents', 'readwrite');
+  await tx.store.clear();
+  for (const a of agents) await tx.store.put(a);
+  await tx.done;
+}
+
+export async function putAgent(agent: StoredAgent) {
+  const db = await getDb();
+  await db.put('agents', agent);
+}
+
+export async function deleteAgent(id: string) {
+  const db = await getDb();
+  await db.delete('agents', id);
+}
+
+export async function getAgent(id: string): Promise<StoredAgent | undefined> {
+  const db = await getDb();
+  return db.get('agents', id);
+}
+
+// ─── Agent Runs CRUD ──────────────────────────────────────────────────────────
+
+export async function loadAgentRuns(agentId?: string): Promise<StoredAgentRun[]> {
+  const db = await getDb();
+  let all: StoredAgentRun[];
+  if (agentId) {
+    all = await db.getAllFromIndex('agentRuns', 'by-agent', agentId);
+  } else {
+    all = await db.getAll('agentRuns');
+  }
+  all.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return all;
+}
+
+export async function putAgentRun(run: StoredAgentRun) {
+  const db = await getDb();
+  await db.put('agentRuns', run);
+}
+
+export async function deleteAgentRun(id: string) {
+  const db = await getDb();
+  await db.delete('agentRuns', id);
+}
+
+export async function bootstrapAgentsIfEmpty(agents: StoredAgent[]) {
+  const db = await getDb();
+  const count = await db.count('agents');
+  if (count === 0 && agents.length) {
+    const tx = db.transaction('agents', 'readwrite');
+    for (const a of agents) await tx.store.put(a);
+    await tx.done;
+  }
 }
