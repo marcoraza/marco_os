@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot } from './ui';
 import { cn } from '../utils/cn';
 import type { Agent, AgentStatus } from '../types/agents';
+import AgentDashboard from './AgentDashboard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CronJob {
@@ -64,8 +65,9 @@ const runBadge: Record<RunItem['status'], { variant: 'mint' | 'orange' | 'red' |
 };
 
 // ─── Modules (sub-nav) ───────────────────────────────────────────────────────
-type ModuleId = 'overview' | 'runs' | 'cron' | 'heartbeat' | 'memory' | 'comms' | 'config';
+type ModuleId = 'dashboard' | 'overview' | 'runs' | 'cron' | 'heartbeat' | 'memory' | 'comms' | 'config';
 const modules: { id: ModuleId; label: string; icon: string }[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
   { id: 'overview', label: 'Visão Geral', icon: 'monitoring' },
   { id: 'runs', label: 'Execuções', icon: 'rocket_launch' },
   { id: 'cron', label: 'Cron Jobs', icon: 'schedule' },
@@ -79,7 +81,7 @@ const modules: { id: ModuleId; label: string; icon: string }[] = [
 type AgentCenterProps = { selectedAgentId: string; roster: Agent[] };
 
 export default function AgentCenter({ selectedAgentId, roster }: AgentCenterProps) {
-  const [activeModule, setActiveModule] = useState<ModuleId>('overview');
+  const [activeModule, setActiveModule] = useState<ModuleId>('dashboard');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [scope, setScope] = useState<'global' | 'agent'>('global');
@@ -200,6 +202,10 @@ export default function AgentCenter({ selectedAgentId, roster }: AgentCenterProp
           <p className="text-[11px] font-bold uppercase tracking-widest">Selecione um item para ver detalhes</p>
         </div>
       );
+    }
+
+    if (activeModule === 'dashboard') {
+      return <AgentDashboard roster={roster} />;
     }
 
     if (activeModule === 'overview') {
