@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot } from './ui';
 import { cn } from '../utils/cn';
 import type { Agent, AgentStatus } from '../types/agents';
+import MissionControl from './MissionControl';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CronJob {
@@ -64,9 +65,10 @@ const runBadge: Record<RunItem['status'], { variant: 'mint' | 'orange' | 'red' |
 };
 
 // ─── Modules (sub-nav) ───────────────────────────────────────────────────────
-type ModuleId = 'overview' | 'runs' | 'cron' | 'heartbeat' | 'memory' | 'comms' | 'config';
+type ModuleId = 'overview' | 'mission-control' | 'runs' | 'cron' | 'heartbeat' | 'memory' | 'comms' | 'config';
 const modules: { id: ModuleId; label: string; icon: string }[] = [
   { id: 'overview', label: 'Visão Geral', icon: 'monitoring' },
+  { id: 'mission-control', label: 'Mission Control', icon: 'view_column' },
   { id: 'runs', label: 'Execuções', icon: 'rocket_launch' },
   { id: 'cron', label: 'Cron Jobs', icon: 'schedule' },
   { id: 'heartbeat', label: 'Heartbeat', icon: 'monitor_heart' },
@@ -449,6 +451,11 @@ export default function AgentCenter({ selectedAgentId, roster }: AgentCenterProp
 
       {/* 3-column body */}
       <div className="flex-grow flex overflow-hidden">
+        {/* Mission Control: full-width layout */}
+        {activeModule === 'mission-control' ? (
+          <MissionControl />
+        ) : (
+          <>
         {/* LEFT: Sub-nav */}
         <div className="w-[200px] bg-header-bg border-r border-border-panel flex flex-col shrink-0 hidden lg:flex">
           <div className="flex-grow overflow-y-auto py-4 px-3">
@@ -545,6 +552,8 @@ export default function AgentCenter({ selectedAgentId, roster }: AgentCenterProp
         <div className="flex-grow bg-bg-base overflow-y-auto p-6">
           {renderDetail()}
         </div>
+          </>
+        )}
       </div>
     </div>
   );
