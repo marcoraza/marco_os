@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface AgentData {
   id: string;
@@ -11,16 +11,16 @@ export interface AgentData {
   updatedAt: string;
 }
 
-// Mock WebSocket data
+// Mock WebSocket data - texto corrido como na screenshot
 const mockAgents: AgentData[] = [
   {
     id: "1",
     status: "active",
     task: "Pesquisar APIs Instagram no RapidAPI",
     progress: [
-      "Iniciado web_search em busca de APIs oficiais e wrappers confiáveis",
-      "Encontrado 3 APIs candidatas no RapidAPI com boa reputação",
-      "Testando endpoints de cada API para validar rate limits e response format"
+      "Started web search for Instagram APIs on RapidAPI marketplace. Found several candidates including Official Instagram API, Instagram Scraper API, and Social Media Data API.",
+      "Comparing pricing tiers and rate limits. The Official API requires business verification but offers 200 requests/day on free tier. Scraper API has 500 requests/month.",
+      "Currently testing endpoints with sample requests to verify response format and data completeness."
     ],
     model: "anthropic/claude-sonnet-4-5",
     tokens: 12453,
@@ -32,7 +32,8 @@ const mockAgents: AgentData[] = [
     status: "queued",
     task: "Construir adapter TikTok pro pipeline v3",
     progress: [
-      "Aguardando conclusão do Agent 1 para replicar estrutura de API discovery"
+      "Waiting for Agent 1 to complete API research. Once Instagram adapter is validated, will use same pattern for TikTok integration.",
+      "Prepared repository structure and identified required dependencies. Will need tiktok-scraper package and rate limiting middleware."
     ],
     model: "google/gemini-flash-1.5",
     tokens: 3201,
@@ -42,12 +43,11 @@ const mockAgents: AgentData[] = [
   {
     id: "3",
     status: "completed",
-    task: "Criar adapter X/Twitter pro pipeline",
+    task: "Criar adapter X/Twitter pro pipeline v3",
     progress: [
-      "Pipeline v3 structure implementada com opinião crítica + nota sistema",
-      "Callback handler criado para menu de 16 botões",
-      "Testing completo com URLs reais do Twitter/X",
-      "Merged to main após code review do Marco"
+      "Implemented Twitter/X adapter following pipeline v3 architecture. Created callback handler for inline button interactions (insights, digest, connections).",
+      "Added tweet metadata extraction including author, timestamp, engagement metrics. Integrated with existing url_router.py for automatic platform detection.",
+      "Completed testing with sample tweets. All callbacks working correctly. Merged to main branch and deployed."
     ],
     model: "anthropic/claude-sonnet-4-5",
     tokens: 18732,
@@ -56,39 +56,14 @@ const mockAgents: AgentData[] = [
   }
 ];
 
-export function useAgentStream(autoRefreshMs: number = 5000) {
+export function useAgentStream() {
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const fetchAgents = useCallback(() => {
-    setIsRefreshing(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setAgents(mockAgents);
-      setIsRefreshing(false);
-    }, 300);
-
-    // TODO: Replace with real API call
-    // fetch('/api/agents/active')
-    //   .then(res => res.json())
-    //   .then(data => {
-    //     setAgents(data.agents);
-    //     setIsRefreshing(false);
-    //   })
-    //   .catch(() => {
-    //     setIsRefreshing(false);
-    //   });
-  }, []);
 
   useEffect(() => {
-    // Initial load
+    // Simulate WebSocket connection
     setIsConnected(true);
-    fetchAgents();
-
-    // Auto-refresh interval
-    const interval = setInterval(fetchAgents, autoRefreshMs);
+    setAgents(mockAgents);
 
     // TODO: Implement real WebSocket connection
     // const ws = new WebSocket('ws://localhost:8080/agents');
@@ -99,13 +74,12 @@ export function useAgentStream(autoRefreshMs: number = 5000) {
     // };
     // ws.onerror = () => setIsConnected(false);
     // ws.onclose = () => setIsConnected(false);
+    // return () => ws.close();
 
     return () => {
-      clearInterval(interval);
       setIsConnected(false);
-      // ws?.close();
     };
-  }, [fetchAgents, autoRefreshMs]);
+  }, []);
 
-  return { agents, isConnected, isRefreshing, refetch: fetchAgents };
+  return { agents, isConnected };
 }
