@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot } from './ui';
 import { cn } from '../utils/cn';
 import type { Agent, AgentStatus } from '../types/agents';
-import MissionControl from './MissionControl';
+import MissionControl from './MissionControl/index';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface CronJob {
