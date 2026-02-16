@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface AgentData {
   id: string;
@@ -59,11 +59,34 @@ const mockAgents: AgentData[] = [
 export function useAgentStream() {
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch/refresh function
+  const refresh = useCallback(() => {
+    setIsRefreshing(true);
+    
+    // Simulate network delay
+    setTimeout(() => {
+      // TODO: Replace with real fetch/WebSocket
+      // const response = await fetch('/api/agents');
+      // const data = await response.json();
+      // setAgents(data.agents);
+      
+      // For now, just update mock data with new timestamps
+      const updatedAgents = mockAgents.map(agent => ({
+        ...agent,
+        updatedAt: new Date().toISOString()
+      }));
+      
+      setAgents(updatedAgents);
+      setIsRefreshing(false);
+    }, 500);
+  }, []);
 
   useEffect(() => {
-    // Simulate WebSocket connection
+    // Initial load
     setIsConnected(true);
-    setAgents(mockAgents);
+    refresh();
 
     // TODO: Implement real WebSocket connection
     // const ws = new WebSocket('ws://localhost:8080/agents');
@@ -79,7 +102,7 @@ export function useAgentStream() {
     return () => {
       setIsConnected(false);
     };
-  }, []);
+  }, [refresh]);
 
-  return { agents, isConnected };
+  return { agents, isConnected, isRefreshing, refresh };
 }
