@@ -16,11 +16,12 @@ import type { Agent } from './types/agents';
 import MissionModal from './components/MissionModal';
 import MissionDetail from './components/MissionDetail';
 import NotesPanel from './components/NotesPanel';
+import MissionControlV2 from './components/MissionControl';
 import { Icon, Badge, SectionLabel, StatusDot, ToastContainer, showToast } from './components/ui';
 import { cn } from './utils/cn';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'notes' | 'settings' | 'agent-center' | 'mission-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'notes' | 'settings' | 'agent-center' | 'mission-detail' | 'mission-control';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -163,6 +164,7 @@ const App: React.FC = () => {
     settings: 'Config',
     'agent-center': 'Agentes',
     'mission-detail': 'Missão',
+    'mission-control': 'Mission Control',
   };
 
   // ─── Centro de Agentes (sidebar) — persisted in IndexedDB ───────────────────
@@ -418,7 +420,7 @@ const App: React.FC = () => {
         }}
       />
 
-      {currentView !== 'mission-detail' && (
+      {currentView !== 'mission-detail' && currentView !== 'mission-control' && (
         <header className="h-16 bg-header-bg border-b border-border-panel px-6 flex items-center justify-between shrink-0 gap-4 z-30 relative transition-colors duration-300">
           <div className="flex items-center gap-6 lg:gap-10 shrink-0">
             {/* Logo */}
@@ -444,11 +446,11 @@ const App: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={() => setCurrentView("agent-center")}
+              onClick={() => setCurrentView("mission-control")}
               className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-surface/50 border border-border-panel hover:border-brand-mint/30 rounded-sm transition-all group cursor-pointer"
             >
               <Icon name="hub" size="lg" className="text-brand-mint group-hover:rotate-12 transition-transform" />
-              <span className="text-[9px] font-bold text-text-primary uppercase tracking-widest">Mission Control</span>
+              <span className="text-[9px] font-bold text-text-primary uppercase tracking-widest">Mission Control V2</span>
             </button>
           </div>
 
@@ -521,7 +523,7 @@ const App: React.FC = () => {
       <div className="flex-grow flex overflow-hidden">
 
         {/* LEFT SIDEBAR */}
-        {currentView !== 'mission-detail' && (
+        {currentView !== 'mission-detail' && currentView !== 'mission-control' && (
           <aside className="w-[220px] bg-header-bg border-r border-border-panel flex-col shrink-0 hidden md:flex z-10 transition-colors duration-300">
             <div className="flex-grow overflow-y-auto py-6">
               <div className="px-4 mb-8">
@@ -683,6 +685,7 @@ const App: React.FC = () => {
             {currentView === 'settings'        && <Settings />}
             {currentView === 'agent-center'    && <AgentCenter selectedAgentId={activeAgentId} roster={agentRoster} />}
             {currentView === 'mission-detail'  && <MissionDetail onBack={() => setCurrentView('dashboard')} />}
+            {currentView === 'mission-control' && <MissionControlV2 />}
           </div>
 
           {/* ─── FOOTER BAR (Dashboard only) ──────────────────────────────── */}
@@ -838,7 +841,7 @@ const App: React.FC = () => {
       </div>
 
       {/* ─── MOBILE BOTTOM NAV ─────────────────────────────────────────────── */}
-      {currentView !== 'mission-detail' && (
+      {currentView !== 'mission-detail' && currentView !== 'mission-control' && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-header-bg border-t border-border-panel z-50 pb-[env(safe-area-inset-bottom)] transition-colors duration-300">
 
           {/* Mobile Context/Project Popover */}
