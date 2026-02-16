@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface AgentData {
   id: string;
@@ -18,9 +18,9 @@ const mockAgents: AgentData[] = [
     status: "active",
     task: "Pesquisar APIs Instagram no RapidAPI",
     progress: [
-      "✅ Iniciado web_search",
-      "✅ Encontrado 3 APIs candidatas",
-      "⏳ Testando endpoints"
+      "Iniciado web_search em busca de APIs oficiais e wrappers confiáveis",
+      "Encontrado 3 APIs candidatas no RapidAPI com boa reputação",
+      "Testando endpoints de cada API para validar rate limits e response format"
     ],
     model: "anthropic/claude-sonnet-4-5",
     tokens: 12453,
@@ -32,7 +32,7 @@ const mockAgents: AgentData[] = [
     status: "queued",
     task: "Construir adapter TikTok pro pipeline v3",
     progress: [
-      "⏳ Aguardando conclusão do Agent 1"
+      "Aguardando conclusão do Agent 1 para replicar estrutura de API discovery"
     ],
     model: "google/gemini-flash-1.5",
     tokens: 3201,
@@ -44,10 +44,10 @@ const mockAgents: AgentData[] = [
     status: "completed",
     task: "Criar adapter X/Twitter pro pipeline",
     progress: [
-      "✅ Pipeline v3 structure",
-      "✅ Callback handler",
-      "✅ Testing completo",
-      "✅ Merged to main"
+      "Pipeline v3 structure implementada com opinião crítica + nota sistema",
+      "Callback handler criado para menu de 16 botões",
+      "Testing completo com URLs reais do Twitter/X",
+      "Merged to main após code review do Marco"
     ],
     model: "anthropic/claude-sonnet-4-5",
     tokens: 18732,
@@ -56,14 +56,39 @@ const mockAgents: AgentData[] = [
   }
 ];
 
-export function useAgentStream() {
+export function useAgentStream(autoRefreshMs: number = 5000) {
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchAgents = useCallback(() => {
+    setIsRefreshing(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setAgents(mockAgents);
+      setIsRefreshing(false);
+    }, 300);
+
+    // TODO: Replace with real API call
+    // fetch('/api/agents/active')
+    //   .then(res => res.json())
+    //   .then(data => {
+    //     setAgents(data.agents);
+    //     setIsRefreshing(false);
+    //   })
+    //   .catch(() => {
+    //     setIsRefreshing(false);
+    //   });
+  }, []);
 
   useEffect(() => {
-    // Simulate WebSocket connection
+    // Initial load
     setIsConnected(true);
-    setAgents(mockAgents);
+    fetchAgents();
+
+    // Auto-refresh interval
+    const interval = setInterval(fetchAgents, autoRefreshMs);
 
     // TODO: Implement real WebSocket connection
     // const ws = new WebSocket('ws://localhost:8080/agents');
@@ -74,12 +99,13 @@ export function useAgentStream() {
     // };
     // ws.onerror = () => setIsConnected(false);
     // ws.onclose = () => setIsConnected(false);
-    // return () => ws.close();
 
     return () => {
+      clearInterval(interval);
       setIsConnected(false);
+      // ws?.close();
     };
-  }, []);
+  }, [fetchAgents, autoRefreshMs]);
 
-  return { agents, isConnected };
+  return { agents, isConnected, isRefreshing, refetch: fetchAgents };
 }
