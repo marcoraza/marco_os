@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/marco_os/(.*)",
+      "destination": "/$1"
+    },
+    {
+      "source": "/marco_os",
+      "destination": "/index.html"
+    }
+  ]
+}
