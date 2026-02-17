@@ -149,9 +149,12 @@ export async function deleteAgentRun(id: string) {
 
 export async function bootstrapAgentsIfEmpty(agents: StoredAgent[]) {
   const db = await getDb();
-  const count = await db.count('agents');
-  if (count === 0 && agents.length) {
+  const existing = await db.getAll('agents');
+  const expectedIds = new Set(agents.map(a => a.id));
+  const needsReseed = existing.length === 0 || !existing.some(a => expectedIds.has(a.id));
+  if (needsReseed && agents.length) {
     const tx = db.transaction('agents', 'readwrite');
+    await tx.store.clear();
     for (const a of agents) await tx.store.put(a);
     await tx.done;
   }

@@ -40,6 +40,7 @@ export class OpenClawClient {
   private maxReconnectDelay = 30_000;
   private shouldReconnect = true;
   private requestTimeout = 15_000;
+  private loggedFirstFailure = false;
 
   constructor(config: OpenClawConfig) {
     this.config = config;
@@ -80,13 +81,17 @@ export class OpenClawClient {
     this.ws.onclose = () => {
       this.cleanup();
       if (this.shouldReconnect) {
+        if (!this.loggedFirstFailure) {
+          this.loggedFirstFailure = true;
+          console.info('[openclaw] Gateway offline — using mock data. Retrying silently…');
+        }
         this.setState('disconnected');
         this.scheduleReconnect();
       }
     };
 
     this.ws.onerror = () => {
-      // onclose will fire after onerror
+      // Suppress console noise — onclose handles reconnect
     };
   }
 
@@ -203,7 +208,9 @@ export class OpenClawClient {
     try {
       await this.request('connect', connectParams as unknown as Record<string, unknown>);
       this.reconnectAttempts = 0;
+      this.loggedFirstFailure = false;
       this.setState('connected');
+      console.info('[openclaw] Connected to gateway');
     } catch (err) {
       console.error('[openclaw] Handshake failed:', err);
       this.ws?.close();
