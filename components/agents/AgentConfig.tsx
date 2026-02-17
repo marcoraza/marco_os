@@ -1,20 +1,47 @@
-import { useMemo } from 'react';
-import { Badge, Card, Icon, SectionLabel, StatusDot } from '../ui';
-import { cn } from '../../utils/cn';
+import { useState, useEffect, useMemo } from 'react';
+import { Badge, Card, Icon, SectionLabel } from '../ui';
+import { useOpenClaw } from '../../contexts/OpenClawContext';
 import { getConfigForAgent } from '../../data/agentMockData';
+import type { AgentConfig as AgentConfigType } from '../../data/agentMockData';
 
 interface AgentConfigProps {
   agentId: string;
 }
 
 const roleBadge: Record<string, { variant: 'mint' | 'blue' | 'purple'; label: string }> = {
-  coordinator: { variant: 'mint', label: 'COORDENADOR' },
-  'sub-agent': { variant: 'blue', label: 'SUB-AGENTE' },
+  coordinator: { variant: 'mint',   label: 'COORDENADOR' },
+  'sub-agent': { variant: 'blue',   label: 'SUB-AGENTE' },
   integration: { variant: 'purple', label: 'INTEGRAÇÃO' },
 };
 
 export default function AgentConfig({ agentId }: AgentConfigProps) {
-  const config = useMemo(() => getConfigForAgent(agentId), [agentId]);
+  const { http, isLive } = useOpenClaw();
+  const [liveConfig, setLiveConfig] = useState<AgentConfigType | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isLive || !http) return;
+    setLoading(true);
+    http.fileRead('config/agents.json')
+      .then(({ content }) => {
+        const parsed = JSON.parse(content) as { agents: AgentConfigType[] };
+        const found = parsed.agents.find(a => a.id === agentId) ?? parsed.agents[0];
+        setLiveConfig(found ?? null);
+      })
+      .catch(() => setLiveConfig(null))
+      .finally(() => setLoading(false));
+  }, [isLive, http, agentId]);
+
+  const config = liveConfig ?? getConfigForAgent(agentId);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <SectionLabel icon="settings">CONFIGURAÇÃO</SectionLabel>
+        <Card className="p-4 text-center text-text-secondary text-[10px]">Carregando...</Card>
+      </div>
+    );
+  }
 
   if (!config) {
     return (
@@ -24,10 +51,6 @@ export default function AgentConfig({ agentId }: AgentConfigProps) {
           <div className="flex flex-col items-center justify-center py-12 gap-3 text-text-secondary">
             <Icon name="settings" size="lg" />
             <span className="text-[11px]">Nenhuma configuração encontrada</span>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-brand-mint/30 bg-brand-mint/10 text-brand-mint hover:bg-brand-mint/20 transition-colors">
-              <Icon name="add" size="xs" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Criar Configuração</span>
-            </button>
           </div>
         </Card>
       </div>
@@ -38,10 +61,15 @@ export default function AgentConfig({ agentId }: AgentConfigProps) {
 
   return (
     <div className="space-y-3">
-      <SectionLabel icon="settings">CONFIGURAÇÃO</SectionLabel>
+      <div className="flex items-center justify-between">
+        <SectionLabel icon="settings">CONFIGURAÇÃO</SectionLabel>
+        {isLive
+          ? <Badge variant="mint" size="sm">LIVE</Badge>
+          : <Badge variant="neutral" size="sm">MOCK</Badge>
+        }
+      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {/* Left: Config Details */}
         <div className="xl:col-span-2 space-y-3">
           <Card className="p-4 space-y-4">
             {/* Header */}
@@ -100,39 +128,21 @@ export default function AgentConfig({ agentId }: AgentConfigProps) {
                 ))}
               </div>
             </div>
-
-            {/* Edit Button */}
-            <div className="flex justify-end pt-2">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-border-panel bg-surface text-text-secondary hover:text-brand-mint hover:border-brand-mint/30 transition-colors">
-                <Icon name="edit" size="xs" />
-                <span className="text-[9px] font-black uppercase tracking-widest">Editar</span>
-              </button>
-            </div>
           </Card>
         </div>
 
-        {/* Right: Guide Sidebar */}
+        {/* Sidebar */}
         <div>
           <Card className="p-4 space-y-3">
             <div className="flex items-center gap-1.5">
               <Icon name="menu_book" size="xs" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Guia de Configuração</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Fonte</span>
             </div>
-
-            <div className="space-y-3 text-[10px] text-text-secondary leading-relaxed">
-              <div>
-                <span className="text-text-primary font-medium">Temperature:</span> Valores mais baixos (0.1-0.3) geram respostas mais determinísticas. Valores mais altos (0.7-1.0) geram respostas mais criativas.
-              </div>
-              <div>
-                <span className="text-text-primary font-medium">Max Tokens:</span> Limite máximo de tokens na resposta. Valores maiores permitem respostas mais longas mas consomem mais recursos.
-              </div>
-              <div>
-                <span className="text-text-primary font-medium">System Prompt:</span> Instruções que definem o comportamento e personalidade do agente. Seja específico e claro.
-              </div>
-              <div>
-                <span className="text-text-primary font-medium">Ferramentas:</span> APIs e capacidades disponíveis para o agente durante execuções.
-              </div>
-            </div>
+            <p className="text-[10px] text-text-secondary leading-relaxed">
+              {isLive
+                ? 'Configuração via config/agents.json no workspace (live).'
+                : 'Gateway offline — exibindo dados mock.'}
+            </p>
           </Card>
         </div>
       </div>
