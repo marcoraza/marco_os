@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { listSessions, connectWebSocket, type OpenClawSession } from '../utils/openclaw';
+import { fetchSessionsSafe, type OpenClawSession } from '../utils/openclaw';
 import type { AgentData, AgentStatus } from '../types/mission-control.types';
 
 // ── Mock Data (fallback quando Gateway offline) ────────────────────────────────
@@ -23,9 +23,7 @@ const MOCK_AGENTS: AgentData[] = [
     id: 'mock-2',
     status: 'queued',
     task: 'Construir adapter TikTok pro pipeline v3',
-    progress: [
-      'Aguardando conclusão do Agent 1 para replicar estrutura de API discovery',
-    ],
+    progress: ['Aguardando conclusão do Agent 1...'],
     model: 'google/gemini-flash-1.5',
     tokens: 3201,
     createdAt: new Date(Date.now() - 5 * 60000).toISOString(),
@@ -36,10 +34,9 @@ const MOCK_AGENTS: AgentData[] = [
     status: 'completed',
     task: 'Criar adapter X/Twitter pro pipeline',
     progress: [
-      'Pipeline v3 structure implementada com opinião crítica + nota sistema',
-      'Callback handler criado para menu de 16 botões',
-      'Testing completo com URLs reais do Twitter/X',
-      'Merged to main após revisão'
+      'Pipeline v3 structure implementada',
+      'Callback handler criado (16 botões)',
+      'Testing completo — merged to main'
     ],
     model: 'anthropic/claude-sonnet-4-5',
     tokens: 18732,
@@ -50,37 +47,53 @@ const MOCK_AGENTS: AgentData[] = [
 
 // ── Adapter OpenClaw → AgentData ──────────────────────────────────────────────
 
+function extractText(content: any): string {
+  if (!content) return '';
+  if (typeof content === 'string') return content;
+  if (Array.isArray(content)) {
+    const textItem = content.find((c: any) => c.type === 'text' && c.text);
+    return textItem?.text || '';
+  }
+  return '';
+}
+
 function mapSession(session: OpenClawSession): AgentData {
-  const lastUpdate = session.updatedAt;
-  const minutesSince = (Date.now() - lastUpdate) / 60000;
+  const minutesSince = (Date.now() - session.updatedAt) / 60000;
 
+  // Inferir status
   let status: AgentStatus = 'active';
-  if (minutesSince > 60) status = 'completed';
-  else if (session.kind === 'other' && minutesSince < 30) status = 'active';
-
-  // Extrair task do displayName
-  const task = session.displayName
-    ?.replace(/^telegram:g-/, '')
-    ?.replace(/-/g, ' ')
-    ?.replace(/agent main subagent /i, 'Agent: ')
-    || 'Sessão ativa';
-
-  // Extrair progresso das últimas mensagens
-  const progress: string[] = [];
-  if (session.messages?.length) {
-    session.messages.slice(-3).forEach(msg => {
-      if (msg.role === 'assistant') {
-        const text = Array.isArray(msg.content)
-          ? msg.content.find((c: any) => c.type === 'text')?.text || ''
-          : String(msg.content);
-        if (text.trim()) {
-          progress.push(text.slice(0, 200).trim());
-        }
-      }
-    });
+  if (session.label?.toLowerCase().includes('cron')) {
+    status = 'completed'; // crons são sempre completed
+  } else if (minutesSince > 60) {
+    status = 'completed';
+  } else if (minutesSince < 30) {
+    status = 'active';
   }
 
-  if (progress.length === 0) progress.push('Sessão em execução...');
+  // Task name a partir do label ou displayName
+  const task =
+    session.label ||
+    session.displayName
+      ?.replace(/^telegram:g-agent-main-/, '')
+      ?.replace(/^subagent-[a-f0-9-]+/, 'Subagent')
+      ?.replace(/-/g, ' ')
+    || 'Sessão ativa';
+
+  // Extrair progresso das últimas mensagens do assistant
+  const progress: string[] = [];
+  if (session.messages?.length) {
+    session.messages
+      .filter(m => m.role === 'assistant')
+      .slice(-3)
+      .forEach(msg => {
+        const text = extractText(msg.content);
+        if (text && text !== 'NO_REPLY' && text !== 'HEARTBEAT_OK') {
+          progress.push(text.slice(0, 250).trim());
+        }
+      });
+  }
+
+  if (progress.length === 0) progress.push('Em execução...');
 
   return {
     id: session.key,
@@ -94,6 +107,19 @@ function mapSession(session: OpenClawSession): AgentData {
   };
 }
 
+// ── Filtros de sessões relevantes ─────────────────────────────────────────────
+
+function isRelevant(session: OpenClawSession): boolean {
+  const key = session.key;
+  // Excluir sessão principal (Frank) e crons silenciosos
+  if (key === 'agent:main:main') return false;
+  if (session.messages?.[0]?.role === 'assistant') {
+    const text = extractText(session.messages[0].content);
+    if (text === 'NO_REPLY' || text === 'HEARTBEAT_OK') return false;
+  }
+  return true;
+}
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useAgentStream(autoRefreshMs = 5000) {
@@ -101,66 +127,42 @@ export function useAgentStream(autoRefreshMs = 5000) {
   const [isConnected, setIsConnected] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isMounted = useRef(true);
+  const usingMock = useRef(true);
 
   const fetchAgents = useCallback(async () => {
-    try {
-      setIsRefreshing(true);
-      const sessions = await listSessions(50);
+    if (!isMounted.current) return;
+    setIsRefreshing(true);
 
-      // Filtrar só sessões relevantes (não sistema)
-      const relevant = sessions.filter(s =>
-        s.kind !== 'system' &&
-        !s.displayName?.includes('heartbeat') &&
-        !s.displayName?.includes('cron')
-      );
+    const sessions = await fetchSessionsSafe(30);
 
-      if (relevant.length > 0 && isMounted.current) {
-        setAgents(relevant.map(mapSession));
-        setIsConnected(true);
+    if (!isMounted.current) return;
+
+    if (sessions !== null) {
+      const relevant = sessions.filter(isRelevant);
+      setAgents(relevant.length > 0 ? relevant.map(mapSession) : MOCK_AGENTS);
+      setIsConnected(true);
+      usingMock.current = false;
+    } else {
+      // Gateway offline — mantém mock
+      if (!usingMock.current) {
+        setAgents(MOCK_AGENTS);
+        usingMock.current = true;
       }
-    } catch {
-      // Gateway offline — mantém mock data silencioso
-    } finally {
-      if (isMounted.current) setIsRefreshing(false);
+      setIsConnected(false);
     }
+
+    setIsRefreshing(false);
   }, []);
 
   useEffect(() => {
     isMounted.current = true;
-
-    // Fetch inicial
     fetchAgents();
-
-    // Auto-refresh polling (fallback se WebSocket não conectar)
     const interval = setInterval(fetchAgents, autoRefreshMs);
-
-    // WebSocket pra updates em tempo real
-    const cleanup = connectWebSocket(
-      (sessions) => {
-        if (!isMounted.current) return;
-        const relevant = sessions.filter(s =>
-          s.kind !== 'system' &&
-          !s.displayName?.includes('heartbeat') &&
-          !s.displayName?.includes('cron')
-        );
-        if (relevant.length > 0) setAgents(relevant.map(mapSession));
-      },
-      (connected) => {
-        if (isMounted.current) setIsConnected(connected);
-      }
-    );
-
     return () => {
       isMounted.current = false;
       clearInterval(interval);
-      cleanup();
     };
   }, [fetchAgents, autoRefreshMs]);
 
-  return {
-    agents,
-    isConnected,
-    isRefreshing,
-    refetch: fetchAgents,
-  };
+  return { agents, isConnected, isRefreshing, refetch: fetchAgents };
 }

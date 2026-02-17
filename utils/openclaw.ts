@@ -1,155 +1,91 @@
 /**
  * OpenClaw Gateway Client
- * Conecta no Gateway local via HTTP + WebSocket
+ * Endpoint: POST /tools/invoke
+ * Token: VITE_OPENCLAW_TOKEN (gateway.auth.token)
  */
 
-const GATEWAY_URL = import.meta.env.VITE_OPENCLAW_URL || 'http://127.0.0.1:18789';
+const GATEWAY_URL = (import.meta.env.VITE_OPENCLAW_URL || 'http://127.0.0.1:18789').replace(/\/$/, '');
 const GATEWAY_TOKEN = import.meta.env.VITE_OPENCLAW_TOKEN || '';
-const WS_URL = GATEWAY_URL.replace('http', 'ws');
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+export interface OpenClawMessage {
+  role: string;
+  content: Array<{ type: string; text?: string }> | string;
+  timestamp: number;
+  usage?: { totalTokens: number };
+}
 
 export interface OpenClawSession {
   key: string;
   kind: string;
   channel: string;
   displayName: string;
+  label?: string;
   model: string;
   updatedAt: number;
   sessionId: string;
   totalTokens?: number;
-  lastTo?: string;
-  messages?: Array<{
-    role: string;
-    content: any;
-    timestamp: number;
-    usage?: { totalTokens: number };
-  }>;
+  messages?: OpenClawMessage[];
 }
 
-export interface OpenClawSessionsResponse {
-  count: number;
-  sessions: OpenClawSession[];
+interface ToolsInvokeResponse {
+  ok: boolean;
+  result?: {
+    content: Array<{ type: string; text: string }>;
+  };
+  details?: any;
+  error?: { message: string };
 }
 
-// ── HTTP Client ──────────────────────────────────────────────────────────────
+// ── HTTP Client ───────────────────────────────────────────────────────────────
 
-async function httpGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${GATEWAY_URL}${path}`, {
-    headers: { Authorization: `Bearer ${GATEWAY_TOKEN}` },
+async function invokeTooll(tool: string, args: Record<string, any> = {}): Promise<any> {
+  const res = await fetch(`${GATEWAY_URL}/tools/invoke`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${GATEWAY_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ tool, args }),
   });
-  if (!res.ok) throw new Error(`OpenClaw API error: ${res.status} ${path}`);
-  return res.json();
+
+  if (!res.ok) throw new Error(`OpenClaw API error: ${res.status}`);
+
+  const data: ToolsInvokeResponse = await res.json();
+
+  if (!data.ok) throw new Error(data.error?.message || 'Tool invocation failed');
+
+  // result.content[0].text contém o JSON como string
+  if (data.result?.content?.[0]?.text) {
+    return JSON.parse(data.result.content[0].text);
+  }
+
+  // Alguns tools retornam direto em details
+  return data.details ?? data;
 }
 
 // ── API Calls ─────────────────────────────────────────────────────────────────
 
-export async function listSessions(limit = 50): Promise<OpenClawSession[]> {
-  const data = await httpGet<OpenClawSessionsResponse>(
-    `/api/sessions/list?limit=${limit}&messageLimit=3`
-  );
+export async function listSessions(limit = 20, messageLimit = 2): Promise<OpenClawSession[]> {
+  const data = await invokeTooll('sessions_list', { limit, messageLimit });
   return data.sessions ?? [];
 }
 
-export async function getSession(sessionKey: string): Promise<OpenClawSession> {
-  return httpGet<OpenClawSession>(
-    `/api/sessions/${encodeURIComponent(sessionKey)}`
-  );
-}
+// ── Singleton refresher ────────────────────────────────────────────────────────
 
-export async function spawnAgent(task: string, model?: string): Promise<{ sessionKey: string }> {
-  const res = await fetch(`${GATEWAY_URL}/api/sessions/spawn`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${GATEWAY_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ task, model, cleanup: 'keep' }),
-  });
-  if (!res.ok) throw new Error(`Spawn failed: ${res.status}`);
-  return res.json();
-}
+let loggedOffline = false;
 
-export async function sendToSession(sessionKey: string, message: string): Promise<void> {
-  const res = await fetch(`${GATEWAY_URL}/api/sessions/send`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${GATEWAY_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ sessionKey, message }),
-  });
-  if (!res.ok) throw new Error(`Send failed: ${res.status}`);
-}
-
-// ── WebSocket ─────────────────────────────────────────────────────────────────
-
-type WSHandler = (sessions: OpenClawSession[]) => void;
-
-let ws: WebSocket | null = null;
-let wsConnected = false;
-let wsLoggedOnce = false;
-
-export function connectWebSocket(onUpdate: WSHandler, onStatusChange: (connected: boolean) => void): () => void {
-  let retryTimeout: ReturnType<typeof setTimeout> | null = null;
-  let destroyed = false;
-
-  function connect() {
-    if (destroyed) return;
-
-    try {
-      ws = new WebSocket(`${WS_URL}/?token=${GATEWAY_TOKEN}`);
-
-      ws.onopen = () => {
-        wsConnected = true;
-        wsLoggedOnce = false;
-        onStatusChange(true);
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data?.sessions) onUpdate(data.sessions);
-        } catch {}
-      };
-
-      ws.onerror = () => {
-        if (!wsLoggedOnce) {
-          console.info('[openclaw] Gateway offline — using mock data. Retrying silently…');
-          wsLoggedOnce = true;
-        }
-      };
-
-      ws.onclose = () => {
-        wsConnected = false;
-        onStatusChange(false);
-        if (!destroyed) {
-          retryTimeout = setTimeout(connect, 5000);
-        }
-      };
-    } catch {
-      if (!wsLoggedOnce) {
-        console.info('[openclaw] Gateway offline — using mock data. Retrying silently…');
-        wsLoggedOnce = true;
-      }
-      retryTimeout = setTimeout(connect, 5000);
+export async function fetchSessionsSafe(limit = 20): Promise<OpenClawSession[] | null> {
+  try {
+    const sessions = await listSessions(limit, 2);
+    loggedOffline = false;
+    return sessions;
+  } catch {
+    if (!loggedOffline) {
+      console.info('[openclaw] Gateway offline — usando mock data. Tentando novamente silenciosamente...');
+      loggedOffline = true;
     }
+    return null;
   }
-
-  connect();
-
-  // Cleanup fn
-  return () => {
-    destroyed = true;
-    if (retryTimeout) clearTimeout(retryTimeout);
-    if (ws) {
-      ws.onclose = null;
-      ws.close();
-      ws = null;
-    }
-  };
-}
-
-export function isConnected() {
-  return wsConnected;
 }
