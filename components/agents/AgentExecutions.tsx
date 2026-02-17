@@ -1,15 +1,18 @@
 import { useMemo } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot } from '../ui';
 import { cn } from '../../utils/cn';
-import { getExecutionsForAgent, executionBadge } from '../../data/agentMockData';
+import { executionBadge } from '../../data/agentMockData';
 import type { ExecutionStatus } from '../../data/agentMockData';
+import { useExecutions, useAgents } from '../../contexts/OpenClawContext';
 
 interface AgentExecutionsProps {
   agentId: string;
 }
 
 export default function AgentExecutions({ agentId }: AgentExecutionsProps) {
-  const executions = useMemo(() => getExecutionsForAgent(agentId), [agentId]);
+  const { agents } = useAgents();
+  const agent = agents.find(a => a.id === agentId);
+  const executions = useExecutions(agent?.role === 'coordinator' ? undefined : agentId);
 
   const stats = useMemo(() => {
     const counts = { running: 0, completed: 0, failed: 0, pending: 0 };

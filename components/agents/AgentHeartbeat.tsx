@@ -1,14 +1,17 @@
 import { useMemo } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot } from '../ui';
 import { cn } from '../../utils/cn';
-import { getHeartbeatsForAgent, heartbeatBadge } from '../../data/agentMockData';
+import { heartbeatBadge } from '../../data/agentMockData';
+import { useHeartbeats, useAgents } from '../../contexts/OpenClawContext';
 
 interface AgentHeartbeatProps {
   agentId: string;
 }
 
 export default function AgentHeartbeat({ agentId }: AgentHeartbeatProps) {
-  const heartbeats = useMemo(() => getHeartbeatsForAgent(agentId), [agentId]);
+  const { agents } = useAgents();
+  const agent = agents.find(a => a.id === agentId);
+  const heartbeats = useHeartbeats(agent?.role === 'coordinator' ? undefined : agentId);
 
   const stats = useMemo(() => {
     const counts = { ok: 0, late: 0, missed: 0 };

@@ -3,7 +3,8 @@ import { Badge, Icon, SectionLabel, StatusDot } from './ui';
 import { TabNav } from './ui/TabNav';
 import type { Tab } from './ui/TabNav';
 import { cn } from '../utils/cn';
-import { getAgentById, getTokenUsageForAgent, statusDot, formatTokens } from '../data/agentMockData';
+import { getTokenUsageForAgent, statusDot, formatTokens } from '../data/agentMockData';
+import { useAgents } from '../contexts/OpenClawContext';
 import AgentKanban from './agents/AgentKanban';
 import AgentExecutions from './agents/AgentExecutions';
 import AgentCronJobs from './agents/AgentCronJobs';
@@ -29,7 +30,8 @@ const agentTabs: Tab[] = [
 export default function AgentDetailView({ agentId, onBack }: AgentDetailViewProps) {
   const [activeTab, setActiveTab] = useState('kanban');
 
-  const agent = useMemo(() => getAgentById(agentId), [agentId]);
+  const { agents, getAgentStatus } = useAgents();
+  const agent = useMemo(() => getAgentStatus(agentId), [agentId, getAgentStatus]);
   const tokenUsage = useMemo(() => getTokenUsageForAgent(agentId), [agentId]);
 
   if (!agent) {

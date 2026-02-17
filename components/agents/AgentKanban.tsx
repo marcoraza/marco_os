@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Badge, Card, Icon, SectionLabel } from '../ui';
 import { cn } from '../../utils/cn';
-import { getTasksForAgent, kanbanColumns, KANBAN_ORDER, KanbanStatus } from '../../data/agentMockData';
+import { kanbanColumns, KANBAN_ORDER, KanbanStatus } from '../../data/agentMockData';
+import { useKanban, useAgents } from '../../contexts/OpenClawContext';
 
 interface AgentKanbanProps {
   agentId: string;
@@ -21,7 +22,10 @@ const messageTypeColor: Record<string, string> = {
 };
 
 export default function AgentKanban({ agentId }: AgentKanbanProps) {
-  const tasks = useMemo(() => getTasksForAgent(agentId), [agentId]);
+  const { agents } = useAgents();
+  const agent = agents.find(a => a.id === agentId);
+  // Coordinator sees ALL tasks; sub-agents see only their own
+  const tasks = useKanban(agent?.role === 'coordinator' ? undefined : agentId);
   const [collapsed, setCollapsed] = useState<Set<KanbanStatus>>(new Set());
 
   const tasksByColumn = useMemo(() => {

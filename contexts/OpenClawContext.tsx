@@ -21,12 +21,32 @@ import {
   heartbeats as mockHeartbeats,
   cronJobs as mockCronJobs,
   kanbanTasks as mockKanbanTasks,
+  tokenUsages as mockTokenUsages,
   type Agent,
   type Execution,
   type HeartbeatEvent,
   type CronJob as MockCronJob,
   type KanbanTask as MockKanbanTask,
+  type TokenUsage,
 } from '../data/agentMockData';
+
+// ─── CROSS-DOMAIN SUMMARY TYPE ──────────────────────────────────────────────
+
+export interface CrossDomainSummary {
+  dashboard: { total: number; done: number; inProgress: number };
+  finance: { balance: string; monthExpenses: string };
+  health: { energy: number; focus: number; sleep: string };
+  planner: { activeMissions: number };
+  crm: { hotContacts: number; pendingReconnect: number };
+}
+
+const defaultCrossDomain: CrossDomainSummary = {
+  dashboard: { total: 15, done: 3, inProgress: 4 },
+  finance: { balance: 'R$ 12.450', monthExpenses: 'R$ 3.280' },
+  health: { energy: 78, focus: 85, sleep: '7h 20m' },
+  planner: { activeMissions: 3 },
+  crm: { hotContacts: 5, pendingReconnect: 2 },
+};
 
 // ─── CONTEXT TYPE ──────────────────────────────────────────────────────────
 
@@ -53,9 +73,20 @@ interface OpenClawContextType {
   cronJobs: MockCronJob[];
   getCronJobsForAgent: (agentId: string) => MockCronJob[];
 
+  // Cron Job Actions
+  updateCronJob: (job: MockCronJob) => void;
+  createCronJob: (job: Omit<MockCronJob, 'id'>) => void;
+  deleteCronJob: (jobId: string) => void;
+
   // Kanban
   kanbanTasks: MockKanbanTask[];
   getTasksForAgent: (agentId: string) => MockKanbanTask[];
+
+  // Token Usage
+  tokenUsages: TokenUsage[];
+
+  // Cross-Domain
+  crossDomainSummary: CrossDomainSummary;
 
   // Actions
   dispatch: (agentId: string, message: string, priority?: 'high' | 'medium' | 'low') => Promise<void>;
@@ -96,7 +127,8 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
   const agents = isLive && liveAgents.length > 0 ? liveAgents : mockAgents;
   const executions = isLive && liveExecutions.length > 0 ? liveExecutions : mockExecutions;
   const heartbeats = isLive && liveHeartbeats.length > 0 ? liveHeartbeats : mockHeartbeats;
-  const cronJobs = isLive && liveCronJobs.length > 0 ? liveCronJobs : mockCronJobs;
+  // Cron jobs: live gateway > static JSON polling > mock fallback
+  const cronJobs = liveCronJobs.length > 0 ? liveCronJobs : mockCronJobs;
   // Kanban: live gateway > static JSON polling > mock fallback
   const kanbanTasks = liveKanbanTasks.length > 0 ? liveKanbanTasks : mockKanbanTasks;
 
@@ -211,6 +243,75 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
         // Fallback to mock data (already default)
       });
   }, [isLive]);
+
+  // ─── CRON JOBS POLLING (same pattern as kanban) ────────────────────────────
+
+  const cronVersionRef = useRef<string>('');
+
+  const parseCronJson = useCallback((raw: string) => {
+    try {
+      const data = JSON.parse(raw) as { jobs: MockCronJob[] };
+      if (!data.jobs?.length) return;
+      setLiveCronJobs(data.jobs);
+    } catch {
+      // Invalid JSON — keep current state
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isLive) return; // gateway handles it
+
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const base = import.meta.env.BASE_URL || '/';
+        const res = await fetch(`${base}data/frank-crons.json`, { cache: 'no-store' });
+        if (!res.ok || cancelled) return;
+        const text = await res.text();
+        if (text !== cronVersionRef.current) {
+          cronVersionRef.current = text;
+          parseCronJson(text);
+        }
+      } catch {
+        // File not available — keep mock data
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 5_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isLive, parseCronJson]);
+
+  // ─── CRON JOB ACTIONS ─────────────────────────────────────────────────────
+
+  const updateCronJob = useCallback((job: MockCronJob) => {
+    setLiveCronJobs(prev => {
+      const updated = prev.length > 0 ? [...prev] : [...mockCronJobs];
+      const idx = updated.findIndex(j => j.id === job.id);
+      if (idx >= 0) updated[idx] = job;
+      return updated;
+    });
+  }, []);
+
+  const createCronJob = useCallback((job: Omit<MockCronJob, 'id'>) => {
+    const newJob: MockCronJob = { ...job, id: `cron-${Date.now()}` };
+    setLiveCronJobs(prev => {
+      const base = prev.length > 0 ? prev : [...mockCronJobs];
+      return [...base, newJob];
+    });
+  }, []);
+
+  const deleteCronJob = useCallback((jobId: string) => {
+    setLiveCronJobs(prev => {
+      const base = prev.length > 0 ? prev : [...mockCronJobs];
+      return base.filter(j => j.id !== jobId);
+    });
+  }, []);
 
   // ─── KANBAN SYNC (hybrid: gateway → static JSON polling → mock) ──────────
 
@@ -346,8 +447,13 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
     getHeartbeatsForAgent,
     cronJobs,
     getCronJobsForAgent,
+    updateCronJob,
+    createCronJob,
+    deleteCronJob,
     kanbanTasks,
     getTasksForAgent,
+    tokenUsages: mockTokenUsages,
+    crossDomainSummary: defaultCrossDomain,
     dispatch,
     memorySearch,
     memoryGet,
@@ -404,6 +510,12 @@ export function useCronJobs(agentId?: string) {
   return cronJobs;
 }
 
+/** Cron job mutation actions */
+export function useCronJobActions() {
+  const { updateCronJob, createCronJob, deleteCronJob } = useOpenClaw();
+  return { updateCronJob, createCronJob, deleteCronJob };
+}
+
 /** Kanban tasks for a specific agent */
 export function useKanban(agentId?: string) {
   const { kanbanTasks, getTasksForAgent } = useOpenClaw();
@@ -415,4 +527,16 @@ export function useKanban(agentId?: string) {
 export function useDispatch() {
   const { dispatch, isLive } = useOpenClaw();
   return { dispatch, isLive };
+}
+
+/** Token usage data */
+export function useTokenUsages() {
+  const { tokenUsages } = useOpenClaw();
+  return tokenUsages;
+}
+
+/** Cross-domain summary */
+export function useCrossDomain() {
+  const { crossDomainSummary } = useOpenClaw();
+  return crossDomainSummary;
 }

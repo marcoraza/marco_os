@@ -15,15 +15,14 @@ import type { Agent } from './types/agents';
 import MissionModal from './components/MissionModal';
 import MissionDetail from './components/MissionDetail';
 import NotesPanel from './components/NotesPanel';
-import AgentsOverview from './components/AgentsOverview';
-import AgentsMissionControl from './components/AgentsMissionControl';
+import AgentCommandCenter from './components/AgentCommandCenter';
 import AgentDetailView from './components/AgentDetailView';
 import { Icon, Badge, SectionLabel, StatusDot, ToastContainer, showToast } from './components/ui';
 import { cn } from './utils/cn';
 import { useConnectionState } from './contexts/OpenClawContext';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'notes' | 'settings' | 'mission-detail' | 'agents-overview' | 'agents-mission-control' | 'agent-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'notes' | 'settings' | 'mission-detail' | 'agents-overview' | 'agent-detail';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -170,8 +169,7 @@ const App: React.FC = () => {
     crm: 'Rede',
     settings: 'Config',
     'mission-detail': 'Missão',
-    'agents-overview': 'Visão Geral',
-    'agents-mission-control': 'Mission Control',
+    'agents-overview': 'Mission Control',
     'agent-detail': 'Agente',
   };
 
@@ -401,7 +399,11 @@ const App: React.FC = () => {
     setCurrentView('dashboard');
   };
 
-  const handleTaskClick = () => setCurrentView('mission-detail');
+  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+  const handleTaskClick = (taskId: number) => {
+    setSelectedTaskId(taskId);
+    setCurrentView('mission-detail');
+  };
 
   const handleAgentClick = (agentId: string) => {
     setActiveAgentId(agentId);
@@ -436,11 +438,14 @@ const App: React.FC = () => {
       {currentView !== 'mission-detail' && (
         <header className="h-16 bg-header-bg border-b border-border-panel px-6 flex items-center justify-between shrink-0 gap-4 z-30 relative transition-colors duration-300">
           <div className="flex items-center gap-6 lg:gap-10 shrink-0">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
+            {/* Logo — click → Central de Comando */}
+            <button
+              onClick={() => setCurrentView('dashboard')}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <Icon name="grid_view" className="text-text-primary text-2xl" />
               <h2 className="text-text-primary text-[10px] font-black tracking-widest uppercase hidden sm:block">Marco OS</h2>
-            </div>
+            </button>
             {/* Indicador de perfil ativo */}
             <div className="hidden md:flex items-center gap-3 bg-surface/50 border border-border-panel px-3 py-1.5 rounded-sm">
               <div className="flex items-center gap-2 min-w-0">
@@ -458,13 +463,13 @@ const App: React.FC = () => {
                 <span className="text-[9px] font-black text-brand-mint">{agentsOnlineCount}</span>
               </div>
             </div>
-            <button
-              onClick={() => setCurrentView("agents-mission-control")}
-              className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-surface/50 border border-border-panel hover:border-brand-mint/30 rounded-sm transition-all group cursor-pointer"
-            >
-              <Icon name="hub" size="lg" className="text-brand-mint group-hover:rotate-12 transition-transform" />
-              <span className="text-[9px] font-bold text-text-primary uppercase tracking-widest">Mission Control</span>
-            </button>
+            {/* Connection indicator */}
+            <div className="hidden md:flex items-center gap-1.5 bg-surface/50 border border-border-panel px-2.5 py-1.5 rounded-sm">
+              <span className={cn('w-1.5 h-1.5 rounded-full', isLive ? 'bg-brand-mint animate-pulse' : 'bg-text-secondary/30')} />
+              <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary">
+                {isLive ? 'ONLINE' : 'OFFLINE'}
+              </span>
+            </div>
           </div>
 
           {/* Mobile View Title */}
@@ -499,33 +504,35 @@ const App: React.FC = () => {
               <span className="text-[8px] font-bold text-text-secondary uppercase tracking-widest whitespace-nowrap">Perfil Ativo:</span>
               <span className="text-[9px] font-black text-text-primary truncate">{activeAgent?.name ?? '—'}</span>
             </div>
-            <button className="hidden sm:flex items-center gap-2 px-3 py-2 bg-surface hover:bg-surface-hover border border-border-panel hover:border-brand-mint/30 rounded-sm transition-all group">
-              <Icon name="smart_toy" size="lg" className="text-brand-mint group-hover:rotate-12 transition-transform" />
-              <span className="text-[10px] font-bold text-text-primary uppercase tracking-wide">Briefing do Frank</span>
-            </button>
             <button
               onClick={() => setIsMissionModalOpen(true)}
-              className="hidden sm:flex bg-brand-mint text-black px-4 py-2 pill-radius text-[11px] font-extrabold hover:brightness-110 transition-all items-center gap-2 uppercase tracking-tight shadow-[0_0_15px_rgba(0,255,149,0.2)] hover:scale-105"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all"
             >
-              <Icon name="add" className="text-base font-bold" />
+              <Icon name="add" size="xs" />
               <span>Nova Missão</span>
             </button>
-            <div className="hidden lg:block h-8 w-[1px] bg-border-panel mx-2"></div>
-            <div className="flex items-center gap-4">
-              <div className="text-right hidden lg:block">
-                <p className="text-[13px] font-black text-text-primary leading-none font-mono">
-                  {currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                </p>
-                <p className="text-[9px] text-brand-mint font-bold uppercase mt-1 tracking-wider">
-                  {currentTime.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '')}
-                </p>
+            {/* Profile + Clock */}
+            <div className="hidden lg:flex items-center gap-3">
+              <div className="flex items-center gap-2.5 bg-surface/50 border border-border-panel pl-1.5 pr-3 py-1 rounded-sm">
+                <div className="size-7 rounded-sm overflow-hidden shrink-0 border border-border-panel/50">
+                  <img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP7JXjTU37vKSlINqzka68iHN7f0ORN-zJoJrWycfR_x5JZii_6nZxKtJ_qNuhT6BywYOGEOnjtdOvypS8jjYwoyQzl3Hub2AJAWTaxT9M9YB2RkcP1hHNqP8VrCB7yAfiMeYVbeyJU_Gj9tOvGVpaybTbAGiEygTljwNl0ethjRW6EDzBWgD2rovQefiMUWgi5zwAQ52cJWrZgCFLShhvT0QbsKYz2rNJ0sbYXNByrLZBp9g90wwfq0LoZoE8dVhJvbRr6DokRQ"
+                    alt="User"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-black text-text-primary leading-none">Marco</span>
+                  <span className="text-[7px] font-bold text-text-secondary uppercase tracking-wider leading-none mt-0.5">Admin</span>
+                </div>
               </div>
-              <div className="size-9 rounded-full bg-surface border border-border-panel overflow-hidden">
-                <img
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP7JXjTU37vKSlINqzka68iHN7f0ORN-zJoJrWycfR_x5JZii_6nZxKtJ_qNuhT6BywYOGEOnjtdOvypS8jjYwoyQzl3Hub2AJAWTaxT9M9YB2RkcP1hHNqP8VrCB7yAfiMeYVbeyJU_Gj9tOvGVpaybTbAGiEygTljwNl0ethjRW6EDzBWgD2rovQefiMUWgi5zwAQ52cJWrZgCFLShhvT0QbsKYz2rNJ0sbYXNByrLZBp9g90wwfq0LoZoE8dVhJvbRr6DokRQ"
-                  alt="User"
-                  className="w-full h-full object-cover grayscale opacity-80"
-                />
+              <div className="flex flex-col items-end">
+                <span className="text-[11px] font-black text-text-primary font-mono leading-none">
+                  {currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                <span className="text-[7px] font-bold text-text-secondary uppercase tracking-wider leading-none mt-1">
+                  {currentTime.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).replace('.', '')}
+                </span>
               </div>
             </div>
           </div>
@@ -587,8 +594,7 @@ const App: React.FC = () => {
                 {/* Agent nav buttons */}
                 <nav className="space-y-0.5 mb-3">
                   {[
-                    { id: 'agents-overview' as View, icon: 'dashboard', label: 'Visão Geral' },
-                    { id: 'agents-mission-control' as View, icon: 'hub', label: 'Mission Control' },
+                    { id: 'agents-overview' as View, icon: 'hub', label: 'Mission Control' },
                   ].map(item => (
                     <button
                       key={item.id}
@@ -653,25 +659,28 @@ const App: React.FC = () => {
             </div>
 
             {/* Uptime Counter */}
-            <div className="h-[72px] px-4 border-t border-border-panel bg-header-bg flex flex-col justify-center shrink-0">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-[9px] font-black text-text-secondary uppercase tracking-[0.1em]">
-                  <button
-                    onClick={cycleUptimeView}
-                    className="flex items-center gap-2 hover:text-brand-mint transition-colors group"
-                    title="Alternar período"
-                  >
-                    <Icon name="timer" size="sm" />
-                    UPTIME <span className="bg-surface border border-border-panel px-1 rounded text-[8px] group-hover:border-brand-mint/50">{uptimeView}</span>
-                  </button>
-                  <span className="text-brand-mint font-mono text-xs">{getDisplayUptime()}</span>
+            <div className="px-4 py-3 border-t border-border-panel bg-bg-base/50 shrink-0">
+              <button
+                onClick={cycleUptimeView}
+                className="w-full group"
+                title="Alternar período"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <div className="size-5 rounded-sm bg-brand-mint/10 border border-brand-mint/20 flex items-center justify-center">
+                      <Icon name="timer" size="xs" className="text-brand-mint" />
+                    </div>
+                    <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Uptime</span>
+                    <span className="text-[7px] font-bold bg-surface border border-border-panel px-1.5 py-0.5 rounded-sm text-text-secondary/60 group-hover:border-brand-mint/30 transition-colors">{uptimeView}</span>
+                  </div>
+                  <span className="text-[11px] font-black text-brand-mint font-mono">{getDisplayUptime()}</span>
                 </div>
-                <div className="w-full h-1 bg-bg-base rounded-full overflow-hidden border border-border-panel">
-                  <div className="w-full h-full bg-brand-mint/20 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-brand-mint/40 animate-pulse"></div>
+                <div className="w-full h-[3px] bg-bg-base rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-brand-mint/30 to-brand-mint/60 rounded-full relative" style={{ width: '100%' }}>
+                    <div className="absolute right-0 top-0 h-full w-4 bg-brand-mint/80 rounded-full animate-pulse" />
                   </div>
                 </div>
-              </div>
+              </button>
             </div>
           </aside>
         )}
@@ -703,12 +712,19 @@ const App: React.FC = () => {
             )}
             {currentView === 'notes'           && <NotesPanel notes={notes} setNotes={setNotes} activeProjectId={activeProjectId} />}
             {currentView === 'crm'             && <CRM />}
-            {currentView === 'agents-overview' && <AgentsOverview onAgentClick={handleAgentClick} />}
-            {currentView === 'agents-mission-control' && <AgentsMissionControl onAgentClick={handleAgentClick} />}
+            {currentView === 'agents-overview' && <AgentCommandCenter onAgentClick={handleAgentClick} onNavigate={setCurrentView} />}
             {currentView === 'agent-detail' && activeAgentId && <AgentDetailView agentId={activeAgentId} onBack={() => setCurrentView('agents-overview')} />}
             {currentView === 'settings'        && <Settings />}
             {/* Agent center replaced by modular views above */}
-            {currentView === 'mission-detail'  && <MissionDetail onBack={() => setCurrentView('dashboard')} />}
+            {currentView === 'mission-detail' && selectedTaskId && (
+              <MissionDetail
+                task={tasks.find(t => t.id === selectedTaskId)!}
+                onBack={() => setCurrentView('dashboard')}
+                onStatusChange={(taskId, newStatus) => {
+                  setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+                }}
+              />
+            )}
           </div>
 
           {/* ─── FOOTER BAR (Dashboard only) ──────────────────────────────── */}
@@ -978,8 +994,8 @@ const App: React.FC = () => {
               <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>Saúde</span>
             </button>
             <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
-              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','notes','crm','agents-overview','agents-mission-control','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','notes','crm','agents-overview','agents-mission-control','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
+              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','notes','crm','agents-overview','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','notes','crm','agents-overview','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
             </button>
           </div>
         </div>
