@@ -92,12 +92,13 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
   const [liveCronJobs, setLiveCronJobs] = useState<MockCronJob[]>([]);
   const [liveKanbanTasks, setLiveKanbanTasks] = useState<MockKanbanTask[]>([]);
 
-  // Use live data when connected, mock data when disconnected
+  // Use live data when available, mock data as final fallback
   const agents = isLive && liveAgents.length > 0 ? liveAgents : mockAgents;
   const executions = isLive && liveExecutions.length > 0 ? liveExecutions : mockExecutions;
   const heartbeats = isLive && liveHeartbeats.length > 0 ? liveHeartbeats : mockHeartbeats;
   const cronJobs = isLive && liveCronJobs.length > 0 ? liveCronJobs : mockCronJobs;
-  const kanbanTasks = isLive && liveKanbanTasks.length > 0 ? liveKanbanTasks : mockKanbanTasks;
+  // Kanban: live gateway > static JSON polling > mock fallback
+  const kanbanTasks = liveKanbanTasks.length > 0 ? liveKanbanTasks : mockKanbanTasks;
 
   // ─── INITIALIZE CLIENTS ─────────────────────────────────────────────────
 
@@ -211,30 +212,65 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
       });
   }, [isLive]);
 
-  // ─── FETCH KANBAN ON CONNECT ─────────────────────────────────────────────
+  // ─── KANBAN SYNC (hybrid: gateway → static JSON polling → mock) ──────────
 
+  const parseBoardJson = useCallback((raw: string) => {
+    try {
+      const board = JSON.parse(raw) as KanbanBoard;
+      if (!board.tasks?.length) return;
+      setLiveKanbanTasks(board.tasks.map(t => ({
+        id: t.id,
+        agentId: t.agent,
+        title: t.title,
+        status: t.status,
+        priority: t.priority,
+        createdAt: t.created,
+        messages: t.messages,
+      })));
+    } catch {
+      // Invalid JSON — keep current state
+    }
+  }, []);
+
+  // When gateway is live, fetch via /tools/invoke
   useEffect(() => {
     if (!isLive || !httpRef.current) return;
-
     httpRef.current.kanbanGet()
-      .then(({ content }) => {
-        const board = JSON.parse(content) as KanbanBoard;
-        if (board.tasks) {
-          setLiveKanbanTasks(board.tasks.map(t => ({
-            id: t.id,
-            agentId: t.agent,
-            title: t.title,
-            status: t.status,
-            priority: t.priority,
-            createdAt: t.created,
-            messages: t.messages,
-          })));
+      .then(({ content }) => parseBoardJson(content))
+      .catch(() => { /* fallback to polling or mock */ });
+  }, [isLive, parseBoardJson]);
+
+  // When gateway is offline, poll static frank-tasks.json every 5s
+  const kanbanVersionRef = useRef<string>('');
+
+  useEffect(() => {
+    if (isLive) return; // gateway handles it
+
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const base = import.meta.env.BASE_URL || '/';
+        const res = await fetch(`${base}data/frank-tasks.json`, { cache: 'no-store' });
+        if (!res.ok || cancelled) return;
+        const text = await res.text();
+        if (text !== kanbanVersionRef.current) {
+          kanbanVersionRef.current = text;
+          parseBoardJson(text);
         }
-      })
-      .catch(() => {
-        // Fallback to mock data
-      });
-  }, [isLive]);
+      } catch {
+        // File not available — keep mock data
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, 5_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [isLive, parseBoardJson]);
 
   // ─── HELPERS ─────────────────────────────────────────────────────────────
 

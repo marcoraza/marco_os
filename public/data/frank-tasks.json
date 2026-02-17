@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "updatedAt": "2026-02-16T22:30:00Z",
+  "tasks": [
+    {
+      "id": "task-1",
+      "title": "Coordenação do PR do Agent Center",
+      "agent": "frank",
+      "status": "em-progresso",
+      "priority": "high",
+      "created": "2026-02-16T22:30:00Z",
+      "messages": [
+        { "id": "m1", "content": "CodeGen iniciado para implementação de UI", "timestamp": "22:31Z", "type": "info" },
+        { "id": "m2", "content": "Planner iniciado para revisão de spec", "timestamp": "22:32Z", "type": "info" },
+        { "id": "m3", "content": "Componentes rascunhados, revisando consistência", "timestamp": "22:45Z", "type": "progress" }
+      ]
+    },
+    {
+      "id": "task-2",
+      "title": "Triagem da caixa de entrada",
+      "agent": "frank",
+      "status": "concluido",
+      "priority": "low",
+      "created": "2026-02-16T22:10:00Z",
+      "messages": [
+        { "id": "m10", "content": "Escaneados 12 novos emails", "timestamp": "22:11Z", "type": "info" },
+        { "id": "m11", "content": "Criadas 2 tarefas de finanças", "timestamp": "22:12Z", "type": "success" }
+      ]
+    },
+    {
+      "id": "task-3",
+      "title": "Implementar componentes modulares",
+      "agent": "head-code",
+      "status": "em-progresso",
+      "priority": "high",
+      "created": "2026-02-16T22:35:00Z",
+      "messages": [
+        { "id": "m20", "content": "AgentKanban com colunas colapsáveis OK", "timestamp": "22:40Z", "type": "success" },
+        { "id": "m21", "content": "TokenUsageCard compact mode OK", "timestamp": "22:50Z", "type": "success" }
+      ]
+    },
+    {
+      "id": "task-4",
+      "title": "Revisão de spec do Mission Control",
+      "agent": "planner",
+      "status": "revisao",
+      "priority": "medium",
+      "created": "2026-02-16T22:20:00Z",
+      "messages": [
+        { "id": "m30", "content": "Layout pipeline aprovado", "timestamp": "22:25Z", "type": "info" },
+        { "id": "m31", "content": "Dispatch form com prioridades adicionado", "timestamp": "22:28Z", "type": "success" }
+      ]
+    },
+    {
+      "id": "task-5",
+      "title": "Validar build de produção",
+      "agent": "qa",
+      "status": "concluido",
+      "priority": "medium",
+      "created": "2026-02-16T22:00:00Z",
+      "messages": [
+        { "id": "m40", "content": "vite build passou sem erros", "timestamp": "22:05Z", "type": "success" },
+        { "id": "m41", "content": "71 modules, 540KB bundle", "timestamp": "22:05Z", "type": "info" }
+      ]
+    },
+    {
+      "id": "task-6",
+      "title": "Migrar Tailwind CDN → PostCSS",
+      "agent": "head-code",
+      "status": "concluido",
+      "priority": "high",
+      "created": "2026-02-16T21:50:00Z",
+      "messages": [
+        { "id": "m50", "content": "tailwind.config.js + postcss.config.js criados", "timestamp": "21:55Z", "type": "success" },
+        { "id": "m51", "content": "Build produção: 82KB CSS tree-shaken", "timestamp": "22:00Z", "type": "success" }
+      ]
+    },
+    {
+      "id": "task-7",
+      "title": "Integração OpenClaw WebSocket",
+      "agent": "frank",
+      "status": "backlog",
+      "priority": "high",
+      "created": "2026-02-16T23:00:00Z",
+      "messages": [
+        { "id": "m60", "content": "Aguardando gateway no VPS", "timestamp": "23:00Z", "type": "info" }
+      ]
+    },
+    {
+      "id": "task-8",
+      "title": "Testar polling de frank-tasks.json",
+      "agent": "qa",
+      "status": "backlog",
+      "priority": "medium",
+      "created": "2026-02-16T23:05:00Z",
+      "messages": [
+        { "id": "m70", "content": "Pendente implementação do polling", "timestamp": "23:05Z", "type": "info" }
+      ]
+    }
+  ]
+}
