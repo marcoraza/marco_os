@@ -1,0 +1,316 @@
+{
+  "_meta": {
+    "generated_by": "frank-sync",
+    "updated_at": "2026-02-17T01:20:31.440657+00:00",
+    "source": "active-tasks.md"
+  },
+  "agents": [
+    {
+      "id": "frank-main",
+      "status": "active",
+      "task": "Frank — Sessão Principal",
+      "progress": [
+        "Monitorando. Aguardando comandos do Marco."
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440657+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440657+00:00"
+    },
+    {
+      "id": "frank-implementar-altos---baixos--pro-con-anal",
+      "status": "completed",
+      "task": "Implementar Altos & Baixos (pro/con analysis)",
+      "progress": [
+        "Board: Sprint Atual",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-pesquisar-apis-x-twitter-no-rapidapi",
+      "status": "completed",
+      "task": "Pesquisar APIs X/Twitter no RapidAPI",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-construir-adapter-x-twitter-pro-pipeline",
+      "status": "completed",
+      "task": "Construir adapter X/Twitter pro pipeline",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-sistema-v4-0-completo--url-handler---cal",
+      "status": "completed",
+      "task": "Sistema v4.0 completo (URL handler + callbacks + menus)",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-second-brain-v1-0--obsidian---syncthing-",
+      "status": "completed",
+      "task": "Second Brain v1.0 (Obsidian + Syncthing + templates + cron)",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-soul-md---style-reference-md---agents-md",
+      "status": "completed",
+      "task": "SOUL.md + STYLE-REFERENCE.md + AGENTS.md reescritos",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-callbacks-funcionais--insights--altos---",
+      "status": "completed",
+      "task": "Callbacks funcionais: Insights, Altos & Baixos, Digest, Conexões, Sugestões",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-5-callbacks-implementados-e-testados",
+      "status": "completed",
+      "task": "5 callbacks implementados e testados",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-bug-fixes--path-extraction--suggestions-",
+      "status": "completed",
+      "task": "Bug fixes: path extraction, suggestions via YouTube API real",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank---insights---an-lise-aprofundada-via-llm",
+      "status": "completed",
+      "task": "🧠 Insights → análise aprofundada via LLM (5 insights práticos)",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank----altos---baixos---integrado--usa--alto",
+      "status": "completed",
+      "task": "⚖️ Altos & Baixos → integrado (usa `altos_baixos.py`)",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank---digest---resumo-tweet-sized--280-chars",
+      "status": "completed",
+      "task": "📊 Digest → resumo tweet-sized (280 chars)",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank---conex-es---busca-relacionados-via-grep",
+      "status": "completed",
+      "task": "🔗 Conexões → busca relacionados via grep + keywords",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank---sugest-es---3-a--es-pr-ticas-personali",
+      "status": "completed",
+      "task": "💡 Sugestões → 3 ações práticas personalizadas pro Marco",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank--generate-initial-menu-----bot-es-----pr",
+      "status": "completed",
+      "task": "`generate_initial_menu()`: botões \"▶️ Processar\" | \"📥 Waiting Room\" | \"⭐ Favoritar\"",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-detec--o-n-o-adiciona-na-waiting-room--s",
+      "status": "completed",
+      "task": "Detecção NÃO adiciona na Waiting Room (só mostra menu)",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-callback--waiting---adiciona-na-waiting-",
+      "status": "completed",
+      "task": "Callback \"waiting\": adiciona na Waiting Room quando clicado",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-callback--process---executa-direto--n-o-",
+      "status": "completed",
+      "task": "Callback \"process\": executa direto (não mexe na Waiting Room)",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-callback--favorite---adiciona-nos-favori",
+      "status": "completed",
+      "task": "Callback \"favorite\": adiciona nos favoritos (não mexe na Waiting Room)",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank-agents-md-atualizado-com-fluxo-correto",
+      "status": "completed",
+      "task": "AGENTS.md atualizado com fluxo correto",
+      "progress": [
+        "Board: Plataformas",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    },
+    {
+      "id": "frank--r1--pesquisar-e-mapear-apis-rapidapi-pr",
+      "status": "completed",
+      "task": "[R1] Pesquisar e mapear APIs RapidAPI pra X/Twitter (extração de posts/threads)",
+      "progress": [
+        "Board: Infraestrutura",
+        "Status: Concluídas Hoje (16/02/2026)"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-17T01:20:31.440208+00:00",
+      "updatedAt": "2026-02-17T01:20:31.440208+00:00"
+    }
+  ]
+}

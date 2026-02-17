@@ -120,10 +120,30 @@ function isRelevant(session: OpenClawSession): boolean {
   return true;
 }
 
+// ── frank-tasks.json loader ───────────────────────────────────────────────────
+
+async function fetchFrankTasks(): Promise<AgentData[] | null> {
+  try {
+    // Tenta /data/frank-tasks.json (relativo ao base do app)
+    const base = import.meta.env.BASE_URL || '/';
+    const url = `${base}data/frank-tasks.json?t=${Date.now()}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (Array.isArray(json.agents) && json.agents.length > 0) {
+      return json.agents as AgentData[];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useAgentStream(autoRefreshMs = 5000) {
   const [agents, setAgents] = useState<AgentData[]>(MOCK_AGENTS);
+  const [activityFeed] = useState<import('../types/mission-control.types').ActivityEvent[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isMounted = useRef(true);
@@ -133,6 +153,7 @@ export function useAgentStream(autoRefreshMs = 5000) {
     if (!isMounted.current) return;
     setIsRefreshing(true);
 
+    // 1ª tentativa: OpenClaw Gateway API
     const sessions = await fetchSessionsSafe(30);
 
     if (!isMounted.current) return;
@@ -143,12 +164,20 @@ export function useAgentStream(autoRefreshMs = 5000) {
       setIsConnected(true);
       usingMock.current = false;
     } else {
-      // Gateway offline — mantém mock
-      if (!usingMock.current) {
-        setAgents(MOCK_AGENTS);
-        usingMock.current = true;
+      // 2ª tentativa: frank-tasks.json (sync do Frank via filesystem)
+      const frankTasks = await fetchFrankTasks();
+      if (frankTasks !== null) {
+        setAgents(frankTasks);
+        setIsConnected(true); // considera "conectado" via arquivo
+        usingMock.current = false;
+      } else {
+        // Fallback: mock estático
+        if (!usingMock.current) {
+          setAgents(MOCK_AGENTS);
+          usingMock.current = true;
+        }
+        setIsConnected(false);
       }
-      setIsConnected(false);
     }
 
     setIsRefreshing(false);
@@ -164,5 +193,25 @@ export function useAgentStream(autoRefreshMs = 5000) {
     };
   }, [fetchAgents, autoRefreshMs]);
 
-  return { agents, isConnected, isRefreshing, refetch: fetchAgents };
+  // getPerformanceMetrics — stub básico (pode evoluir)
+  const getPerformanceMetrics = useCallback((agentId: string) => {
+    const agent = agents.find(a => a.id === agentId);
+    if (!agent) return null;
+    const elapsed = (Date.now() - new Date(agent.createdAt).getTime()) / 60000;
+    return {
+      tokensPerMinute: elapsed > 0 ? Math.round(agent.tokens / elapsed) : 0,
+      avgCompletionTime: elapsed,
+      efficiency: agent.status === 'completed' ? 100 : agent.status === 'active' ? 65 : 0,
+    };
+  }, [agents]);
+
+  return {
+    agents,
+    activityFeed,
+    isConnected,
+    isRefreshing,
+    refresh: fetchAgents,
+    refetch: fetchAgents,
+    getPerformanceMetrics,
+  };
 }
