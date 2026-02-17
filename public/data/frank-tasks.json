@@ -1,7 +1,7 @@
 {
   "_meta": {
     "generated_by": "frank-sync",
-    "updated_at": "2026-02-17T21:00:01.769731+00:00",
+    "updated_at": "2026-02-17T21:30:01.717272+00:00",
     "source": "active-tasks.md"
   },
   "agents": [
@@ -15,8 +15,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769731+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769731+00:00"
+      "createdAt": "2026-02-17T21:30:01.717272+00:00",
+      "updatedAt": "2026-02-17T21:30:01.717272+00:00"
     },
     {
       "id": "frank-fix-heartbeat-modelo--era-gemini-bloquea",
@@ -29,8 +29,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-fix-subagents-modelo--era-gemini-bloquea",
@@ -43,8 +43,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-ativar-webhooks-externos--hooks-enabled-",
@@ -57,8 +57,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-ativar-agent-to-agent--tools-agenttoagen",
@@ -71,8 +71,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-instalar-claude-code-plugin-v1-0-9--infr",
@@ -85,8 +85,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-criar-bindings---soul-md-pra-agentes-cod",
@@ -99,8 +99,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-configurar-backup-semanal-automatizado--",
@@ -113,8 +113,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-implementar-processing-paralelo-no-pipel",
@@ -127,8 +127,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-gog-cli-reauth-franciscoraza247-gmail-co",
@@ -141,8 +141,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-gog-cli-reauth-marcoaquilino-gmail-com",
@@ -155,8 +155,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-gmail-marcoaquilino-organizado--7-labels",
@@ -169,8 +169,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-mission-control-sync-channel-frank-tasks",
@@ -183,8 +183,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-agentmemory---agentconfig-via-openclawco",
@@ -197,8 +197,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-pesquisa-openclaw-overnight---roadmap-en",
@@ -211,8 +211,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-implementar-altos---baixos--pro-con-anal",
@@ -225,8 +225,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-pesquisar-apis-x-twitter-no-rapidapi",
@@ -239,8 +239,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-construir-adapter-x-twitter-pro-pipeline",
@@ -253,8 +253,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-adapter-instagram-pro-pipeline--platafor",
@@ -267,8 +267,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-adapter-tiktok-pro-pipeline--plataformas",
@@ -281,8 +281,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-gog-cli-auth-full--google-calendar---dri",
@@ -295,8 +295,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-sistema-v4-0-completo--url-handler---cal",
@@ -309,8 +309,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-second-brain-v1-0--obsidian---syncthing-",
@@ -323,8 +323,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-soul-md---style-reference-md---agents-md",
@@ -337,8 +337,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     },
     {
       "id": "frank-5-callbacks-implementados-e-testados",
@@ -351,8 +351,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-17T21:00:01.769059+00:00",
-      "updatedAt": "2026-02-17T21:00:01.769059+00:00"
+      "createdAt": "2026-02-17T21:30:01.716656+00:00",
+      "updatedAt": "2026-02-17T21:30:01.716656+00:00"
     }
   ]
 }
