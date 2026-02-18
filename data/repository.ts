@@ -1,4 +1,4 @@
-import type { StoredAgent, StoredAgentRun, StoredEvent, StoredNote, StoredProject, StoredTask } from './models';
+import type { StoredAgent, StoredAgentRun, StoredContact, StoredEvent, StoredNote, StoredProject, StoredTask } from './models';
 import { getDb } from './db';
 
 export type BootstrapPayload = {
@@ -89,6 +89,43 @@ export async function saveEvents(events: StoredEvent[]) {
   await tx.store.clear();
   for (const e of events) await tx.store.put(e);
   await tx.done;
+}
+
+// ─── Contacts CRUD ────────────────────────────────────────────────────────────
+
+export async function loadContacts(): Promise<StoredContact[]> {
+  const db = await getDb();
+  const all = await db.getAll('contacts');
+  all.sort((a, b) => a.name.localeCompare(b.name));
+  return all;
+}
+
+export async function saveContacts(contacts: StoredContact[]) {
+  const db = await getDb();
+  const tx = db.transaction('contacts', 'readwrite');
+  await tx.store.clear();
+  for (const c of contacts) await tx.store.put(c);
+  await tx.done;
+}
+
+export async function putContact(contact: StoredContact) {
+  const db = await getDb();
+  await db.put('contacts', contact);
+}
+
+export async function deleteContact(id: string) {
+  const db = await getDb();
+  await db.delete('contacts', id);
+}
+
+export async function bootstrapContactsIfEmpty(contacts: StoredContact[]) {
+  const db = await getDb();
+  const existing = await db.getAll('contacts');
+  if (existing.length === 0 && contacts.length) {
+    const tx = db.transaction('contacts', 'readwrite');
+    for (const c of contacts) await tx.store.put(c);
+    await tx.done;
+  }
 }
 
 // ─── Agents CRUD ──────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import type { StoredAgent, StoredAgentRun, StoredEvent, StoredNote, StoredProject, StoredTask } from './models';
+import type { StoredAgent, StoredAgentRun, StoredContact, StoredEvent, StoredNote, StoredProject, StoredTask } from './models';
 
 interface MarcoOSDbSchema extends DBSchema {
   projects: {
@@ -34,13 +34,17 @@ interface MarcoOSDbSchema extends DBSchema {
     value: StoredAgentRun;
     indexes: { 'by-agent': string };
   };
+  contacts: {
+    key: string;
+    value: StoredContact;
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<MarcoOSDbSchema>> | null = null;
 
 export function getDb() {
   if (!dbPromise) {
-    dbPromise = openDB<MarcoOSDbSchema>('marco-os', 2, {
+    dbPromise = openDB<MarcoOSDbSchema>('marco-os', 3, {
       upgrade(db, oldVersion) {
         if (oldVersion < 1) {
           db.createObjectStore('projects', { keyPath: 'id' });
@@ -62,6 +66,10 @@ export function getDb() {
 
           const runs = db.createObjectStore('agentRuns', { keyPath: 'id' });
           runs.createIndex('by-agent', 'agentId');
+        }
+
+        if (oldVersion < 3) {
+          db.createObjectStore('contacts', { keyPath: 'id' });
         }
       },
     });

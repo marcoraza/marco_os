@@ -24,6 +24,7 @@ import CommandPalette from './components/CommandPalette';
 import AgentAddModal from './components/AgentAddModal';
 import MissionModal from './components/MissionModal';
 import { Icon, Badge, SectionLabel, StatusDot, ToastContainer, showToast } from './components/ui';
+import { NotificationBell } from './components/NotificationCenter';
 import { cn } from './utils/cn';
 import { useConnectionState } from './contexts/OpenClawContext';
 
@@ -531,6 +532,7 @@ const App: React.FC = () => {
               <span className="text-[8px] font-bold text-text-secondary uppercase tracking-widest whitespace-nowrap">Perfil Ativo:</span>
               <span className="text-[9px] font-black text-text-primary truncate">{activeAgent?.name ?? '—'}</span>
             </div>
+            <NotificationBell />
             <button
               onClick={() => setIsMissionModalOpen(true)}
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all"

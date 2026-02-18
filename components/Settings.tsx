@@ -103,15 +103,40 @@ const Settings: React.FC = () => {
         <Card className="p-6">
             <SectionLabel icon="palette" className="mb-6">APARÊNCIA</SectionLabel>
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-bold text-text-primary">Modo Escuro</p>
-                        <p className="text-[10px] text-text-secondary mt-0.5">Sempre ativado para melhor contraste.</p>
+                <div>
+                    <p className="text-sm font-bold text-text-primary mb-3">Tema</p>
+                    <div className="flex gap-3">
+                      {([
+                        { value: 'dark', label: 'Escuro', icon: 'dark_mode', color: 'text-brand-mint' },
+                        { value: 'light', label: 'Claro', icon: 'light_mode', color: 'text-accent-orange' },
+                        { value: 'system', label: 'Sistema', icon: 'desktop_windows', color: 'text-accent-blue' },
+                      ] as const).map(opt => {
+                        const currentTheme = localStorage.getItem('marco-os-theme') || 'dark';
+                        const isActive = currentTheme === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => {
+                              localStorage.setItem('marco-os-theme', opt.value);
+                              const root = document.documentElement;
+                              let effective = opt.value as string;
+                              if (opt.value === 'system') {
+                                effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                              }
+                              root.setAttribute('data-theme', effective);
+                            }}
+                            className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-md border transition-all ${
+                              isActive
+                                ? `bg-surface border-brand-mint/40 ${opt.color}`
+                                : 'bg-bg-base border-border-panel text-text-secondary hover:border-text-secondary/40'
+                            }`}
+                          >
+                            <Icon name={opt.icon} className="text-lg" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">{opt.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
-                    <label className="switch">
-                        <input checked disabled type="checkbox"/>
-                        <span className="slider"></span>
-                    </label>
                 </div>
                 <div className="w-full h-[1px] bg-border-panel/50"></div>
                 <div className="flex items-center justify-between">

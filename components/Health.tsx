@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -58,23 +58,33 @@ const HealthTooltip = ({ active, payload, label }: any) => {
 const Health: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'daily' | 'trends'>('daily');
   
-  // Daily Log State
-  const [metrics, setMetrics] = useState({
-    energy: 8,
-    sleep: 6,
-    focus: 9,
-    recovery: 5,
-    mood: 7
+  // Daily Log State — persisted to localStorage per date
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const storageKey = `marco-os-health-${todayKey}`;
+
+  const [metrics, setMetrics] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved).metrics ?? { energy: 8, sleep: 6, focus: 9, recovery: 5, mood: 7 };
+    } catch { /* ignore */ }
+    return { energy: 8, sleep: 6, focus: 9, recovery: 5, mood: 7 };
   });
 
-  const [habits, setHabits] = useState({
-    meditation: true,
-    sugar: false,
-    hydration: true
+  const [habits, setHabits] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved).habits ?? { meditation: true, sugar: false, hydration: true };
+    } catch { /* ignore */ }
+    return { meditation: true, sugar: false, hydration: true };
   });
+
+  // Auto-save metrics + habits to localStorage
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify({ metrics, habits, date: todayKey }));
+  }, [metrics, habits, storageKey, todayKey]);
 
   const handleSliderChange = (key: keyof typeof metrics, value: number) => {
-    setMetrics(prev => ({ ...prev, [key]: value }));
+    setMetrics((prev: typeof metrics) => ({ ...prev, [key]: value }));
   };
 
   const toggleHabit = (key: keyof typeof habits) => {

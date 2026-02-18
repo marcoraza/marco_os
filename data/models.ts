@@ -41,6 +41,24 @@ export interface StoredEvent {
   updatedAt: string; // ISO
 }
 
+// ─── Contacts ─────────────────────────────────────────────────────────────────
+export interface StoredContact {
+  id: string;
+  name: string;
+  role: string;
+  company: string;
+  email: string;
+  phone: string;
+  image?: string;
+  initials?: string;
+  status: 'hot' | 'warm' | 'cold';
+  tags: string[];
+  lastContact: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Agents ───────────────────────────────────────────────────────────────────
 export type StoredAgentStatus = 'online' | 'busy' | 'idle' | 'offline';
 export type StoredAgentRole = 'coordinator' | 'sub-agent' | 'integration';
