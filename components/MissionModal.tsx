@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Icon, Badge } from './ui';
 
 interface MissionModalProps {
@@ -19,10 +20,22 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
       {/* Modal Content - Bottom Sheet on Mobile, Centered Card on Desktop */}
-      <div className="relative w-full md:max-w-2xl bg-surface rounded-t-xl md:rounded-xl border-t md:border border-border-panel shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 md:slide-in-from-bottom-0 md:zoom-in-95 duration-200 max-h-[90vh] md:max-h-[85vh] flex flex-col">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 10 }}
+        transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="relative w-full md:max-w-2xl bg-surface rounded-t-xl md:rounded-xl border-t md:border border-border-panel shadow-2xl overflow-hidden max-h-[90vh] md:max-h-[85vh] flex flex-col">
         
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 md:px-6 md:py-5 border-b border-border-panel shrink-0">
@@ -209,7 +222,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
           </button>
         </div>
 
-      </div>
+      </motion.div>
     </div>
   );
 };

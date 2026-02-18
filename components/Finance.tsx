@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Icon, Badge, Card, SectionLabel, TabNav } from './ui';
 
 const Finance: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'debts' | 'cashflow' | 'investments' | 'crypto'>('overview');
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
-  
+
   // Investments State
   const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
   const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
@@ -36,14 +37,14 @@ const Finance: React.FC = () => {
     const fromRate = rates[calcFrom] || 0;
     const toRate = rates[calcTo] || 1;
     let result = 0;
-    
+
     if (calcTo === 'USD') result = calcAmount * fromRate;
     else if (calcFrom === 'USD') result = calcAmount / toRate;
     else {
         const inUSD = calcAmount * fromRate;
         result = inUSD / toRate;
     }
-    
+
     setConversionResult(result);
   }, [calcAmount, calcFrom, calcTo]);
 
@@ -141,7 +142,7 @@ const Finance: React.FC = () => {
   ]);
 
   const totalPortfolioValue = portfolioAssets.reduce((acc, asset) => acc + (asset.amount * asset.price), 0);
-  
+
   let cumulativePercent = 0;
   const gradientStops = portfolioAssets.map(asset => {
     const value = asset.amount * asset.price;
@@ -177,16 +178,36 @@ const Finance: React.FC = () => {
     { id: 'crypto', label: 'Cripto', icon: 'currency_bitcoin' },
   ];
 
+  // Recharts data for overview charts
+  const pieData = [
+    { name: 'Infraestrutura', value: 350 },
+    { name: 'Transporte', value: 222.90 },
+    { name: 'Equipamento', value: 12999 },
+    { name: 'Assinatura', value: 21.90 },
+    { name: 'Alimentação', value: 450.20 },
+  ];
+  const PIE_COLORS = ['#0A84FF', '#BF5AF2', '#FF453A', '#FF9F0A', '#00FF95'];
+  const pieTotal = pieData.reduce((acc, d) => acc + d.value, 0);
+
+  const cashflowData = [
+    { month: 'Set', income: 14000, expenses: 8000 },
+    { month: 'Out', income: 16000, expenses: 9000 },
+    { month: 'Nov', income: 18000, expenses: 11000 },
+    { month: 'Dez', income: 15000, expenses: 8000 },
+    { month: 'Jan', income: 17000, expenses: 10000 },
+    { month: 'Fev', income: 19000, expenses: 9000 },
+  ];
+
   return (
     <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full font-sans h-full overflow-y-auto relative">
       <div className="flex flex-col gap-6 h-full">
-        
+
         {/* Navigation Tabs */}
         <div className="shrink-0">
-           <TabNav 
-             tabs={tabs} 
-             activeTab={activeTab} 
-             onTabChange={(id) => setActiveTab(id as any)} 
+           <TabNav
+             tabs={tabs}
+             activeTab={activeTab}
+             onTabChange={(id) => setActiveTab(id as any)}
              accentColor={getAccentColor()}
            />
         </div>
@@ -195,7 +216,7 @@ const Finance: React.FC = () => {
         {activeTab === 'overview' && (
           // TODO: Extract to FinanceOverview.tsx
           <div className="flex flex-col gap-4 animate-in fade-in duration-300 h-full overflow-hidden">
-            
+
             {/* ROW 1: Metrics + Revenue Goal (Compact) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 shrink-0">
                 <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -218,7 +239,7 @@ const Finance: React.FC = () => {
                         <div className="mt-1 flex items-center text-[10px] text-text-secondary font-medium"><Icon name="remove" className="text-xs mr-1" />Estável</div>
                     </Card>
                 </div>
-                
+
                 <div className="lg:col-span-4">
                     <Card className="p-4 relative overflow-hidden h-full flex flex-col justify-center">
                         <SectionLabel className="mb-1 text-text-secondary tracking-wider">Meta de Receita</SectionLabel>
@@ -235,6 +256,78 @@ const Finance: React.FC = () => {
                             Você atingiu <span className="text-brand-mint font-bold">25%</span> da sua meta.
                         </p>
                     </Card>
+                </div>
+            </div>
+
+            {/* ROW 1.5: Recharts — Pie + Area */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+                {/* Donut: Monthly Expenses by Category */}
+                <div className="bg-header-bg border border-border-panel p-4 rounded">
+                    <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2"><span className="w-1 h-3 bg-accent-blue"></span> GASTOS POR CATEGORIA</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                            <Pie
+                                data={pieData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={40}
+                                outerRadius={70}
+                                dataKey="value"
+                                stroke="none"
+                            >
+                                {pieData.map((_, i) => (
+                                    <Cell key={i} fill={PIE_COLORS[i]} />
+                                ))}
+                            </Pie>
+                            <Tooltip
+                                contentStyle={{ backgroundColor: '#1C1C1C', border: '1px solid #2A2A2A', borderRadius: 4, fontSize: 10 }}
+                                itemStyle={{ color: '#E1E1E1' }}
+                                formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, '']}
+                            />
+                            <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" fill="#E1E1E1" style={{ fontSize: 14, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }}>
+                                R$ {pieTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            </text>
+                            <text x="50%" y="58%" textAnchor="middle" dominantBaseline="central" fill="#8E8E93" style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>
+                                Total
+                            </text>
+                        </PieChart>
+                    </ResponsiveContainer>
+                    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
+                        {pieData.map((item, i) => (
+                            <div key={i} className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i] }}></span>
+                                <span className="text-[9px] text-text-secondary">{item.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Area: Cash Flow (6 months) */}
+                <div className="bg-header-bg border border-border-panel p-4 rounded">
+                    <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2"><span className="w-1 h-3 bg-brand-mint"></span> FLUXO DE CAIXA (6 MESES)</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <AreaChart data={cashflowData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="rcIncomeGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#00FF95" stopOpacity={0.25} />
+                                    <stop offset="100%" stopColor="#00FF95" stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="rcExpenseGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#FF453A" stopOpacity={0.25} />
+                                    <stop offset="100%" stopColor="#FF453A" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <XAxis dataKey="month" tick={{ fontSize: 9, fill: '#8E8E93' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 9, fill: '#8E8E93' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v / 1000}k`} />
+                            <Tooltip
+                                contentStyle={{ backgroundColor: '#1C1C1C', border: '1px solid #2A2A2A', borderRadius: 4, fontSize: 10 }}
+                                itemStyle={{ color: '#E1E1E1' }}
+                                formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, '']}
+                            />
+                            <Area type="monotone" dataKey="income" stroke="#00FF95" strokeWidth={2} fill="url(#rcIncomeGrad)" name="Receita" />
+                            <Area type="monotone" dataKey="expenses" stroke="#FF453A" strokeWidth={2} fill="url(#rcExpenseGrad)" name="Despesas" />
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
 
@@ -518,7 +611,7 @@ const Finance: React.FC = () => {
                     <h2 className="text-lg font-black text-text-primary flex items-center gap-2 uppercase tracking-wide"><span className="w-1 h-5 bg-accent-blue"></span> MEUS DÉBITOS</h2>
                     <button className="flex items-center gap-2 px-3 py-1.5 bg-accent-blue hover:bg-accent-blue/90 text-white text-[10px] font-bold uppercase rounded-sm transition-colors"><Icon name="add" size="sm" /> Novo Débito</button>
                  </div>
-                 
+
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto custom-scrollbar p-1">
                     {/* BLOCK 1: BLUE */}
                     <Card className="bg-bg-base p-5 hover:border-accent-blue/50 transition-all duration-300 flex flex-col justify-between">
@@ -540,7 +633,7 @@ const Finance: React.FC = () => {
                         </div>
                       </div>
                     </Card>
-                    
+
                     {/* BLOCK 2: ORANGE */}
                     <Card className="bg-bg-base p-5 hover:border-accent-orange/50 transition-all duration-300 flex flex-col justify-between">
                       <div className="flex justify-between items-start mb-2">
@@ -607,7 +700,7 @@ const Finance: React.FC = () => {
                  </div>
               </Card>
             </div>
-            
+
             <div className="lg:col-span-4 flex flex-col gap-6 h-full overflow-hidden">
               <div className="bg-surface rounded-md p-0 border border-border-panel flex flex-col relative overflow-hidden flex-1 min-h-0">
                 {/* Financial Health Header Color Change */}
@@ -616,7 +709,7 @@ const Finance: React.FC = () => {
                     <div className="flex justify-between items-center shrink-0">
                         <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-brand-mint">PAGAMENTOS DO MÊS</h2>
                     </div>
-                    
+
                     {/* Monthly Progress Bar - Gamified with Tooltip */}
                     <div className="group cursor-pointer relative shrink-0">
                         <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary mb-2 group-hover:text-text-primary transition-colors">
@@ -630,7 +723,7 @@ const Finance: React.FC = () => {
                                 <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/50 shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
                             </div>
                         </div>
-                        
+
                         {/* Visual Streak Tooltip */}
                         <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-header-bg border border-border-panel p-2 rounded-md shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 w-48">
                             <p className="text-[9px] text-text-secondary uppercase font-bold text-center mb-2">Streak de Pagamentos</p>
@@ -656,11 +749,11 @@ const Finance: React.FC = () => {
                     </div>
                 </div>
               </div>
-              
+
               {/* Score Card - Reduced Size & Square & Flatter */}
               <Card className="p-4 shadow-lg flex flex-col items-center justify-between shrink-0 h-auto gap-4 group">
                  <h3 className="text-[10px] font-bold text-text-secondary uppercase tracking-widest w-full text-left">Score de Crédito</h3>
-                 
+
                  <div className="flex flex-col items-center justify-center">
                     {/* Square Indicator - Smaller */}
                     <div className="relative w-20 h-20 flex items-center justify-center border-4 border-border-panel border-t-brand-mint border-r-brand-mint rounded-md rotate-45 transition-all group-hover:shadow-[0_0_15px_rgba(0,255,149,0.2)]">
@@ -711,7 +804,7 @@ const Finance: React.FC = () => {
                         </defs>
                         <path d="M0,45 Q10,42 20,44 T40,35 T60,28 T80,15 T100,5" fill="none" className="stroke-accent-purple group-hover:stroke-width-1 transition-all" strokeWidth="0.5" />
                         <path d="M0,45 Q10,42 20,44 T40,35 T60,28 T80,15 T100,5 V50 H0 Z" fill="url(#investGradient)" className="opacity-50 group-hover:opacity-70 transition-opacity" />
-                        
+
                         {/* Comparison Line (Index) */}
                         <path d="M0,48 Q15,45 30,46 T50,40 T70,38 T90,30 T100,25" fill="none" stroke="var(--color-text-secondary)" strokeWidth="0.5" strokeDasharray="2,2" />
                      </svg>
@@ -727,8 +820,8 @@ const Finance: React.FC = () => {
                   <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-[0.1em] flex items-center gap-2 mb-4 shrink-0"><Icon name="list" className="text-accent-purple" /> Seus Ativos</h3>
                   <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3">
                     {assetAllocation.map((asset, idx) => (
-                        <div 
-                            key={idx} 
+                        <div
+                            key={idx}
                             onClick={() => setSelectedInvestment(asset)}
                             className="bg-header-bg p-4 rounded-md border border-border-panel flex items-center justify-between hover:bg-surface-hover hover:border-accent-purple/50 transition-all cursor-pointer group"
                         >
@@ -823,7 +916,7 @@ const Finance: React.FC = () => {
         {activeTab === 'crypto' && (
           // TODO: Extract to FinanceCrypto.tsx
           <div className="flex flex-col h-full gap-4 p-1 overflow-hidden animate-in fade-in duration-300">
-             
+
              {/* ROW 1: Portfolio Manager (Left) & Side Panel (Right) - Flexible Height */}
              <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* 1. Portfolio Manager (Main - Col 8) */}
@@ -881,7 +974,7 @@ const Finance: React.FC = () => {
                         <div className="space-y-3">
                             <div className="flex justify-between items-center text-[10px]"><span className="text-text-primary font-bold">BTC Dom.</span><span className="text-accent-orange font-mono font-bold">54.2%</span></div>
                             <div className="w-full h-1 bg-border-panel rounded-full overflow-hidden"><div className="w-[54%] h-full bg-accent-orange"></div></div>
-                            
+
                             <div className="flex justify-between items-center text-[10px] pt-1"><span className="text-text-primary font-bold">Others Dom.</span><span className="text-accent-purple font-mono font-bold">12.8%</span></div>
                             <div className="w-full h-1 bg-border-panel rounded-full overflow-hidden"><div className="w-[12%] h-full bg-accent-purple"></div></div>
 
@@ -1013,7 +1106,7 @@ const Finance: React.FC = () => {
            <div className="bg-surface border border-border-panel rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
               <div className="p-6 border-b border-border-panel flex justify-between items-center bg-header-bg">
                  <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                    <Icon name={selectedInvestment ? 'query_stats' : 'add_circle'} className="text-accent-purple" /> 
+                    <Icon name={selectedInvestment ? 'query_stats' : 'add_circle'} className="text-accent-purple" />
                     {selectedInvestment ? selectedInvestment.name : 'Novo Ativo'}
                  </h3>
                  <button onClick={() => { setIsInvestModalOpen(false); setSelectedInvestment(null); }} className="text-text-secondary hover:text-text-primary transition-colors"><Icon name="close" /></button>

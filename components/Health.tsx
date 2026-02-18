@@ -1,5 +1,59 @@
 import React, { useState } from 'react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  BarChart, Bar, ResponsiveContainer
+} from 'recharts';
 import { Icon, SectionLabel, StatusDot, TabNav, Badge } from './ui';
+
+const trendData14Days = [
+  { day: 'D1', energy: 6, sleep: 7, focus: 5, recovery: 6, mood: 7 },
+  { day: 'D2', energy: 7, sleep: 6, focus: 6, recovery: 5, mood: 6 },
+  { day: 'D3', energy: 5, sleep: 8, focus: 7, recovery: 7, mood: 7 },
+  { day: 'D4', energy: 8, sleep: 7, focus: 8, recovery: 6, mood: 8 },
+  { day: 'D5', energy: 7, sleep: 5, focus: 6, recovery: 4, mood: 5 },
+  { day: 'D6', energy: 6, sleep: 6, focus: 7, recovery: 5, mood: 6 },
+  { day: 'D7', energy: 8, sleep: 8, focus: 9, recovery: 7, mood: 8 },
+  { day: 'D8', energy: 7, sleep: 7, focus: 8, recovery: 8, mood: 7 },
+  { day: 'D9', energy: 9, sleep: 6, focus: 7, recovery: 6, mood: 8 },
+  { day: 'D10', energy: 6, sleep: 8, focus: 6, recovery: 7, mood: 6 },
+  { day: 'D11', energy: 8, sleep: 9, focus: 8, recovery: 8, mood: 9 },
+  { day: 'D12', energy: 7, sleep: 7, focus: 9, recovery: 7, mood: 7 },
+  { day: 'D13', energy: 9, sleep: 8, focus: 8, recovery: 9, mood: 8 },
+  { day: 'D14', energy: 8, sleep: 7, focus: 9, recovery: 8, mood: 9 },
+];
+
+const radarData = [
+  { metric: 'Energia', value: 7.4 },
+  { metric: 'Sono', value: 7.6 },
+  { metric: 'Foco', value: 8.1 },
+  { metric: 'Recuperação', value: 7.3 },
+  { metric: 'Humor', value: 7.7 },
+];
+
+const habitsStreakData = [
+  { day: 'Seg', meditation: 1, sugarFree: 1, hydration: 1 },
+  { day: 'Ter', meditation: 1, sugarFree: 0, hydration: 1 },
+  { day: 'Qua', meditation: 0, sugarFree: 1, hydration: 1 },
+  { day: 'Qui', meditation: 1, sugarFree: 1, hydration: 0 },
+  { day: 'Sex', meditation: 1, sugarFree: 1, hydration: 1 },
+  { day: 'Sáb', meditation: 1, sugarFree: 0, hydration: 1 },
+  { day: 'Dom', meditation: 1, sugarFree: 1, hydration: 1 },
+];
+
+const HealthTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded border text-xs font-mono" style={{ background: '#1C1C1C', borderColor: '#2A2A2A', padding: '10px 14px' }}>
+      <p className="font-bold text-text-primary mb-1">{label}</p>
+      {payload.map((entry: any, i: number) => (
+        <p key={i} style={{ color: entry.color }} className="leading-relaxed">
+          {entry.name}: <span className="font-bold">{entry.value}</span>
+        </p>
+      ))}
+    </div>
+  );
+};
 
 const Health: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'daily' | 'trends'>('daily');
@@ -195,128 +249,64 @@ const Health: React.FC = () => {
               {/* Left Column: Trend Charts (Spans 8 columns) */}
               <div className="lg:col-span-8 space-y-8">
                   
-                  {/* Chart 1: Tinnitus Level */}
-                  <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm relative overflow-hidden group">
-                    <div className="flex justify-between items-start mb-4 relative z-10">
+                  {/* Chart: 14-Day Health Metrics */}
+                  <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <StatusDot color="orange" />
-                          <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono">Nível de Tinnitus</h3>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-text-primary font-mono">3.2</span>
-                          <span className="text-xs text-text-secondary">/ 10</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 text-brand-mint bg-brand-mint/10 px-2 py-1 rounded-sm text-xs font-mono font-medium">
-                        <Icon name="arrow_downward" className="text-sm" style={{fontSize: '14px'}} />
-                        12% vs sem. anterior
+                        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono mb-1">Métricas de Saúde — 14 Dias</h3>
+                        <p className="text-xs text-text-secondary">Evolução diária dos 5 indicadores principais</p>
                       </div>
                     </div>
-                    {/* Chart Visualization Area */}
-                    <div className="h-40 w-full relative grid-bg rounded-sm border border-border-panel">
-                      {/* Simulated SVG Line Chart */}
-                      <svg className="w-full h-full absolute bottom-0 left-0" preserveAspectRatio="none" viewBox="0 0 100 100">
-                        <defs>
-                          <linearGradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
-                            <stop offset="0%" stopColor="#FF9F0A" stopOpacity="0.2"></stop>
-                            <stop offset="100%" stopColor="#FF9F0A" stopOpacity="0"></stop>
-                          </linearGradient>
-                        </defs>
-                        <path d="M0,70 Q10,65 20,50 T40,45 T60,60 T80,30 T100,20 V100 H0 Z" fill="url(#grad1)"></path>
-                        <path d="M0,70 Q10,65 20,50 T40,45 T60,60 T80,30 T100,20" fill="none" className="stroke-accent-orange" strokeWidth="2" vectorEffect="non-scaling-stroke"></path>
-                        {/* Data Points */}
-                        <circle className="stroke-accent-orange" fill="var(--color-bg-header)" cx="20" cy="50" r="1.5" strokeWidth="1"></circle>
-                        <circle className="stroke-accent-orange" fill="var(--color-bg-header)" cx="60" cy="60" r="1.5" strokeWidth="1"></circle>
-                        <circle className="fill-text-primary stroke-accent-orange animate-ping opacity-75" cx="80" cy="30" r="2.5" strokeWidth="0"></circle>
-                        <circle className="stroke-accent-orange" fill="var(--color-bg-header)" cx="80" cy="30" r="1.5" strokeWidth="1"></circle>
-                      </svg>
-                      {/* Axis Labels */}
-                      <div className="absolute bottom-1 left-2 right-2 flex justify-between text-[10px] text-text-secondary font-mono">
-                        <span>01 Ago</span>
-                        <span>07 Ago</span>
-                        <span>14 Ago</span>
-                        <span>21 Ago</span>
-                        <span>Hoje</span>
-                      </div>
+                    <div className="h-64 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={trendData14Days} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" />
+                          <XAxis dataKey="day" tick={{ fill: '#8E8E93', fontSize: 11 }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
+                          <YAxis domain={[0, 10]} tick={{ fill: '#8E8E93', fontSize: 11 }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
+                          <Tooltip content={<HealthTooltip />} />
+                          <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: '#8E8E93' }} />
+                          <Line type="monotone" dataKey="energy" name="Energia" stroke="#facc15" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="sleep" name="Sono" stroke="#0A84FF" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="focus" name="Foco" stroke="#00FF95" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="recovery" name="Recuperação" stroke="#BF5AF2" strokeWidth={2} dot={false} />
+                          <Line type="monotone" dataKey="mood" name="Humor" stroke="#FF9F0A" strokeWidth={2} dot={false} />
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
 
-                  {/* Chart 2: Sleep Quality */}
-                  <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm relative overflow-hidden group">
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <StatusDot color="blue" />
-                          <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono">Qualidade do Sono</h3>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-text-primary font-mono">84</span>
-                          <span className="text-xs text-text-secondary">Pontuação</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 text-accent-orange bg-accent-orange/10 px-2 py-1 rounded-sm text-xs font-mono font-medium">
-                        <Icon name="arrow_upward" className="text-sm" style={{fontSize: '14px'}} />
-                        5% Estável
+                  {/* Row: Radar + Habits Streak */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Radar: Weekly Score */}
+                    <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm">
+                      <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono mb-4">Score Semanal</h3>
+                      <div className="h-52 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
+                            <PolarGrid stroke="#2A2A2A" />
+                            <PolarAngleAxis dataKey="metric" tick={{ fill: '#8E8E93', fontSize: 11 }} />
+                            <PolarRadiusAxis domain={[0, 10]} tick={false} axisLine={false} />
+                            <Radar dataKey="value" stroke="#00FF95" fill="#00FF95" fillOpacity={0.15} strokeWidth={2} />
+                          </RadarChart>
+                        </ResponsiveContainer>
                       </div>
                     </div>
-                    <div className="h-32 w-full relative grid-bg rounded-sm border border-border-panel">
-                      <svg className="w-full h-full absolute bottom-0 left-0" preserveAspectRatio="none" viewBox="0 0 100 100">
-                        <defs>
-                          <linearGradient id="grad2" x1="0%" x2="0%" y1="0%" y2="100%">
-                            <stop offset="0%" stopColor="#0A84FF" stopOpacity="0.2"></stop>
-                            <stop offset="100%" stopColor="#0A84FF" stopOpacity="0"></stop>
-                          </linearGradient>
-                        </defs>
-                        <path d="M0,60 Q15,55 25,40 T50,45 T75,30 T100,25 V100 H0 Z" fill="url(#grad2)"></path>
-                        <path d="M0,60 Q15,55 25,40 T50,45 T75,30 T100,25" fill="none" className="stroke-accent-blue" strokeWidth="2" vectorEffect="non-scaling-stroke"></path>
-                      </svg>
-                      <div className="absolute bottom-1 left-2 right-2 flex justify-between text-[10px] text-text-secondary font-mono">
-                        <span>Seg</span>
-                        <span>Ter</span>
-                        <span>Qua</span>
-                        <span>Qui</span>
-                        <span>Sex</span>
-                        <span>Sáb</span>
-                        <span>Dom</span>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Chart 3: Energy Levels */}
-                  <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm relative overflow-hidden group">
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
-                          <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono">Nível de Energia</h3>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-xl font-bold text-text-primary font-mono">Alto</span>
-                          <span className="text-xs text-text-secondary">Subjetivo</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 text-brand-mint bg-brand-mint/10 px-2 py-1 rounded-sm text-xs font-mono font-medium">
-                        <Icon name="bolt" className="text-sm" style={{fontSize: '14px'}} />
-                        Pico Matinal
-                      </div>
-                    </div>
-                    <div className="h-32 w-full relative grid-bg rounded-sm border border-border-panel">
-                      <svg className="w-full h-full absolute bottom-0 left-0" preserveAspectRatio="none" viewBox="0 0 100 100">
-                        <defs>
-                          <linearGradient id="grad3" x1="0%" x2="0%" y1="0%" y2="100%">
-                            <stop offset="0%" stopColor="#facc15" stopOpacity="0.2"></stop>
-                            <stop offset="100%" stopColor="#facc15" stopOpacity="0"></stop>
-                          </linearGradient>
-                        </defs>
-                        <path d="M0,80 C20,70 30,20 50,30 S70,80 100,60 V100 H0 Z" fill="url(#grad3)"></path>
-                        <path d="M0,80 C20,70 30,20 50,30 S70,80 100,60" fill="none" stroke="#facc15" strokeDasharray="4,4" strokeWidth="2" vectorEffect="non-scaling-stroke"></path>
-                      </svg>
-                      <div className="absolute bottom-1 left-2 right-2 flex justify-between text-[10px] text-text-secondary font-mono">
-                        <span>06:00</span>
-                        <span>12:00</span>
-                        <span>18:00</span>
-                        <span>22:00</span>
+                    {/* Stacked Bar: Habits Streak */}
+                    <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm">
+                      <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono mb-4">Streak de Hábitos</h3>
+                      <div className="h-52 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={habitsStreakData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
+                            <XAxis dataKey="day" tick={{ fill: '#8E8E93', fontSize: 11 }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
+                            <YAxis domain={[0, 3]} ticks={[0, 1, 2, 3]} tick={{ fill: '#8E8E93', fontSize: 11 }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
+                            <Tooltip content={<HealthTooltip />} />
+                            <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: '#8E8E93' }} />
+                            <Bar dataKey="meditation" name="Meditação" stackId="a" fill="#BF5AF2" radius={[0, 0, 0, 0]} />
+                            <Bar dataKey="sugarFree" name="Sem Açúcar" stackId="a" fill="#0A84FF" radius={[0, 0, 0, 0]} />
+                            <Bar dataKey="hydration" name="Hidratação" stackId="a" fill="#00FF95" radius={[2, 2, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
                       </div>
                     </div>
                   </div>

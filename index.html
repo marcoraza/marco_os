@@ -3,7 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Marco OS Central de Comando Full PRD</title>
+    <title>Marco OS — Central de Comando</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/marco_os/manifest.json">
+    <meta name="theme-color" content="#00FF95">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Marco OS">
+    <link rel="apple-touch-icon" href="/marco_os/icons/icon-192.svg">
+
     <script id="theme-boot">
       (function(){
         try {
@@ -24,6 +33,13 @@
 </head>
 <body class="antialiased overflow-hidden h-screen flex flex-col selection:bg-brand-mint selection:text-black">
     <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/marco_os/sw.js').catch(() => {});
+        });
+      }
+    </script>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>

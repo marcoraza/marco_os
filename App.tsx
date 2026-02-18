@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { StoredAgent, StoredEvent, StoredNote } from './data/models';
 import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, putAgent, saveAgents, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
 import { defaultAgents } from './data/agentsSeed';
@@ -20,6 +21,27 @@ import AgentDetailView from './components/AgentDetailView';
 import { Icon, Badge, SectionLabel, StatusDot, ToastContainer, showToast } from './components/ui';
 import { cn } from './utils/cn';
 import { useConnectionState } from './contexts/OpenClawContext';
+
+// ─── Framer Motion variants ─────────────────────────────────────────────────
+const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+const pageTransition = { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] };
+
+const overlayVariants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+const modalVariants = {
+  initial: { opacity: 0, scale: 0.95, y: 8 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.97, y: 4 },
+};
+const modalTransition = { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] };
 
 // Types
 export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'notes' | 'settings' | 'mission-detail' | 'agents-overview' | 'agent-detail';
@@ -688,43 +710,54 @@ const App: React.FC = () => {
         {/* CONTENT AREA */}
         <div className="flex-grow flex flex-col min-w-0 bg-bg-base relative overflow-hidden transition-colors duration-300">
           <div className="flex-grow overflow-y-auto overflow-x-hidden flex flex-col pb-24 md:pb-0 safe-pb">
-            {currentView === 'dashboard' && (
-              <Dashboard
-                tasks={tasks}
-                setTasks={setTasks}
-                onTaskClick={handleTaskClick}
-                activeProjectId={activeProjectId}
-                projects={projects}
-                onAddTask={() => setIsMissionModalOpen(true)}
-                events={events}
-                setEvents={setEvents}
-              />
-            )}
-            {currentView === 'finance'         && <Finance />}
-            {currentView === 'health'          && <Health />}
-            {currentView === 'learning'        && <Learning />}
-            {currentView === 'planner'         && (
-              <Planner
-                projects={projects}
-                activeProjectId={activeProjectId}
-                addTasks={addTasks}
-              />
-            )}
-            {currentView === 'notes'           && <NotesPanel notes={notes} setNotes={setNotes} activeProjectId={activeProjectId} />}
-            {currentView === 'crm'             && <CRM />}
-            {currentView === 'agents-overview' && <AgentCommandCenter onAgentClick={handleAgentClick} onNavigate={setCurrentView} />}
-            {currentView === 'agent-detail' && activeAgentId && <AgentDetailView agentId={activeAgentId} onBack={() => setCurrentView('agents-overview')} />}
-            {currentView === 'settings'        && <Settings />}
-            {/* Agent center replaced by modular views above */}
-            {currentView === 'mission-detail' && selectedTaskId && (
-              <MissionDetail
-                task={tasks.find(t => t.id === selectedTaskId)!}
-                onBack={() => setCurrentView('dashboard')}
-                onStatusChange={(taskId, newStatus) => {
-                  setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-                }}
-              />
-            )}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentView + (currentView === 'agent-detail' ? activeAgentId : '')}
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={pageTransition}
+                className="flex-grow flex flex-col"
+              >
+                {currentView === 'dashboard' && (
+                  <Dashboard
+                    tasks={tasks}
+                    setTasks={setTasks}
+                    onTaskClick={handleTaskClick}
+                    activeProjectId={activeProjectId}
+                    projects={projects}
+                    onAddTask={() => setIsMissionModalOpen(true)}
+                    events={events}
+                    setEvents={setEvents}
+                  />
+                )}
+                {currentView === 'finance'         && <Finance />}
+                {currentView === 'health'          && <Health />}
+                {currentView === 'learning'        && <Learning />}
+                {currentView === 'planner'         && (
+                  <Planner
+                    projects={projects}
+                    activeProjectId={activeProjectId}
+                    addTasks={addTasks}
+                  />
+                )}
+                {currentView === 'notes'           && <NotesPanel notes={notes} setNotes={setNotes} activeProjectId={activeProjectId} />}
+                {currentView === 'crm'             && <CRM />}
+                {currentView === 'agents-overview' && <AgentCommandCenter onAgentClick={handleAgentClick} onNavigate={setCurrentView} />}
+                {currentView === 'agent-detail' && activeAgentId && <AgentDetailView agentId={activeAgentId} onBack={() => setCurrentView('agents-overview')} />}
+                {currentView === 'settings'        && <Settings />}
+                {currentView === 'mission-detail' && selectedTaskId && (
+                  <MissionDetail
+                    task={tasks.find(t => t.id === selectedTaskId)!}
+                    onBack={() => setCurrentView('dashboard')}
+                    onStatusChange={(taskId, newStatus) => {
+                      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+                    }}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* ─── FOOTER BAR (Dashboard only) ──────────────────────────────── */}

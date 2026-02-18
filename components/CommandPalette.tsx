@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import type { Task } from '../App';
 import type { StoredEvent, StoredNote } from '../data/models';
 import { Icon, SectionLabel } from './ui';
@@ -170,12 +171,22 @@ export default function CommandPalette(props: CommandPaletteProps) {
 
   return (
     <div className="fixed inset-0 z-[100]">
-      <div
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
         className="absolute inset-0 bg-black/60"
         onClick={onClose}
       />
 
-      <div className="absolute left-1/2 top-[12vh] w-[92vw] max-w-[720px] -translate-x-1/2">
+      <motion.div
+        initial={{ opacity: 0, y: -20, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -10, scale: 0.98 }}
+        transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="absolute left-1/2 top-[12vh] w-[92vw] max-w-[720px] -translate-x-1/2"
+      >
         <div className="bg-surface border border-border-panel rounded-lg shadow-2xl layered-card overflow-hidden">
           <div className="px-4 py-3 border-b border-border-panel bg-header-bg">
             <div className="flex items-center gap-3">
@@ -266,7 +277,7 @@ export default function CommandPalette(props: CommandPaletteProps) {
             <div className="text-[9px] font-black text-text-secondary/50 uppercase tracking-[0.3em]">PALETTE</div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
