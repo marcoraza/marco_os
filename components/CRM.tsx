@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Icon, Badge, Card, SectionLabel, StatusDot } from './ui';
+import { Icon, Badge, Card, SectionLabel, StatusDot, EmptyState } from './ui';
 
 interface Contact {
   id: number;
@@ -17,6 +17,8 @@ interface Contact {
 
 const CRM: React.FC = () => {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTag, setActiveTag] = useState<string>('Todos');
 
   const contacts: Contact[] = [
     {
@@ -69,6 +71,15 @@ const CRM: React.FC = () => {
     }
   ];
 
+  const allTags = ['Todos', ...Array.from(new Set(contacts.flatMap(c => c.tags)))];
+
+  const filteredContacts = contacts.filter(c => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q || c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q) || c.tags.some(t => t.toLowerCase().includes(q));
+    const matchesTag = activeTag === 'Todos' || c.tags.includes(activeTag);
+    return matchesSearch && matchesTag;
+  });
+
   return (
     <div className="relative h-full flex flex-col">
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 flex-1 w-full overflow-y-auto">
@@ -88,18 +99,27 @@ const CRM: React.FC = () => {
         <Card className="p-4 flex flex-wrap gap-4 items-center">
           <div className="relative flex-1 min-w-[200px]">
             <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm" />
-            <input 
-              type="text" 
-              placeholder="Buscar por nome, empresa ou tag..." 
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Buscar por nome, empresa ou tag..."
               className="w-full bg-header-bg border border-border-panel rounded-md py-2 pl-9 pr-4 text-base md:text-xs text-text-primary focus:border-accent-blue focus:outline-none transition-colors"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
             <span className="text-[9px] font-bold text-text-secondary uppercase self-center mr-2 whitespace-nowrap tracking-[0.1em]">Filtros:</span>
-            <button className="px-3 py-1 bg-accent-blue text-white text-[10px] font-bold uppercase rounded-sm whitespace-nowrap">Todos</button>
-            <button className="px-3 py-1 bg-border-panel hover:bg-surface-hover text-text-primary text-[10px] font-bold uppercase rounded-sm transition-colors whitespace-nowrap">Tech</button>
-            <button className="px-3 py-1 bg-border-panel hover:bg-surface-hover text-text-primary text-[10px] font-bold uppercase rounded-sm transition-colors whitespace-nowrap">Design</button>
-            <button className="px-3 py-1 bg-border-panel hover:bg-surface-hover text-text-primary text-[10px] font-bold uppercase rounded-sm transition-colors whitespace-nowrap">VC</button>
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setActiveTag(tag)}
+                className={`px-3 py-1 text-[10px] font-bold uppercase rounded-sm whitespace-nowrap transition-colors ${
+                  activeTag === tag ? 'bg-accent-blue text-white' : 'bg-border-panel hover:bg-surface-hover text-text-primary'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
           </div>
         </Card>
 
@@ -107,7 +127,14 @@ const CRM: React.FC = () => {
           {/* Main List (8 cols) */}
           <div className="lg:col-span-8 space-y-4">
             
-            {contacts.map(contact => (
+            {filteredContacts.length === 0 && (
+              <EmptyState
+                icon="person_search"
+                title="Nenhum contato encontrado"
+                description="Tente ajustar os filtros ou o termo de busca."
+              />
+            )}
+            {filteredContacts.map(contact => (
               <Card 
                 key={contact.id}
                 interactive

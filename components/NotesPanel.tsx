@@ -12,6 +12,7 @@ interface NotesPanelProps {
 const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectId }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
+  const [showListMobile, setShowListMobile] = useState(true);
   const autosaveRef = useRef<ReturnType<typeof setTimeout>>();
 
   const projectNotes = notes.filter(n => !n.projectId || n.projectId === activeProjectId);
@@ -71,8 +72,11 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
       </div>
 
       <div className="flex-1 flex gap-4 overflow-hidden min-h-0">
-        {/* Notes List */}
-        <div className="w-64 shrink-0 overflow-y-auto space-y-2">
+        {/* Notes List — full width on mobile when no note selected, hidden when editing */}
+        <div className={cn(
+          'md:w-64 md:shrink-0 overflow-y-auto space-y-2',
+          showListMobile ? 'w-full' : 'hidden md:block'
+        )}>
           {projectNotes.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12">
               <Icon name="note_stack" size="lg" className="text-text-secondary/30 mb-2" />
@@ -84,7 +88,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
             <Card
               key={note.id}
               interactive
-              onClick={() => setSelectedId(note.id)}
+              onClick={() => { setSelectedId(note.id); setShowListMobile(false); }}
               className={cn(
                 'p-3 group',
                 selectedId === note.id && 'border-accent-orange/40 bg-accent-orange/5'
@@ -109,11 +113,20 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
           ))}
         </div>
 
-        {/* Editor */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Editor — hidden on mobile when list is showing */}
+        <div className={cn(
+          'flex-1 flex flex-col min-w-0',
+          !showListMobile ? 'w-full' : 'hidden md:flex'
+        )}>
           {selected ? (
             <>
               <div className="flex items-center gap-2 mb-2 shrink-0">
+                <button
+                  onClick={() => setShowListMobile(true)}
+                  className="md:hidden text-text-secondary hover:text-text-primary p-1"
+                >
+                  <Icon name="arrow_back" size="sm" />
+                </button>
                 <input
                   type="text"
                   value={selected.title}

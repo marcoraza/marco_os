@@ -1,9 +1,25 @@
 import React, { useState } from 'react';
-import { Icon, Badge, SectionLabel, TabNav } from './ui';
+import { Icon, Badge, SectionLabel, TabNav, EmptyState } from './ui';
+
+const knowledgeCards = [
+  { id: 1, category: 'IA', categoryVariant: 'purple' as const, date: '22 Out', status: 'PENDENTE', statusVariant: 'orange' as const,
+    title: 'Estrutura de Prompts para LLMs',
+    bullets: ['Contexto é rei: sempre inicie definindo a \'persona\' da IA para melhor calibração de tom.', 'Use delimitadores claros (###, """, ---) para separar instruções de dados de entrada.', 'Chain of Thought: peça para o modelo "pensar passo a passo" antes de responder.'],
+    action: 'Testar a técnica de \'Chain of Thought\' no próximo relatório de análise de dados.', done: false },
+  { id: 2, category: 'NEGÓCIOS', categoryVariant: 'blue' as const, date: '20 Out', status: 'REVISADO', statusVariant: 'mint' as const,
+    title: 'Modelo de Precificação SaaS',
+    bullets: ['Focar em métricas de retenção (Net Dollar Retention) é mais valioso que aquisição pura.', 'Tiered Pricing ajuda a segmentar clientes por disposição de pagamento e uso.'],
+    action: 'Recalcular LTV dos clientes enterprise com novo modelo.', done: true },
+  { id: 3, category: 'DESIGN', categoryVariant: 'purple' as const, date: '18 Out', status: 'PENDENTE', statusVariant: 'orange' as const,
+    title: 'Psicologia das Cores em Dark Mode',
+    bullets: ['Evite preto puro (#000000); use cinzas escuros para reduzir o cansaço visual.', 'Cores saturadas vibram contra fundos escuros; use tons pastéis ou dessaturados.'],
+    action: 'Ajustar a paleta de cores do Design System atual para WCAG compliance.', done: false },
+];
 
 const Learning: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'curriculum' | 'knowledge' | 'resources'>('curriculum');
   const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [knowledgeSearch, setKnowledgeSearch] = useState('');
 
   const tabs = [
     { id: 'curriculum', label: 'Currículo' },
@@ -180,7 +196,13 @@ const Learning: React.FC = () => {
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Icon name="search" className="text-text-secondary text-xl" />
                         </div>
-                        <input className="block w-full pl-10 pr-3 py-2 border border-border-panel rounded-md leading-5 bg-header-bg text-text-primary placeholder-text-secondary focus:outline-none focus:placeholder-text-secondary focus:ring-1 focus:ring-accent-purple focus:border-accent-purple text-base md:text-sm transition-colors" placeholder="Buscar anotações..." type="text"/>
+                        <input
+                          value={knowledgeSearch}
+                          onChange={e => setKnowledgeSearch(e.target.value)}
+                          className="block w-full pl-10 pr-3 py-2 border border-border-panel rounded-md leading-5 bg-header-bg text-text-primary placeholder-text-secondary focus:outline-none focus:placeholder-text-secondary focus:ring-1 focus:ring-accent-purple focus:border-accent-purple text-base md:text-sm transition-colors"
+                          placeholder="Buscar anotações..."
+                          type="text"
+                        />
                     </div>
                     {/* Filters Group */}
                     <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
@@ -205,29 +227,30 @@ const Learning: React.FC = () => {
 
                 {/* Feed Items */}
                 <div className="space-y-4">
-                    {/* Card 1: Pending */}
-                    <div className="group bg-surface rounded-md p-4 md:p-6 shadow-sm border border-border-panel hover:border-accent-purple/50 transition-all duration-300 hover:shadow-md">
+                    {knowledgeCards
+                      .filter(card => {
+                        if (showPendingOnly && card.status !== 'PENDENTE') return false;
+                        if (!knowledgeSearch) return true;
+                        const q = knowledgeSearch.toLowerCase();
+                        return card.title.toLowerCase().includes(q) || card.category.toLowerCase().includes(q) || card.bullets.some(b => b.toLowerCase().includes(q));
+                      })
+                      .map(card => (
+                      <div key={card.id} className={`group bg-surface rounded-md p-4 md:p-6 shadow-sm border border-border-panel hover:border-accent-purple/50 transition-all duration-300 hover:shadow-md ${card.done ? 'opacity-80 hover:opacity-100' : ''}`}>
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-3">
-                                <Badge variant="purple">IA</Badge>
-                                <span className="text-[10px] text-text-secondary">22 Out</span>
+                                <Badge variant={card.categoryVariant}>{card.category}</Badge>
+                                <span className="text-[10px] text-text-secondary">{card.date}</span>
                             </div>
-                            <Badge variant="orange">PENDENTE</Badge>
+                            <Badge variant={card.statusVariant}>{card.status}</Badge>
                         </div>
-                        <h3 className="text-lg md:text-xl font-bold text-text-primary mb-4 group-hover:text-accent-purple transition-colors">Estrutura de Prompts para LLMs</h3>
+                        <h3 className="text-lg md:text-xl font-bold text-text-primary mb-4 group-hover:text-accent-purple transition-colors">{card.title}</h3>
                         <div className="mb-6 space-y-3">
-                            <div className="flex items-start gap-3">
+                            {card.bullets.map((bullet, i) => (
+                              <div key={i} className="flex items-start gap-3">
                                 <div className="mt-1.5 w-2 h-2 rounded-full bg-accent-purple shrink-0"></div>
-                                <p className="text-text-primary text-xs md:text-sm leading-relaxed">Contexto é rei: sempre inicie definindo a 'persona' da IA para melhor calibração de tom.</p>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1.5 w-2 h-2 rounded-full bg-accent-purple shrink-0"></div>
-                                <p className="text-text-primary text-xs md:text-sm leading-relaxed">Use delimitadores claros (###, """, ---) para separar instruções de dados de entrada.</p>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1.5 w-2 h-2 rounded-full bg-accent-purple shrink-0"></div>
-                                <p className="text-text-primary text-xs md:text-sm leading-relaxed">Chain of Thought: peça para o modelo "pensar passo a passo" antes de responder.</p>
-                            </div>
+                                <p className="text-text-primary text-xs md:text-sm leading-relaxed">{bullet}</p>
+                              </div>
+                            ))}
                         </div>
                         <div className="bg-header-bg rounded-md p-3 md:p-4 border border-border-panel flex items-start gap-3">
                             <div className="p-1.5 rounded-md bg-accent-purple/10 text-accent-purple">
@@ -235,72 +258,19 @@ const Learning: React.FC = () => {
                             </div>
                             <div>
                                 <SectionLabel className="mb-1 text-text-secondary">Item de Ação</SectionLabel>
-                                <p className="text-xs md:text-sm font-medium text-text-primary">Testar a técnica de 'Chain of Thought' no próximo relatório de análise de dados.</p>
+                                <p className={`text-xs md:text-sm font-medium text-text-primary ${card.done ? 'line-through opacity-50' : ''}`}>{card.action}</p>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Card 2: Reviewed */}
-                    <div className="group bg-surface rounded-md p-4 md:p-6 shadow-sm border border-border-panel hover:border-accent-purple/50 transition-all duration-300 hover:shadow-md opacity-80 hover:opacity-100">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-3">
-                                <Badge variant="blue">NEGÓCIOS</Badge>
-                                <span className="text-[10px] text-text-secondary">20 Out</span>
-                            </div>
-                            <Badge variant="mint">REVISADO</Badge>
-                        </div>
-                        <h3 className="text-lg md:text-xl font-bold text-text-primary mb-4 group-hover:text-accent-purple transition-colors">Modelo de Precificação SaaS</h3>
-                        <div className="mb-6 space-y-3">
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1.5 w-2 h-2 rounded-full bg-accent-purple shrink-0"></div>
-                                <p className="text-text-primary text-xs md:text-sm leading-relaxed">Focar em métricas de retenção (Net Dollar Retention) é mais valioso que aquisição pura.</p>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1.5 w-2 h-2 rounded-full bg-accent-purple shrink-0"></div>
-                                <p className="text-text-primary text-xs md:text-sm leading-relaxed">Tiered Pricing ajuda a segmentar clientes por disposição de pagamento e uso.</p>
-                            </div>
-                        </div>
-                        <div className="bg-header-bg rounded-md p-3 md:p-4 border border-border-panel flex items-start gap-3">
-                            <div className="p-1.5 rounded-md bg-accent-purple/10 text-accent-purple">
-                                <Icon name="bolt" className="text-sm" />
-                            </div>
-                            <div>
-                                <SectionLabel className="mb-1 text-text-secondary">Item de Ação</SectionLabel>
-                                <p className="text-xs md:text-sm font-medium text-text-primary line-through opacity-50">Recalcular LTV dos clientes enterprise com novo modelo.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Card 3: Pending */}
-                    <div className="group bg-surface rounded-md p-4 md:p-6 shadow-sm border border-border-panel hover:border-accent-purple/50 transition-all duration-300 hover:shadow-md">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-3">
-                                <span className="bg-pink-900/30 text-pink-300 text-[9px] md:text-xs font-bold px-2.5 py-0.5 rounded-sm border border-pink-800">DESIGN</span>
-                                <span className="text-[10px] text-text-secondary">18 Out</span>
-                            </div>
-                            <Badge variant="orange">PENDENTE</Badge>
-                        </div>
-                        <h3 className="text-lg md:text-xl font-bold text-text-primary mb-4 group-hover:text-accent-purple transition-colors">Psicologia das Cores em Dark Mode</h3>
-                        <div className="mb-6 space-y-3">
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1.5 w-2 h-2 rounded-full bg-accent-purple shrink-0"></div>
-                                <p className="text-text-primary text-xs md:text-sm leading-relaxed">Evite preto puro (#000000); use cinzas escuros para reduzir o cansaço visual.</p>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1.5 w-2 h-2 rounded-full bg-accent-purple shrink-0"></div>
-                                <p className="text-text-primary text-xs md:text-sm leading-relaxed">Cores saturadas vibram contra fundos escuros; use tons pastéis ou dessaturados.</p>
-                            </div>
-                        </div>
-                        <div className="bg-header-bg rounded-md p-3 md:p-4 border border-border-panel flex items-start gap-3">
-                            <div className="p-1.5 rounded-md bg-accent-purple/10 text-accent-purple">
-                                <Icon name="bolt" className="text-sm" />
-                            </div>
-                            <div>
-                                <SectionLabel className="mb-1 text-text-secondary">Item de Ação</SectionLabel>
-                                <p className="text-xs md:text-sm font-medium text-text-primary">Ajustar a paleta de cores do Design System atual para WCAG compliance.</p>
-                            </div>
-                        </div>
-                    </div>
+                      </div>
+                    ))}
+                    {knowledgeCards.filter(card => {
+                      if (showPendingOnly && card.status !== 'PENDENTE') return false;
+                      if (!knowledgeSearch) return true;
+                      const q = knowledgeSearch.toLowerCase();
+                      return card.title.toLowerCase().includes(q) || card.category.toLowerCase().includes(q);
+                    }).length === 0 && (
+                      <EmptyState icon="school" title="Nenhuma anotação encontrada" description="Tente ajustar a busca ou o filtro de pendentes." />
+                    )}
                 </div>
              </div>
           )}
