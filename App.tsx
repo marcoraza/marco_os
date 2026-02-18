@@ -1,24 +1,28 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHotkeys, useGoKeys, SHORTCUTS } from './hooks/useHotkeys';
 import type { StoredAgent, StoredEvent, StoredNote } from './data/models';
 import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, putAgent, saveAgents, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
 import { defaultAgents } from './data/agentsSeed';
 import Dashboard from './components/Dashboard';
-import Finance from './components/Finance';
-import Health from './components/Health';
-import Learning from './components/Learning';
-import Planner from './components/Planner';
-import CRM from './components/CRM';
-import CommandPalette from './components/CommandPalette';
-import Settings from './components/Settings';
-import AgentAddModal from './components/AgentAddModal';
 import type { Agent } from './types/agents';
+
+// Lazy-loaded pages (code-split)
+const Finance = lazy(() => import('./components/Finance'));
+const Health = lazy(() => import('./components/Health'));
+const Learning = lazy(() => import('./components/Learning'));
+const Planner = lazy(() => import('./components/Planner'));
+const CRM = lazy(() => import('./components/CRM'));
+const Settings = lazy(() => import('./components/Settings'));
+const NotesPanel = lazy(() => import('./components/NotesPanel'));
+const AgentCommandCenter = lazy(() => import('./components/AgentCommandCenter'));
+const AgentDetailView = lazy(() => import('./components/AgentDetailView'));
+const MissionDetail = lazy(() => import('./components/MissionDetail'));
+
+// Eagerly loaded (always needed)
+import CommandPalette from './components/CommandPalette';
+import AgentAddModal from './components/AgentAddModal';
 import MissionModal from './components/MissionModal';
-import MissionDetail from './components/MissionDetail';
-import NotesPanel from './components/NotesPanel';
-import AgentCommandCenter from './components/AgentCommandCenter';
-import AgentDetailView from './components/AgentDetailView';
 import { Icon, Badge, SectionLabel, StatusDot, ToastContainer, showToast } from './components/ui';
 import { cn } from './utils/cn';
 import { useConnectionState } from './contexts/OpenClawContext';
@@ -721,6 +725,7 @@ const App: React.FC = () => {
                 transition={pageTransition}
                 className="flex-grow flex flex-col"
               >
+                <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="animate-pulse text-text-secondary text-xs font-mono">Carregando...</div></div>}>
                 {currentView === 'dashboard' && (
                   <Dashboard
                     tasks={tasks}
@@ -757,6 +762,7 @@ const App: React.FC = () => {
                     }}
                   />
                 )}
+                </Suspense>
               </motion.div>
             </AnimatePresence>
           </div>

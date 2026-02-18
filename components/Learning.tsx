@@ -274,6 +274,84 @@ const Learning: React.FC = () => {
                 </div>
              </div>
           )}
+
+          {activeTab === 'resources' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+              {/* Tools Grid */}
+              <div>
+                <SectionLabel className="mb-4 text-text-secondary">Ferramentas de Desenvolvimento</SectionLabel>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { name: 'Cursor IDE', desc: 'Editor AI-first para dev', icon: 'code', color: 'accent-purple' },
+                    { name: 'Bolt.new', desc: 'Fullstack no browser', icon: 'electric_bolt', color: 'accent-blue' },
+                    { name: 'v0.dev', desc: 'UI generation by Vercel', icon: 'palette', color: 'brand-mint' },
+                    { name: 'Claude API', desc: 'Modelo de raciocínio avançado', icon: 'smart_toy', color: 'accent-orange' },
+                    { name: 'Supabase', desc: 'Backend-as-a-Service', icon: 'database', color: 'brand-mint' },
+                    { name: 'Figma', desc: 'Design colaborativo', icon: 'draw', color: 'accent-red' },
+                  ].map(tool => (
+                    <div key={tool.name} className="group bg-surface rounded-md p-4 border border-border-panel hover:border-accent-purple/40 transition-all cursor-pointer">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-8 h-8 rounded-md bg-${tool.color}/10 flex items-center justify-center text-${tool.color}`}>
+                          <Icon name={tool.icon} size="sm" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-text-primary group-hover:text-accent-purple transition-colors">{tool.name}</h4>
+                          <p className="text-[10px] text-text-secondary">{tool.desc}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Learning Channels */}
+              <div>
+                <SectionLabel className="mb-4 text-text-secondary">Canais de Aprendizado</SectionLabel>
+                <div className="space-y-3">
+                  {[
+                    { name: 'Documentação Oficial', items: '12 docs salvos', icon: 'description', badge: 'Docs' },
+                    { name: 'YouTube Playlists', items: '8 playlists', icon: 'play_circle', badge: 'Vídeo' },
+                    { name: 'Artigos & Blogs', items: '24 artigos', icon: 'article', badge: 'Leitura' },
+                    { name: 'Cursos Online', items: '3 em andamento', icon: 'school', badge: 'Curso' },
+                  ].map(channel => (
+                    <div key={channel.name} className="flex items-center justify-between p-4 bg-surface border border-border-panel rounded-md hover:border-accent-purple/30 transition-colors cursor-pointer group">
+                      <div className="flex items-center gap-3">
+                        <Icon name={channel.icon} className="text-text-secondary group-hover:text-accent-purple transition-colors" />
+                        <div>
+                          <h4 className="text-sm font-bold text-text-primary">{channel.name}</h4>
+                          <p className="text-[10px] text-text-secondary">{channel.items}</p>
+                        </div>
+                      </div>
+                      <Badge variant="purple">{channel.badge}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bookmarks */}
+              <div>
+                <SectionLabel className="mb-4 text-text-secondary">Salvos para Depois</SectionLabel>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {[
+                    { title: 'React 19 — What\'s New', source: 'react.dev', tag: 'React' },
+                    { title: 'Building AI Agents with Claude', source: 'anthropic.com', tag: 'IA' },
+                    { title: 'Tailwind CSS v4 Migration Guide', source: 'tailwindcss.com', tag: 'CSS' },
+                    { title: 'PostgreSQL Performance Tips', source: 'supabase.com', tag: 'DB' },
+                  ].map(bookmark => (
+                    <div key={bookmark.title} className="p-3 bg-surface border border-border-panel rounded-md hover:border-accent-purple/30 transition-colors cursor-pointer group">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-bold text-text-primary truncate group-hover:text-accent-purple transition-colors">{bookmark.title}</h4>
+                          <p className="text-[9px] text-text-secondary mt-0.5">{bookmark.source}</p>
+                        </div>
+                        <Badge variant="neutral" size="xs">{bookmark.tag}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Sidebar */}
