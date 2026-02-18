@@ -8,7 +8,6 @@ import Health from './components/Health';
 import Learning from './components/Learning';
 import Planner from './components/Planner';
 import CRM from './components/CRM';
-import MissionControl from './components/MissionControl/index';
 import CommandPalette from './components/CommandPalette';
 import Settings from './components/Settings';
 import AgentAddModal from './components/AgentAddModal';
@@ -23,7 +22,7 @@ import { cn } from './utils/cn';
 import { useConnectionState } from './contexts/OpenClawContext';
 
 // Types
-export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'notes' | 'settings' | 'mission-control' | 'mission-detail' | 'agents-overview' | 'agent-detail';
+export type View = 'dashboard' | 'finance' | 'health' | 'learning' | 'planner' | 'crm' | 'notes' | 'settings' | 'mission-detail' | 'agents-overview' | 'agent-detail';
 type UptimeView = '24H' | '7D' | '30D' | '90D' | '120D' | '365D';
 type Theme = 'dark' | 'light' | 'system';
 
@@ -168,7 +167,6 @@ const App: React.FC = () => {
     planner: 'Planejador',
     notes: 'Notas',
     crm: 'Rede',
-    'mission-control': 'Mission Control',
     settings: 'Config',
     'mission-detail': 'Missão',
     'agents-overview': 'Mission Control',
@@ -559,7 +557,6 @@ const App: React.FC = () => {
                     { id: 'planner',   icon: 'event_note',     label: 'Planejador' },
                     { id: 'notes',     icon: 'sticky_note_2',  label: 'Notas' },
                     { id: 'crm',       icon: 'contacts',       label: 'Gestão de Contatos' },
-                    { id: 'mission-control', icon: 'hub',      label: 'Mission Control' },
                     // Agent views moved to sidebar "Agentes" section
                     { id: 'settings',  icon: 'settings',       label: 'Configurações' },
                   ].map(item => (
@@ -715,7 +712,6 @@ const App: React.FC = () => {
             )}
             {currentView === 'notes'           && <NotesPanel notes={notes} setNotes={setNotes} activeProjectId={activeProjectId} />}
             {currentView === 'crm'             && <CRM />}
-            {currentView === 'mission-control' && <MissionControl setCurrentView={setCurrentView} />}
             {currentView === 'agents-overview' && <AgentCommandCenter onAgentClick={handleAgentClick} onNavigate={setCurrentView} />}
             {currentView === 'agent-detail' && activeAgentId && <AgentDetailView agentId={activeAgentId} onBack={() => setCurrentView('agents-overview')} />}
             {currentView === 'settings'        && <Settings />}
@@ -960,7 +956,6 @@ const App: React.FC = () => {
                 { id: 'planner',  icon: 'event_note', label: 'Planejador'  },
                 { id: 'notes',    icon: 'sticky_note_2', label: 'Notas'    },
                 { id: 'crm',      icon: 'contacts',   label: 'Rede (CRM)'  },
-                { id: 'mission-control', icon: 'hub', label: 'Mission Control' },
                 { id: 'agents-overview', icon: 'smart_toy',  label: 'Agentes' },
                 { id: 'settings', icon: 'settings',   label: 'Configurações' },
               ].map(item => (
@@ -999,8 +994,8 @@ const App: React.FC = () => {
               <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>Saúde</span>
             </button>
             <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
-              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','notes','crm','mission-control','agents-overview','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','notes','crm','mission-control','agents-overview','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
+              <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','notes','crm','agents-overview','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || ['learning','planner','notes','crm','agents-overview','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
             </button>
           </div>
         </div>
