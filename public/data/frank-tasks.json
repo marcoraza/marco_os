@@ -1,7 +1,7 @@
 {
   "_meta": {
     "generated_by": "frank-sync",
-    "updated_at": "2026-02-18T16:30:01.688413+00:00",
+    "updated_at": "2026-02-18T17:00:01.272688+00:00",
     "source": "active-tasks.md"
   },
   "agents": [
@@ -15,8 +15,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688413+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688413+00:00"
+      "createdAt": "2026-02-18T17:00:01.272688+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272688+00:00"
     },
     {
       "id": "frank-criar-estrutura-de-notebooks-no-notion-v",
@@ -29,8 +29,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-configurar-routing-de-documentos--tools-",
@@ -43,8 +43,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-migrar-briefe-gui-franciscon--google-doc",
@@ -57,8 +57,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-integrar-agenda-compromisso-skill-com-no",
@@ -71,8 +71,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-avaliar-superdata-api-vs-stack-atual",
@@ -85,8 +85,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-configurar-extrator-prim-rio",
@@ -99,8 +99,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-workflow-completo--url---full-sum---driv",
@@ -113,8 +113,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-testar-instagram---youtube",
@@ -127,8 +127,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank---decis-o-marco----typefully-vs-postiz--",
@@ -141,8 +141,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-criar-skill-x-poster",
@@ -155,8 +155,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-testar-rascunho-no-x",
@@ -169,8 +169,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-configurar-serpapi",
@@ -183,8 +183,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank---marco----fornecer-foto-de-refer-ncia--",
@@ -197,8 +197,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-criar-skill-thumbnail-moodboard--serpapi",
@@ -211,8 +211,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-testar-2-imagens---pdf-completo--20-mini",
@@ -225,8 +225,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-assistir-trecho-final-do-v-deo--36min--",
@@ -239,8 +239,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-implementar-skill-6--google-images-",
@@ -253,8 +253,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-implementar-skill-7--favorita-do-criador",
@@ -267,8 +267,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank---decis-o-marco----linear-vs-notion---ag",
@@ -281,8 +281,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-review--7-7-skills-operacionais-",
@@ -295,8 +295,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     },
     {
       "id": "frank-atualizar-memory-md-com-stack-final",
@@ -309,8 +309,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T16:30:01.688010+00:00",
-      "updatedAt": "2026-02-18T16:30:01.688010+00:00"
+      "createdAt": "2026-02-18T17:00:01.272159+00:00",
+      "updatedAt": "2026-02-18T17:00:01.272159+00:00"
     }
   ]
 }
