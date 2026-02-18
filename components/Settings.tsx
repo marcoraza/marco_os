@@ -1,7 +1,47 @@
-import React from 'react';
-import { Card, Icon, SectionLabel } from './ui';
+import React, { useRef, useState } from 'react';
+import { Card, Icon, SectionLabel, showToast } from './ui';
+import { useSettings, type AppSettings } from '../hooks/useSettings';
+
+const accentOptions: { id: AppSettings['appearance']['accentColor']; bg: string; glow: string }[] = [
+  { id: 'mint',   bg: 'bg-brand-mint',    glow: 'shadow-[0_0_10px_rgba(0,255,149,0.4)]' },
+  { id: 'blue',   bg: 'bg-accent-blue',   glow: 'shadow-[0_0_10px_rgba(10,132,255,0.4)]' },
+  { id: 'red',    bg: 'bg-accent-red',    glow: 'shadow-[0_0_10px_rgba(255,69,58,0.4)]' },
+  { id: 'orange', bg: 'bg-accent-orange', glow: 'shadow-[0_0_10px_rgba(255,159,10,0.4)]' },
+  { id: 'purple', bg: 'bg-accent-purple', glow: 'shadow-[0_0_10px_rgba(191,90,242,0.4)]' },
+];
 
 const Settings: React.FC = () => {
+  const { settings, update, resetAll, exportAll, importBackup } = useSettings();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const handleImport = () => fileInputRef.current?.click();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      importBackup(file);
+      showToast('Backup importado com sucesso', 'success');
+    }
+    e.target.value = '';
+  };
+
+  const handleReset = () => {
+    if (!confirmReset) {
+      setConfirmReset(true);
+      setTimeout(() => setConfirmReset(false), 3000);
+      return;
+    }
+    resetAll();
+    showToast('Todos os dados foram resetados', 'success');
+    setConfirmReset(false);
+  };
+
+  const handleExport = () => {
+    exportAll();
+    showToast('Backup exportado', 'success');
+  };
+
   return (
     <div className="flex-grow flex flex-col bg-bg-base overflow-y-auto relative scroll-smooth h-full">
       <div className="max-w-[800px] w-full mx-auto p-8 space-y-8 pb-20">
@@ -11,10 +51,7 @@ const Settings: React.FC = () => {
                 <h1 className="text-lg font-black uppercase tracking-tight text-text-primary mb-1">Configurações</h1>
                 <p className="text-xs text-text-secondary font-medium">Gerencie suas preferências globais, integrações e perfil.</p>
             </div>
-            <button className="bg-surface hover:bg-surface-hover text-text-primary px-4 py-2 rounded-md border border-border-panel text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center gap-2">
-                <Icon name="save" size="md" />
-                Salvar Alterações
-            </button>
+            <span className="text-[9px] text-text-secondary font-mono">Auto-save ativo</span>
         </div>
 
         {/* Profile */}
@@ -35,7 +72,12 @@ const Settings: React.FC = () => {
                 <div className="flex-grow grid grid-cols-2 gap-6">
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold text-text-secondary uppercase">Nome de Exibição</label>
-                        <input className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors" type="text" defaultValue="Marco Anderson"/>
+                        <input
+                          className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
+                          type="text"
+                          value={settings.profile.displayName}
+                          onChange={e => update('profile', { displayName: e.target.value })}
+                        />
                     </div>
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold text-text-secondary uppercase">Função</label>
@@ -46,7 +88,12 @@ const Settings: React.FC = () => {
                     </div>
                     <div className="col-span-2 space-y-1">
                         <label className="text-[10px] font-bold text-text-secondary uppercase">Email</label>
-                        <input className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors" type="email" defaultValue="marco@marco-os.com"/>
+                        <input
+                          className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
+                          type="email"
+                          value={settings.profile.email}
+                          onChange={e => update('profile', { email: e.target.value })}
+                        />
                     </div>
                 </div>
             </div>
@@ -62,7 +109,7 @@ const Settings: React.FC = () => {
                         <p className="text-[10px] text-text-secondary mt-0.5">Sempre ativado para melhor contraste.</p>
                     </div>
                     <label className="switch">
-                        <input defaultChecked type="checkbox"/>
+                        <input checked disabled type="checkbox"/>
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -73,7 +120,11 @@ const Settings: React.FC = () => {
                         <p className="text-[10px] text-text-secondary mt-0.5">Desativar transições para maior performance.</p>
                     </div>
                     <label className="switch">
-                        <input type="checkbox"/>
+                        <input
+                          type="checkbox"
+                          checked={settings.appearance.reducedMotion}
+                          onChange={e => update('appearance', { reducedMotion: e.target.checked })}
+                        />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -81,16 +132,22 @@ const Settings: React.FC = () => {
                 <div>
                     <p className="text-sm font-bold text-text-primary mb-3">Cor de Destaque (Accent)</p>
                     <div className="flex gap-3">
-                        <div className="size-8 rounded-full bg-brand-mint border-2 border-white cursor-pointer shadow-[0_0_10px_rgba(0,255,149,0.4)]"></div>
-                        <div className="size-8 rounded-full bg-accent-blue border border-border-panel cursor-pointer hover:border-white transition-colors opacity-50 hover:opacity-100"></div>
-                        <div className="size-8 rounded-full bg-accent-red border border-border-panel cursor-pointer hover:border-white transition-colors opacity-50 hover:opacity-100"></div>
-                        <div className="size-8 rounded-full bg-accent-orange border border-border-panel cursor-pointer hover:border-white transition-colors opacity-50 hover:opacity-100"></div>
-                        <div className="size-8 rounded-full bg-accent-purple border border-border-panel cursor-pointer hover:border-white transition-colors opacity-50 hover:opacity-100"></div>
+                        {accentOptions.map(opt => (
+                          <div
+                            key={opt.id}
+                            onClick={() => update('appearance', { accentColor: opt.id })}
+                            className={`size-8 rounded-full ${opt.bg} cursor-pointer transition-all ${
+                              settings.appearance.accentColor === opt.id
+                                ? `border-2 border-white ${opt.glow}`
+                                : 'border border-border-panel opacity-50 hover:opacity-100 hover:border-white'
+                            }`}
+                          />
+                        ))}
                     </div>
                 </div>
             </div>
         </Card>
-        
+
         {/* Notifications */}
         <Card className="p-6">
             <SectionLabel icon="notifications" className="mb-6">Notificações</SectionLabel>
@@ -101,7 +158,11 @@ const Settings: React.FC = () => {
                         <span className="text-sm font-bold text-text-primary">Push Notifications</span>
                     </div>
                     <label className="switch">
-                        <input defaultChecked type="checkbox"/>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications.push}
+                          onChange={e => update('notifications', { push: e.target.checked })}
+                        />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -111,7 +172,11 @@ const Settings: React.FC = () => {
                         <span className="text-sm font-bold text-text-primary">Email Digest</span>
                     </div>
                     <label className="switch">
-                        <input type="checkbox"/>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications.emailDigest}
+                          onChange={e => update('notifications', { emailDigest: e.target.checked })}
+                        />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -121,7 +186,11 @@ const Settings: React.FC = () => {
                         <span className="text-sm font-bold text-text-primary">WhatsApp Alertas</span>
                     </div>
                     <label className="switch">
-                        <input defaultChecked type="checkbox"/>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications.whatsapp}
+                          onChange={e => update('notifications', { whatsapp: e.target.checked })}
+                        />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -205,8 +274,8 @@ const Settings: React.FC = () => {
                             <img alt="User" className="w-full h-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP7JXjTU37vKSlINqzka68iHN7f0ORN-zJoJrWycfR_x5JZii_6nZxKtJ_qNuhT6BywYOGEOnjtdOvypS8jjYwoyQzl3Hub2AJAWTaxT9M9YB2RkcP1hHNqP8VrCB7yAfiMeYVbeyJU_Gj9tOvGVpaybTbAGiEygTljwNl0ethjRW6EDzBWgD2rovQefiMUWgi5zwAQ52cJWrZgCFLShhvT0QbsKYz2rNJ0sbYXNByrLZBp9g90wwfq0LoZoE8dVhJvbRr6DokRQ"/>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-text-primary">Marco Anderson</p>
-                            <p className="text-[9px] text-text-secondary">marco@marco-os.com</p>
+                            <p className="text-xs font-bold text-text-primary">{settings.profile.displayName}</p>
+                            <p className="text-[9px] text-text-secondary">{settings.profile.email}</p>
                         </div>
                     </div>
                     <select className="bg-bg-base border border-border-panel text-[10px] font-bold text-text-secondary rounded-md p-1 focus:border-brand-mint outline-none uppercase">
@@ -274,14 +343,21 @@ const Settings: React.FC = () => {
         <Card className="p-6">
             <SectionLabel icon="database" className="mb-6">Dados do Sistema</SectionLabel>
             <div className="flex gap-4 mb-8">
-                <button className="flex-1 py-3 border border-border-panel rounded-md bg-bg-base hover:bg-bg-base/80 text-text-primary text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleExport}
+                  className="flex-1 py-3 border border-border-panel rounded-md bg-bg-base hover:bg-bg-base/80 text-text-primary text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
+                >
                     <Icon name="download" size="md" />
                     Exportar Tudo (JSON)
                 </button>
-                <button className="flex-1 py-3 border border-border-panel rounded-md bg-bg-base hover:bg-bg-base/80 text-text-primary text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleImport}
+                  className="flex-1 py-3 border border-border-panel rounded-md bg-bg-base hover:bg-bg-base/80 text-text-primary text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
+                >
                     <Icon name="upload" size="md" />
                     Importar Backup
                 </button>
+                <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileChange} />
             </div>
             <div className="border border-accent-red/30 bg-accent-red/5 rounded-md p-4">
                 <h4 className="text-xs font-black text-accent-red uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -289,8 +365,15 @@ const Settings: React.FC = () => {
                     Zona de Perigo
                 </h4>
                 <p className="text-[10px] text-text-secondary mb-4">Esta ação é irreversível. Todos os dados, agentes e configurações serão apagados permanentemente.</p>
-                <button className="px-4 py-2 bg-accent-red/10 border border-accent-red/50 text-accent-red hover:bg-accent-red hover:text-white rounded-md text-[10px] font-bold uppercase tracking-wide transition-all">
-                    Resetar Todos os Dados
+                <button
+                  onClick={handleReset}
+                  className={`px-4 py-2 border rounded-md text-[10px] font-bold uppercase tracking-wide transition-all ${
+                    confirmReset
+                      ? 'bg-accent-red text-white border-accent-red'
+                      : 'bg-accent-red/10 border-accent-red/50 text-accent-red hover:bg-accent-red hover:text-white'
+                  }`}
+                >
+                    {confirmReset ? 'Confirmar Reset — Clique Novamente' : 'Resetar Todos os Dados'}
                 </button>
             </div>
         </Card>

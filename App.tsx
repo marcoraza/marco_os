@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useHotkeys, useGoKeys, SHORTCUTS } from './hooks/useHotkeys';
 import type { StoredAgent, StoredEvent, StoredNote } from './data/models';
 import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, putAgent, saveAgents, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
 import { defaultAgents } from './data/agentsSeed';
@@ -148,6 +149,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [uptime, setUptime] = useState(0);
   const [uptimeView, setUptimeView] = useState<UptimeView>('24H');
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -225,17 +227,16 @@ const App: React.FC = () => {
     return () => { clearInterval(uptimeInterval); clearInterval(clockInterval); };
   }, []);
 
-  // Cmd/Ctrl+K opens command palette
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsPaletteOpen(true);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  // ─── Keyboard shortcuts ─────────────────────────────────────────────────────
+  const navigate = useCallback((view: string) => setCurrentView(view as View), []);
+
+  useHotkeys([
+    { key: 'k', mod: true, handler: () => setIsPaletteOpen(true), description: 'Command Palette' },
+    { key: '?', shift: true, handler: () => setIsShortcutsOpen(o => !o), description: 'Toggle shortcuts' },
+    { key: 'Escape', handler: () => { setIsShortcutsOpen(false); setIsPaletteOpen(false); setIsMissionModalOpen(false); setIsAgentModalOpen(false); }, description: 'Close overlay' },
+  ]);
+
+  useGoKeys(navigate);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -1050,6 +1051,45 @@ const App: React.FC = () => {
       {isMissionModalOpen && (
         <MissionModal onClose={() => setIsMissionModalOpen(false)} onSave={addTask} />
       )}
+
+      {/* Keyboard Shortcuts Overlay */}
+      <AnimatePresence>
+        {isShortcutsOpen && (
+          <motion.div
+            key="shortcuts-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center"
+            onClick={() => setIsShortcutsOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: 4 }}
+              transition={{ duration: 0.2 }}
+              className="bg-surface border border-border-panel rounded-md p-6 w-[420px] max-w-[90vw] shadow-2xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-sm font-black uppercase tracking-wider text-text-primary">Atalhos de Teclado</h2>
+                <button onClick={() => setIsShortcutsOpen(false)} className="text-text-secondary hover:text-text-primary">
+                  <Icon name="close" />
+                </button>
+              </div>
+              <div className="space-y-2">
+                {SHORTCUTS.map(s => (
+                  <div key={s.key + s.label} className="flex items-center justify-between py-2 border-b border-border-panel/50 last:border-0">
+                    <span className="text-xs text-text-secondary">{s.description}</span>
+                    <kbd className="px-2 py-0.5 bg-bg-base border border-border-panel rounded text-[10px] font-mono font-bold text-text-primary">{s.label}</kbd>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-text-secondary mt-4 text-center">Pressione <kbd className="px-1 py-0.5 bg-bg-base border border-border-panel rounded text-[9px] font-mono">?</kbd> para fechar</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ToastContainer />
     </div>
