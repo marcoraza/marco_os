@@ -280,14 +280,14 @@ const Finance: React.FC = () => {
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#1C1C1C', border: '1px solid #2A2A2A', borderRadius: 4, fontSize: 10 }}
-                                itemStyle={{ color: '#E1E1E1' }}
+                                contentStyle={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-panel)', borderRadius: 4, fontSize: 10 }}
+                                itemStyle={{ color: 'var(--color-text-primary)' }}
                                 formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, '']}
                             />
-                            <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" fill="#E1E1E1" style={{ fontSize: 14, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }}>
+                            <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" fill="var(--color-text-primary)" style={{ fontSize: 14, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }}>
                                 R$ {pieTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </text>
-                            <text x="50%" y="58%" textAnchor="middle" dominantBaseline="central" fill="#8E8E93" style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>
+                            <text x="50%" y="58%" textAnchor="middle" dominantBaseline="central" fill="var(--color-text-secondary)" style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>
                                 Total
                             </text>
                         </PieChart>
@@ -317,11 +317,11 @@ const Finance: React.FC = () => {
                                     <stop offset="100%" stopColor="#FF453A" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <XAxis dataKey="month" tick={{ fontSize: 9, fill: '#8E8E93' }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 9, fill: '#8E8E93' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v / 1000}k`} />
+                            <XAxis dataKey="month" tick={{ fontSize: 9, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 9, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v / 1000}k`} />
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#1C1C1C', border: '1px solid #2A2A2A', borderRadius: 4, fontSize: 10 }}
-                                itemStyle={{ color: '#E1E1E1' }}
+                                contentStyle={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-panel)', borderRadius: 4, fontSize: 10 }}
+                                itemStyle={{ color: 'var(--color-text-primary)' }}
                                 formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, '']}
                             />
                             <Area type="monotone" dataKey="income" stroke="#00FF95" strokeWidth={2} fill="url(#rcIncomeGrad)" name="Receita" />
@@ -345,7 +345,7 @@ const Finance: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="relative w-full flex-grow rounded-md border border-border-panel overflow-hidden bg-[#151515] bg-bg-base" style={{ backgroundImage: 'linear-gradient(to right, var(--color-border-panel) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border-panel) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+                        <div className="relative w-full flex-grow rounded-md border border-border-panel overflow-hidden bg-bg-base bg-bg-base" style={{ backgroundImage: 'linear-gradient(to right, var(--color-border-panel) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border-panel) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
                             <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, var(--color-border-panel) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border-panel) 1px, transparent 1px)', backgroundSize: '40px 40px'}}></div>
                             <div className="absolute left-0 top-0 bottom-6 w-10 flex flex-col justify-between text-[9px] text-text-secondary font-mono px-1 py-2 border-r border-border-panel bg-surface/50">
                                 <span>15k</span><span>10k</span><span>5k</span><span>0</span>
@@ -438,7 +438,7 @@ const Finance: React.FC = () => {
                         <div className="p-3 space-y-2 flex-grow overflow-y-auto custom-scrollbar">
                             <div className="flex items-center justify-between group">
                                 <div className="flex items-center gap-2">
-                                    <div className="flex flex-col items-center justify-center w-7 h-7 bg-border-panel rounded-sm border border-[#333] text-text-secondary"><span className="text-[7px] font-bold uppercase">OUT</span><span className="text-[10px] font-bold text-text-primary">10</span></div>
+                                    <div className="flex flex-col items-center justify-center w-7 h-7 bg-border-panel rounded-sm border border-border-panel text-text-secondary"><span className="text-[7px] font-bold uppercase">OUT</span><span className="text-[10px] font-bold text-text-primary">10</span></div>
                                     <div><p className="text-[10px] font-bold text-text-primary group-hover:text-accent-red transition-colors">Aluguel</p><p className="text-[9px] text-text-secondary">Recorrente</p></div>
                                 </div>
                                 <span className="text-[10px] font-bold font-mono text-text-primary">R$ 2.500</span>
@@ -446,7 +446,7 @@ const Finance: React.FC = () => {
                             <div className="w-full h-px bg-border-panel"></div>
                             <div className="flex items-center justify-between group">
                                 <div className="flex items-center gap-2">
-                                    <div className="flex flex-col items-center justify-center w-7 h-7 bg-border-panel rounded-sm border border-[#333] text-text-secondary"><span className="text-[7px] font-bold uppercase">OUT</span><span className="text-[10px] font-bold text-text-primary">12</span></div>
+                                    <div className="flex flex-col items-center justify-center w-7 h-7 bg-border-panel rounded-sm border border-border-panel text-text-secondary"><span className="text-[7px] font-bold uppercase">OUT</span><span className="text-[10px] font-bold text-text-primary">12</span></div>
                                     <div><p className="text-[10px] font-bold text-text-primary group-hover:text-accent-red transition-colors">AWS</p><p className="text-[9px] text-text-secondary">Infra</p></div>
                                 </div>
                                 <span className="text-[10px] font-bold font-mono text-text-primary">R$ 350</span>
@@ -454,7 +454,7 @@ const Finance: React.FC = () => {
                             <div className="w-full h-px bg-border-panel"></div>
                             <div className="flex items-center justify-between group">
                                 <div className="flex items-center gap-2">
-                                    <div className="flex flex-col items-center justify-center w-7 h-7 bg-border-panel rounded-sm border border-[#333] text-text-secondary"><span className="text-[7px] font-bold uppercase">OUT</span><span className="text-[10px] font-bold text-text-primary">15</span></div>
+                                    <div className="flex flex-col items-center justify-center w-7 h-7 bg-border-panel rounded-sm border border-border-panel text-text-secondary"><span className="text-[7px] font-bold uppercase">OUT</span><span className="text-[10px] font-bold text-text-primary">15</span></div>
                                     <div><p className="text-[10px] font-bold text-text-primary group-hover:text-accent-red transition-colors">Seguro</p><p className="text-[9px] text-text-secondary">Anual</p></div>
                                 </div>
                                 <span className="text-[10px] font-bold font-mono text-text-primary">R$ 390</span>
@@ -796,7 +796,7 @@ const Finance: React.FC = () => {
                         <button onClick={() => setIsInvestModalOpen(true)} className="flex items-center gap-2 px-3 py-1.5 bg-accent-purple hover:bg-accent-purple/90 text-white text-[10px] font-bold uppercase rounded-sm transition-colors shadow-lg shadow-accent-purple/20"><Icon name="add" size="sm" /> Novo Ativo</button>
                     </div>
                  </div>
-                 <div className="relative h-48 w-full bg-[#151515] rounded-md border border-border-panel overflow-hidden group">
+                 <div className="relative h-48 w-full bg-bg-base rounded-md border border-border-panel overflow-hidden group">
                      {/* Detailed Gradient Area Chart */}
                      <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 50">
                         <defs>
@@ -810,7 +810,7 @@ const Finance: React.FC = () => {
                      </svg>
                      <div className="absolute top-2 right-2 flex gap-2 text-[9px] font-bold text-text-secondary uppercase">
                         <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-accent-purple"></span> Portfolio</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-[#8A8A8A] border-t border-dashed"></span> CDI</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-text-secondary border-t border-dashed"></span> CDI</span>
                      </div>
                  </div>
                </Card>
@@ -867,7 +867,7 @@ const Finance: React.FC = () => {
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <button className="flex-1 py-2 bg-border-panel hover:bg-[#333] border border-border-panel rounded-sm text-[9px] font-bold text-text-secondary uppercase transition-colors">Ignorar</button>
+                            <button className="flex-1 py-2 bg-border-panel hover:bg-border-panel border border-border-panel rounded-sm text-[9px] font-bold text-text-secondary uppercase transition-colors">Ignorar</button>
                             <button className="flex-1 py-2 bg-accent-purple hover:bg-accent-purple/90 text-white rounded-sm text-[9px] font-bold uppercase transition-colors shadow-lg shadow-accent-purple/10">Rebalancear</button>
                         </div>
                     </div>
@@ -927,7 +927,7 @@ const Finance: React.FC = () => {
                             <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-[0.1em] flex items-center gap-2"><Icon name="pie_chart" className="text-accent-orange" size="sm" /> Portfolio Manager</h3>
                             <div className="flex items-baseline gap-2 mt-1">
                                 <p className="text-2xl font-mono font-bold text-text-primary tracking-tight">{formatCurrency(totalPortfolioValue)}</p>
-                                <div className="flex bg-border-panel rounded-sm p-0.5 border border-[#333] scale-75 origin-left">
+                                <div className="flex bg-border-panel rounded-sm p-0.5 border border-border-panel scale-75 origin-left">
                                     <button onClick={() => setDisplayCurrency('USD')} className={`px-1.5 py-0.5 text-[8px] font-bold rounded-sm ${displayCurrency === 'USD' ? 'bg-accent-orange text-black' : 'text-text-secondary hover:text-text-primary'}`}>USD</button>
                                     <button onClick={() => setDisplayCurrency('BRL')} className={`px-1.5 py-0.5 text-[8px] font-bold rounded-sm ${displayCurrency === 'BRL' ? 'bg-accent-orange text-black' : 'text-text-secondary hover:text-text-primary'}`}>BRL</button>
                                 </div>
@@ -1023,7 +1023,7 @@ const Finance: React.FC = () => {
                 <Card className="p-4 flex flex-col shadow-lg overflow-hidden">
                     <div className="flex justify-between items-center mb-3 shrink-0">
                         <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-[0.1em] flex items-center gap-2"><Icon name="lock_clock" className="text-accent-orange" size="sm" /> Staking</h3>
-                        <div className="flex bg-border-panel rounded-sm p-0.5 border border-[#333] scale-75 origin-right">
+                        <div className="flex bg-border-panel rounded-sm p-0.5 border border-border-panel scale-75 origin-right">
                             <button onClick={() => setStakingDisplayCurrency('USD')} className={`px-1.5 py-0.5 text-[8px] font-bold rounded-sm ${stakingDisplayCurrency === 'USD' ? 'bg-accent-orange text-black' : 'text-text-secondary hover:text-text-primary'}`}>USD</button>
                             <button onClick={() => setStakingDisplayCurrency('BRL')} className={`px-1.5 py-0.5 text-[8px] font-bold rounded-sm ${stakingDisplayCurrency === 'BRL' ? 'bg-accent-orange text-black' : 'text-text-secondary hover:text-text-primary'}`}>BRL</button>
                         </div>

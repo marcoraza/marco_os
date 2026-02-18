@@ -306,7 +306,7 @@ const CRM: React.FC = () => {
                           <img src={contact.image} alt="Profile" className="w-full h-full rounded-full border-2 border-surface object-cover" />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-full bg-border-panel flex items-center justify-center text-text-secondary text-sm font-bold border border-[#333]">
+                        <div className="w-12 h-12 rounded-full bg-border-panel flex items-center justify-center text-text-secondary text-sm font-bold border border-border-panel">
                           {contact.initials || generateInitials(contact.name)}
                         </div>
                       )}
@@ -447,7 +447,7 @@ const CRM: React.FC = () => {
                     {selectedContact.image ? (
                         <img src={selectedContact.image} alt={selectedContact.name} className="w-20 h-20 rounded-full object-cover border-2 border-border-panel shadow-sm" />
                     ) : (
-                        <div className="w-20 h-20 rounded-full bg-border-panel flex items-center justify-center text-text-secondary text-2xl font-bold border-2 border-[#333]">{selectedContact.initials || generateInitials(selectedContact.name)}</div>
+                        <div className="w-20 h-20 rounded-full bg-border-panel flex items-center justify-center text-text-secondary text-2xl font-bold border-2 border-border-panel">{selectedContact.initials || generateInitials(selectedContact.name)}</div>
                     )}
                     <div className="absolute bottom-0 right-0">
                         {selectedContact.status === 'hot' && <StatusDot color="mint" className="w-5 h-5 border-2 border-surface" />}

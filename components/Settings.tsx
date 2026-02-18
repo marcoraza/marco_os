@@ -14,6 +14,7 @@ const Settings: React.FC = () => {
   const { settings, update, resetAll, exportAll, importBackup } = useSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [activeTheme, setActiveTheme] = useState(() => localStorage.getItem('marco-os-theme') || 'dark');
 
   const handleImport = () => fileInputRef.current?.click();
 
@@ -111,13 +112,13 @@ const Settings: React.FC = () => {
                         { value: 'light', label: 'Claro', icon: 'light_mode', color: 'text-accent-orange' },
                         { value: 'system', label: 'Sistema', icon: 'desktop_windows', color: 'text-accent-blue' },
                       ] as const).map(opt => {
-                        const currentTheme = localStorage.getItem('marco-os-theme') || 'dark';
-                        const isActive = currentTheme === opt.value;
+                        const isActive = activeTheme === opt.value;
                         return (
                           <button
                             key={opt.value}
                             onClick={() => {
                               localStorage.setItem('marco-os-theme', opt.value);
+                              setActiveTheme(opt.value);
                               const root = document.documentElement;
                               let effective = opt.value as string;
                               if (opt.value === 'system') {

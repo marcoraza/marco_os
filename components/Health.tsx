@@ -44,7 +44,7 @@ const habitsStreakData = [
 const HealthTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded border text-xs font-mono" style={{ background: '#1C1C1C', borderColor: '#2A2A2A', padding: '10px 14px' }}>
+    <div className="rounded border border-border-panel bg-surface text-xs font-mono px-3.5 py-2.5">
       <p className="font-bold text-text-primary mb-1">{label}</p>
       {payload.map((entry: any, i: number) => (
         <p key={i} style={{ color: entry.color }} className="leading-relaxed">
@@ -270,11 +270,11 @@ const Health: React.FC = () => {
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={trendData14Days} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" />
-                          <XAxis dataKey="day" tick={{ fill: '#8E8E93', fontSize: 11 }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
-                          <YAxis domain={[0, 10]} tick={{ fill: '#8E8E93', fontSize: 11 }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-panel)" />
+                          <XAxis dataKey="day" tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }} axisLine={{ stroke: 'var(--color-border-panel)' }} tickLine={false} />
+                          <YAxis domain={[0, 10]} tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }} axisLine={{ stroke: 'var(--color-border-panel)' }} tickLine={false} />
                           <Tooltip content={<HealthTooltip />} />
-                          <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: '#8E8E93' }} />
+                          <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: 'var(--color-text-secondary)' }} />
                           <Line type="monotone" dataKey="energy" name="Energia" stroke="#facc15" strokeWidth={2} dot={false} />
                           <Line type="monotone" dataKey="sleep" name="Sono" stroke="#0A84FF" strokeWidth={2} dot={false} />
                           <Line type="monotone" dataKey="focus" name="Foco" stroke="#00FF95" strokeWidth={2} dot={false} />
@@ -293,8 +293,8 @@ const Health: React.FC = () => {
                       <div className="h-52 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
-                            <PolarGrid stroke="#2A2A2A" />
-                            <PolarAngleAxis dataKey="metric" tick={{ fill: '#8E8E93', fontSize: 11 }} />
+                            <PolarGrid stroke="var(--color-border-panel)" />
+                            <PolarAngleAxis dataKey="metric" tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }} />
                             <PolarRadiusAxis domain={[0, 10]} tick={false} axisLine={false} />
                             <Radar dataKey="value" stroke="#00FF95" fill="#00FF95" fillOpacity={0.15} strokeWidth={2} />
                           </RadarChart>
@@ -308,10 +308,10 @@ const Health: React.FC = () => {
                       <div className="h-52 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={habitsStreakData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
-                            <XAxis dataKey="day" tick={{ fill: '#8E8E93', fontSize: 11 }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
-                            <YAxis domain={[0, 3]} ticks={[0, 1, 2, 3]} tick={{ fill: '#8E8E93', fontSize: 11 }} axisLine={{ stroke: '#2A2A2A' }} tickLine={false} />
+                            <XAxis dataKey="day" tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }} axisLine={{ stroke: 'var(--color-border-panel)' }} tickLine={false} />
+                            <YAxis domain={[0, 3]} ticks={[0, 1, 2, 3]} tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }} axisLine={{ stroke: 'var(--color-border-panel)' }} tickLine={false} />
                             <Tooltip content={<HealthTooltip />} />
-                            <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: '#8E8E93' }} />
+                            <Legend iconType="circle" wrapperStyle={{ fontSize: 11, color: 'var(--color-text-secondary)' }} />
                             <Bar dataKey="meditation" name="Meditação" stackId="a" fill="#BF5AF2" radius={[0, 0, 0, 0]} />
                             <Bar dataKey="sugarFree" name="Sem Açúcar" stackId="a" fill="#0A84FF" radius={[0, 0, 0, 0]} />
                             <Bar dataKey="hydration" name="Hidratação" stackId="a" fill="#00FF95" radius={[2, 2, 0, 0]} />

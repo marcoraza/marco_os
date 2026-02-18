@@ -102,7 +102,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
   const achievements = [
     { id: 'first-blood', icon: 'military_tech', label: 'First Blood', desc: 'Completou a 1a tarefa', unlocked: completedTasks >= 1 },
     { id: 'streak-7', icon: 'local_fire_department', label: 'Semana de Fogo', desc: '7 dias sem perder prazo', unlocked: true },
-    { id: 'centurion', icon: 'shield', label: 'Centuri\u00e3o', desc: '100 tasks completadas', unlocked: completedTasks >= 5 },
+    { id: 'centurion', icon: 'shield', label: 'CENTURIÃO', desc: '100 tasks completadas', unlocked: completedTasks >= 5 },
     { id: 'multitask', icon: 'hub', label: 'Multitarefa', desc: '3+ tasks em andamento', unlocked: contextTasks.filter(t => t.status === 'in-progress').length >= 2 },
     { id: 'clean-slate', icon: 'auto_awesome', label: 'Tela Limpa', desc: 'Zero no backlog', unlocked: contextTasks.filter(t => t.status === 'assigned').length === 0 },
     { id: 'early-bird', icon: 'wb_sunny', label: 'Early Bird', desc: 'Tarefa antes do prazo', unlocked: true },
@@ -144,20 +144,20 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
     { day: 'Qua', tasks: 3 },
     { day: 'Qui', tasks: 7 },
     { day: 'Sex', tasks: 4 },
-    { day: 'S\u00e1b', tasks: 6 },
+    { day: 'Sáb', tasks: 6 },
     { day: 'Dom', tasks: 1 },
   ], []);
 
   const chartTooltipStyle = {
     contentStyle: {
-      backgroundColor: '#1C1C1C',
-      border: '1px solid #2A2A2A',
+      backgroundColor: 'var(--color-bg-surface)',
+      border: '1px solid var(--color-border-panel)',
       borderRadius: '4px',
       fontSize: '10px',
-      color: '#E1E1E1',
+      color: 'var(--color-text-primary)',
     },
-    itemStyle: { color: '#E1E1E1' },
-    labelStyle: { color: '#8E8E93', fontSize: '9px', fontWeight: 700 },
+    itemStyle: { color: 'var(--color-text-primary)' },
+    labelStyle: { color: 'var(--color-text-secondary)', fontSize: '9px', fontWeight: 700 },
   };
 
   const handleDragStart = (e: React.DragEvent, id: number) => {
@@ -213,17 +213,17 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
   // Map deadline to colored info line
   const getDeadlineColor = (deadline: string) => {
     if (deadline === 'Hoje') return 'text-accent-red';
-    if (deadline === 'Amanh\u00e3') return 'text-accent-orange';
-    if (deadline === 'Ontem' || deadline.includes('atr\u00e1s')) return 'text-brand-mint';
+    if (deadline === 'Amanhã') return 'text-accent-orange';
+    if (deadline === 'Ontem' || deadline.includes('atrás')) return 'text-brand-mint';
     return 'text-text-secondary';
   };
 
   const columns: { id: Task['status']; title: string; color: string; border: string; icon: string; variant: 'neutral' | 'blue' | 'orange' | 'purple' | 'mint' | 'red' }[] = [
-    { id: 'assigned', title: 'Atribu\u00eddas', color: 'bg-slate-500', border: 'border-slate-500', icon: 'inbox', variant: 'neutral' },
+    { id: 'assigned', title: 'ATRIBUÍDAS', color: 'bg-slate-500', border: 'border-slate-500', icon: 'inbox', variant: 'neutral' },
     { id: 'started', title: 'Iniciadas', color: 'bg-accent-blue', border: 'border-accent-blue', icon: 'play_circle', variant: 'blue' },
     { id: 'in-progress', title: 'Em Andamento', color: 'bg-accent-orange', border: 'border-accent-orange', icon: 'autorenew', variant: 'orange' },
     { id: 'standby', title: 'Stand By', color: 'bg-yellow-500', border: 'border-yellow-500', icon: 'pause_circle', variant: 'purple' },
-    { id: 'done', title: 'Conclu\u00eddas', color: 'bg-brand-mint', border: 'border-brand-mint', icon: 'check_circle', variant: 'mint' },
+    { id: 'done', title: 'CONCLUÍDAS', color: 'bg-brand-mint', border: 'border-brand-mint', icon: 'check_circle', variant: 'mint' },
   ];
 
   const prioPillColor: Record<string, string> = {
@@ -254,7 +254,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                     {activeProject && (
                       <span className="size-1.5 rounded-full inline-block" style={{ backgroundColor: activeProject.color }}></span>
                     )}
-                    {activeProject?.name ?? '\u2013'}
+                    {activeProject?.name ?? '–'}
                   </p>
               </div>
             </div>
@@ -267,7 +267,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                 value={quickCapture}
                 onChange={e => setQuickCapture(e.target.value)}
                 onKeyDown={handleQuickCapture}
-                placeholder="Captura r\u00e1pida\u2026 Enter para criar"
+                placeholder="Captura rápida… Enter para criar"
                 className="w-full bg-bg-base border border-border-panel rounded-md pl-9 pr-3 py-2 text-[11px] text-text-primary focus:outline-none focus:border-brand-mint/50 transition-colors placeholder:text-text-secondary/40"
               />
             </div>
@@ -300,7 +300,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                 <span className="text-[9px] font-bold text-text-secondary uppercase tracking-wider mr-1">Prioridade:</span>
                 {[
                     { val: 'high', label: 'Alta', color: 'text-accent-red border-accent-red/30 bg-accent-red/10' },
-                    { val: 'medium', label: 'M\u00e9dia', color: 'text-accent-orange border-accent-orange/30 bg-accent-orange/10' },
+                    { val: 'medium', label: 'MÉDIA', color: 'text-accent-orange border-accent-orange/30 bg-accent-orange/10' },
                     { val: 'low', label: 'Baixa', color: 'text-accent-blue border-accent-blue/30 bg-accent-blue/10' }
                 ].map(p => (
                     <button
@@ -368,7 +368,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
           </div>
         </div>
 
-        {/* KANBAN BOARD \u2014 Clean design matching AgentKanban */}
+        {/* KANBAN BOARD — Clean design matching AgentKanban */}
         <div className="flex-grow p-4 flex gap-3 h-full overflow-hidden">
           {columns.map((col) => {
             const colTasks = displayTasks.filter(t => t.status === col.id);
@@ -459,10 +459,10 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                           <p className="text-[11px] text-text-secondary leading-relaxed">{task.tag}</p>
                           {task.deadline && task.deadline !== 'A definir' && (
                             <p className={cn('text-[11px] leading-relaxed', getDeadlineColor(task.deadline))}>
-                              {task.deadline === 'Hoje' ? 'Prazo: Hoje \u2014 urgente'
-                                : task.deadline === 'Amanh\u00e3' ? 'Prazo: Amanh\u00e3'
-                                : task.deadline === 'Ontem' ? 'Conclu\u00eddo ontem'
-                                : task.deadline.includes('atr\u00e1s') ? `Finalizado ${task.deadline}`
+                              {task.deadline === 'Hoje' ? 'Prazo: Hoje — urgente'
+                                : task.deadline === 'Amanhã' ? 'Prazo: Amanhã'
+                                : task.deadline === 'Ontem' ? 'Concluído ontem'
+                                : task.deadline.includes('atrás') ? `Finalizado ${task.deadline}`
                                 : `Prazo: ${task.deadline}`}
                             </p>
                           )}
@@ -490,10 +490,10 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
           })}
         </div>
 
-        {/* BOTTOM PANEL \u2014 Gamification + Focus Mode */}
+        {/* BOTTOM PANEL — Gamification + Focus Mode */}
         <div className="shrink-0 border-t border-border-panel bg-header-bg">
 
-          {/* \u2500\u2500\u2500 FOCUS MODE OVERLAY \u2500\u2500\u2500 */}
+          {/* ─── FOCUS MODE OVERLAY ─── */}
           {focusMode && focusTask && (
             <div className="fixed inset-0 z-50 bg-bg-base/95 backdrop-blur-sm flex items-center justify-center p-6">
               <div className="w-full max-w-lg space-y-6">
@@ -505,7 +505,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                     </div>
                     <div>
                       <h2 className="text-sm font-black text-brand-mint uppercase tracking-widest">Focus Mode</h2>
-                      <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest">Uma tarefa. Sem distra\u00e7\u00f5es.</p>
+                      <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest">UMA TAREFA. SEM DISTRAÇÕES.</p>
                     </div>
                   </div>
                   <button
@@ -609,7 +609,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
             </div>
           )}
 
-          {/* \u2500\u2500\u2500 GAMIFICATION BAR \u2500\u2500\u2500 */}
+          {/* ─── GAMIFICATION BAR ─── */}
           <div className="p-4 md:p-5 flex flex-col gap-4">
 
             {/* Row 1: XP + Level + Streak + Focus toggle */}
@@ -709,7 +709,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                 </div>
                 {focusTask && !focusMode && (
                   <div className="bg-bg-base rounded-sm p-2 border border-border-panel/50">
-                    <p className="text-[9px] text-text-secondary truncate">Pr\u00f3xima: <span className="text-text-primary font-medium">{focusTask.title}</span></p>
+                    <p className="text-[9px] text-text-secondary truncate">Próxima: <span className="text-text-primary font-medium">{focusTask.title}</span></p>
                   </div>
                 )}
                 {focusMode && (
@@ -736,7 +736,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                       <BarChart data={statusChartData} barCategoryGap="20%">
                         <XAxis
                           dataKey="name"
-                          tick={{ fontSize: 8, fill: '#8E8E93' }}
+                          tick={{ fontSize: 8, fill: 'var(--color-text-secondary)' }}
                           axisLine={false}
                           tickLine={false}
                         />
@@ -775,7 +775,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                         </defs>
                         <XAxis
                           dataKey="day"
-                          tick={{ fontSize: 8, fill: '#8E8E93' }}
+                          tick={{ fontSize: 8, fill: 'var(--color-text-secondary)' }}
                           axisLine={false}
                           tickLine={false}
                         />
@@ -792,8 +792,8 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                           stroke="#00FF95"
                           strokeWidth={2}
                           fill="url(#mintGradient)"
-                          dot={{ r: 3, fill: '#00FF95', stroke: '#1C1C1C', strokeWidth: 2 }}
-                          activeDot={{ r: 4, fill: '#00FF95', stroke: '#1C1C1C', strokeWidth: 2 }}
+                          dot={{ r: 3, fill: '#00FF95', stroke: 'var(--color-bg-surface)', strokeWidth: 2 }}
+                          activeDot={{ r: 4, fill: '#00FF95', stroke: 'var(--color-bg-surface)', strokeWidth: 2 }}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -849,15 +849,15 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
         <div className="p-4 border-b border-border-panel shrink-0">
           <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary flex items-center gap-1.5 mb-3">
             <Icon name="auto_awesome" size="xs" className="text-brand-mint" />
-            A\u00e7\u00f5es R\u00e1pidas
+            AÇÕES RÁPIDAS
           </span>
           <div className="space-y-1">
             {[
-              { icon: 'summarize', label: 'Briefing Di\u00e1rio', desc: 'Resumo do dia pelo Frank' },
+              { icon: 'summarize', label: 'BRIEFING DIÁRIO', desc: 'Resumo do dia pelo Frank' },
               { icon: 'mail', label: 'Triar Inbox', desc: 'Escanear emails pendentes' },
               { icon: 'monitor_heart', label: 'Health Check', desc: 'Checar status dos sistemas' },
-              { icon: 'sync', label: 'Sync Mem\u00f3ria', desc: 'Destilar mem\u00f3rias recentes' },
-              { icon: 'bolt', label: 'Task R\u00e1pida', desc: 'Criar e delegar tarefa' },
+              { icon: 'sync', label: 'SYNC MEMÓRIA', desc: 'Destilar memórias recentes' },
+              { icon: 'bolt', label: 'TASK RÁPIDA', desc: 'Criar e delegar tarefa' },
             ].map((fn, i) => (
               <button
                 key={i}
@@ -902,16 +902,16 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
         <div className="p-4 border-b border-border-panel shrink-0">
           <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary flex items-center gap-1.5 mb-3">
             <Icon name="notifications" size="xs" className="text-accent-orange" />
-            Notifica\u00e7\u00f5es
+            NOTIFICAÇÕES
             <span className="ml-auto px-1.5 py-0.5 rounded-sm bg-accent-orange/10 border border-accent-orange/20 text-[8px] font-mono text-accent-orange">5</span>
           </span>
           <div className="space-y-1.5">
             {[
-              { icon: 'warning', color: 'text-accent-orange', text: 'Lint com alertas \u2014 QA verificando', time: '2min' },
+              { icon: 'warning', color: 'text-accent-orange', text: 'Lint com alertas — QA verificando', time: '2min' },
               { icon: 'check_circle', color: 'text-brand-mint', text: 'Build #42 passou com sucesso', time: '8min' },
               { icon: 'mail', color: 'text-accent-blue', text: '3 emails novos triados pelo Frank', time: '15min' },
               { icon: 'psychology', color: 'text-accent-purple', text: 'Planner atualizou roadmap Q1', time: '22min' },
-              { icon: 'payments', color: 'text-accent-red', text: 'Fatura cart\u00e3o vence amanh\u00e3', time: '1h' },
+              { icon: 'payments', color: 'text-accent-red', text: 'Fatura cartão vence amanhã', time: '1h' },
             ].map((n, i) => (
               <div key={i} className="flex items-start gap-2 px-2 py-1.5 rounded-sm hover:bg-surface transition-colors cursor-pointer">
                 <Icon name={n.icon} size="xs" className={cn('shrink-0 mt-0.5', n.color)} />
@@ -933,9 +933,9 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
           <div className="relative pl-4 space-y-4 before:absolute before:inset-0 before:ml-1.5 before:h-full before:w-px before:bg-border-panel">
             {[
               { time: '14:32', user: 'Frank', action: 'Atualizou status de infraestrutura', type: 'system' },
-              { time: '12:15', user: 'MA', action: 'Concluiu "Revis\u00e3o de PR"', type: 'user' },
+              { time: '12:15', user: 'MA', action: 'Concluiu "Revisão de PR"', type: 'user' },
               { time: '09:45', user: 'Agente E2', action: 'Novo lead qualificado no CRM', type: 'agent' },
-              { time: '08:00', user: 'System', action: 'Backup di\u00e1rio realizado', type: 'system' },
+              { time: '08:00', user: 'System', action: 'Backup diário realizado', type: 'system' },
             ].map((log, i) => (
               <div key={i} className="relative">
                 <div className={cn(
