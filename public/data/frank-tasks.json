@@ -1,7 +1,7 @@
 {
   "_meta": {
     "generated_by": "frank-sync",
-    "updated_at": "2026-02-18T15:00:01.782456+00:00",
+    "updated_at": "2026-02-18T15:30:01.342699+00:00",
     "source": "active-tasks.md"
   },
   "agents": [
@@ -15,400 +15,302 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.782456+00:00",
-      "updatedAt": "2026-02-18T15:00:01.782456+00:00"
+      "createdAt": "2026-02-18T15:30:01.342699+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342699+00:00"
     },
     {
-      "id": "frank-fix-heartbeat-modelo--era-gemini-bloquea",
-      "status": "completed",
-      "task": "Fix Heartbeat modelo (era gemini bloqueado → sonnet) [Infra] ← feito 17/02 madrugada",
+      "id": "frank-criar-estrutura-de-notebooks-no-notion-v",
+      "status": "queued",
+      "task": "Criar estrutura de notebooks no Notion via API",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Roadmap OpenClaw"
+        "Status: HOJE 18/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-fix-subagents-modelo--era-gemini-bloquea",
-      "status": "completed",
-      "task": "Fix subagents modelo (era gemini bloqueado → sonnet) [Infra] ← feito 17/02 madrugada",
+      "id": "frank-configurar-routing-de-documentos--tools-",
+      "status": "queued",
+      "task": "Configurar routing de documentos (TOOLS.md)",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Roadmap OpenClaw"
+        "Status: HOJE 18/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-ativar-webhooks-externos--hooks-enabled-",
-      "status": "completed",
-      "task": "Ativar webhooks externos (hooks.enabled: true no openclaw.json) [Infra] ← feito 17/02",
+      "id": "frank-migrar-briefe-gui-franciscon--google-doc",
+      "status": "queued",
+      "task": "Migrar briefe Gui Franciscon (Google Docs → Notion)",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Roadmap OpenClaw"
+        "Status: HOJE 18/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-ativar-agent-to-agent--tools-agenttoagen",
-      "status": "completed",
-      "task": "Ativar agent-to-agent (tools.agentToAgent.enabled: true) [Infra] ← feito 17/02",
+      "id": "frank-integrar-agenda-compromisso-skill-com-no",
+      "status": "queued",
+      "task": "Integrar agenda-compromisso skill com Notion",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Roadmap OpenClaw"
+        "Status: HOJE 18/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-instalar-claude-code-plugin-v1-0-9--infr",
-      "status": "completed",
-      "task": "Instalar Claude Code plugin v1.0.9 [Infra] ← feito 17/02",
+      "id": "frank-avaliar-superdata-api-vs-stack-atual",
+      "status": "queued",
+      "task": "Avaliar SuperData API vs stack atual",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Roadmap OpenClaw"
+        "Status: HOJE 18/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-criar-bindings---soul-md-pra-agentes-cod",
-      "status": "completed",
-      "task": "Criar Bindings + SOUL.md pra agentes coder/researcher [Infra] ← feito 18/02",
+      "id": "frank-configurar-extrator-prim-rio",
+      "status": "queued",
+      "task": "Configurar extrator primário",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Roadmap OpenClaw"
+        "Status: HOJE 18/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-configurar-backup-semanal-automatizado--",
-      "status": "completed",
-      "task": "Configurar Backup semanal automatizado [Infra] ← feito 17/02",
+      "id": "frank-workflow-completo--url---full-sum---driv",
+      "status": "queued",
+      "task": "Workflow completo: URL → FULL+SUM → Drive → Notion",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Roadmap OpenClaw"
+        "Status: HOJE 18/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-implementar-processing-paralelo-no-pipel",
-      "status": "completed",
-      "task": "Implementar processing paralelo no pipeline v3 (subagents) [Plataformas] ← feito 17/02",
+      "id": "frank-testar-instagram---youtube",
+      "status": "queued",
+      "task": "Testar Instagram + YouTube",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Roadmap OpenClaw"
+        "Status: HOJE 18/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-implementar-callbacks--highlights--clipe",
-      "status": "completed",
-      "task": "Implementar callbacks: Highlights, Clipes, Aplicar, Buscar, Tarefas [Plataformas] ← feito 18/02",
+      "id": "frank---decis-o-marco----typefully-vs-postiz--",
+      "status": "queued",
+      "task": "**DECISÃO MARCO:** Typefully vs Postiz ← aguardando",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Próximos"
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-integrar-callbacks--notas--favoritos--hi",
-      "status": "completed",
-      "task": "Integrar callbacks: Notas, Favoritos, Histórico no handler principal [Plataformas] ← feito 18/02",
+      "id": "frank-criar-skill-x-poster",
+      "status": "queued",
+      "task": "Criar skill x-poster",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Próximos"
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-fix-saved-path-no-primeiro-processamento",
-      "status": "completed",
-      "task": "Fix saved_path no primeiro processamento (process_callback.py + url_handler_v4.py) ← feito 18/02",
+      "id": "frank-testar-rascunho-no-x",
+      "status": "queued",
+      "task": "Testar rascunho no X",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Próximos"
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-habilitar-youtube-data-api-v3--infra----",
-      "status": "completed",
-      "task": "Habilitar YouTube Data API v3 [Infra] ← fechado 18/02 — RapidAPI cobre, não prioritário",
+      "id": "frank-configurar-serpapi",
+      "status": "queued",
+      "task": "Configurar SerpApi",
       "progress": [
         "Sem board definida",
-        "Status: Fila 18/02 — Próximos"
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-gog-cli-reauth-franciscoraza247-gmail-co",
-      "status": "completed",
-      "task": "gog CLI reauth franciscoraza247@gmail.com",
-      "progress": [
-        "Board: Infra",
-        "Status: Concluídas Hoje (17/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-gog-cli-reauth-marcoaquilino-gmail-com",
-      "status": "completed",
-      "task": "gog CLI reauth marcoaquilino@gmail.com",
-      "progress": [
-        "Board: Infra",
-        "Status: Concluídas Hoje (17/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-gmail-marcoaquilino-organizado--7-labels",
-      "status": "completed",
-      "task": "Gmail marcoaquilino organizado (7 labels + promoções arquivadas)",
-      "progress": [
-        "Board: Infra",
-        "Status: Concluídas Hoje (17/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-mission-control-sync-channel-frank-tasks",
-      "status": "completed",
-      "task": "Mission Control sync channel frank-tasks.json",
-      "progress": [
-        "Board: Marco OS",
-        "Status: Concluídas Hoje (17/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-agentmemory---agentconfig-via-openclawco",
-      "status": "completed",
-      "task": "AgentMemory + AgentConfig via OpenClawContext (LIVE/MOCK)",
-      "progress": [
-        "Board: Marco OS",
-        "Status: Concluídas Hoje (17/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-pesquisa-openclaw-overnight---roadmap-en",
-      "status": "completed",
-      "task": "Pesquisa OpenClaw overnight + roadmap entregue via Telegram",
-      "progress": [
-        "Board: Research",
-        "Status: Concluídas Hoje (17/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-implementar-altos---baixos--pro-con-anal",
-      "status": "completed",
-      "task": "Implementar Altos & Baixos (pro/con analysis)",
-      "progress": [
-        "Board: Sprint Atual",
-        "Status: Concluídas (16/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-pesquisar-apis-x-twitter-no-rapidapi",
-      "status": "completed",
-      "task": "Pesquisar APIs X/Twitter no RapidAPI",
-      "progress": [
-        "Board: Plataformas",
-        "Status: Concluídas (16/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-construir-adapter-x-twitter-pro-pipeline",
-      "status": "completed",
-      "task": "Construir adapter X/Twitter pro pipeline",
-      "progress": [
-        "Board: Plataformas",
-        "Status: Concluídas (16/02/2026)"
-      ],
-      "model": "anthropic/claude-sonnet-4-5",
-      "tokens": 0,
-      "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
-    },
-    {
-      "id": "frank-adapter-instagram-pro-pipeline--platafor",
-      "status": "completed",
-      "task": "Adapter Instagram pro pipeline [Plataformas] ← confirmado 17/02",
+      "id": "frank---marco----fornecer-foto-de-refer-ncia--",
+      "status": "queued",
+      "task": "**MARCO:** fornecer foto de referência ← aguardando",
       "progress": [
         "Sem board definida",
-        "Status: Concluídas (16/02/2026)"
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-adapter-tiktok-pro-pipeline--plataformas",
-      "status": "completed",
-      "task": "Adapter TikTok pro pipeline [Plataformas] ← confirmado 17/02",
+      "id": "frank-criar-skill-thumbnail-moodboard--serpapi",
+      "status": "queued",
+      "task": "Criar skill thumbnail-moodboard (SerpApi + Nano Banana)",
       "progress": [
         "Sem board definida",
-        "Status: Concluídas (16/02/2026)"
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-gog-cli-auth-full--google-calendar---dri",
-      "status": "completed",
-      "task": "gog CLI auth full (Google Calendar + Drive + Gmail) [Infra] ← confirmado 17/02",
+      "id": "frank-testar-2-imagens---pdf-completo--20-mini",
+      "status": "queued",
+      "task": "Testar 2 imagens → PDF completo (20 miniaturas)",
       "progress": [
         "Sem board definida",
-        "Status: Concluídas (16/02/2026)"
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-sistema-v4-0-completo--url-handler---cal",
-      "status": "completed",
-      "task": "Sistema v4.0 completo (URL handler + callbacks + menus)",
+      "id": "frank-assistir-trecho-final-do-v-deo--36min--",
+      "status": "queued",
+      "task": "Assistir trecho final do vídeo (36min+)",
       "progress": [
-        "Board: Plataformas",
-        "Status: Concluídas (16/02/2026)"
+        "Sem board definida",
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-second-brain-v1-0--obsidian---syncthing-",
-      "status": "completed",
-      "task": "Second Brain v1.0 (Obsidian + Syncthing + templates + cron)",
+      "id": "frank-implementar-skill-6--google-images-",
+      "status": "queued",
+      "task": "Implementar skill 6 (Google Images)",
       "progress": [
-        "Board: Plataformas",
-        "Status: Concluídas (16/02/2026)"
+        "Sem board definida",
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-soul-md---style-reference-md---agents-md",
-      "status": "completed",
-      "task": "SOUL.md + STYLE-REFERENCE.md + AGENTS.md reescritos",
+      "id": "frank-implementar-skill-7--favorita-do-criador",
+      "status": "queued",
+      "task": "Implementar skill 7 (favorita do criador)",
       "progress": [
-        "Board: Plataformas",
-        "Status: Concluídas (16/02/2026)"
+        "Sem board definida",
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     },
     {
-      "id": "frank-5-callbacks-implementados-e-testados",
-      "status": "completed",
-      "task": "5 callbacks implementados e testados",
+      "id": "frank---decis-o-marco----linear-vs-notion---ag",
+      "status": "queued",
+      "task": "**DECISÃO MARCO:** Linear vs Notion ← aguardando",
       "progress": [
-        "Board: Plataformas",
-        "Status: Concluídas (16/02/2026)"
+        "Sem board definida",
+        "Status: AMANHÃ 19/02"
       ],
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-18T15:00:01.781786+00:00",
-      "updatedAt": "2026-02-18T15:00:01.781786+00:00"
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
+    },
+    {
+      "id": "frank-review--7-7-skills-operacionais-",
+      "status": "queued",
+      "task": "Review: 7/7 skills operacionais?",
+      "progress": [
+        "Sem board definida",
+        "Status: AMANHÃ 19/02"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
+    },
+    {
+      "id": "frank-atualizar-memory-md-com-stack-final",
+      "status": "queued",
+      "task": "Atualizar MEMORY.md com stack final",
+      "progress": [
+        "Sem board definida",
+        "Status: AMANHÃ 19/02"
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-18T15:30:01.342090+00:00",
+      "updatedAt": "2026-02-18T15:30:01.342090+00:00"
     }
   ]
 }
