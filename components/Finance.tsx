@@ -510,23 +510,23 @@ const Finance: React.FC = () => {
                 </Card>
                 {/* COL 3: ANALYSIS */}
                 <Card className="flex flex-col p-6 overflow-hidden shadow-lg">
-                    <div className="flex justify-between items-start mb-6"><h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2"><Icon name="analytics" className="text-accent-blue" /> Análise de Fluxo</h3></div>
+                    <div className="flex justify-between items-start mb-6"><h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2"><Icon name="analytics" className="text-accent-blue" /> ANÁLISE DE FLUXO</h3></div>
                     <div className="flex-1 flex items-end justify-center gap-4 sm:gap-8 px-4 relative">
                         <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10 z-0 pb-6"><div className="w-full h-px bg-white"></div><div className="w-full h-px bg-white"></div><div className="w-full h-px bg-white"></div><div className="w-full h-px bg-white"></div></div>
                         <div className="flex flex-col items-center gap-2 z-10 w-16 group"><span className="text-[10px] font-bold text-brand-mint opacity-0 group-hover:opacity-100 transition-opacity">{(totalReceived/maxBarValue*100).toFixed(0)}%</span><div className="w-full bg-brand-mint rounded-t-sm relative transition-all duration-500" style={{height: `${(totalReceived/maxBarValue)*100}%`}}><div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div></div><span className="text-[10px] font-bold text-text-secondary uppercase">Entradas</span></div>
                         <div className="flex flex-col items-center gap-2 z-10 w-16 group"><span className="text-[10px] font-bold text-accent-red opacity-0 group-hover:opacity-100 transition-opacity">{(totalExpenses/maxBarValue*100).toFixed(0)}%</span><div className="w-full bg-accent-red rounded-t-sm relative transition-all duration-500" style={{height: `${(totalExpenses/maxBarValue)*100}%`}}><div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div></div><span className="text-[10px] font-bold text-text-secondary uppercase">Saídas</span></div>
                     </div>
                     <div className="mt-6 pt-6 border-t border-border-panel space-y-4">
-                        <div className="flex justify-between items-center"><span className="text-xs text-text-secondary font-bold uppercase tracking-wide">Saldo Líquido</span><span className={`text-sm font-mono font-bold ${netResult >= 0 ? 'text-accent-blue' : 'text-accent-red'}`}>{netResult >= 0 ? '+' : ''} {formatBRL(netResult)}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-xs text-text-secondary font-bold uppercase tracking-wide">SALDO LÍQUIDO</span><span className={`text-sm font-mono font-bold ${netResult >= 0 ? 'text-accent-blue' : 'text-accent-red'}`}>{netResult >= 0 ? '+' : ''} {formatBRL(netResult)}</span></div>
                         <div className="bg-header-bg p-3 rounded-md border border-border-panel"><p className="text-[10px] text-text-primary leading-snug"><span className="text-brand-mint font-bold uppercase mr-1">Insight:</span> Suas despesas representam <span className="text-accent-red font-bold">{((totalExpenses/totalReceived)*100).toFixed(1)}%</span> da sua receita total. Fluxo saudável.</p></div>
                     </div>
                 </Card>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
                 <Card className="p-4 flex items-center justify-between shadow-sm"><div><p className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-1">Crescimento Entradas</p><p className="text-lg font-mono font-bold text-text-primary">+12.5%</p></div><div className="w-8 h-8 rounded-sm bg-brand-mint/10 flex items-center justify-center text-brand-mint"><Icon name="trending_up" size="sm" /></div></Card>
-                <Card className="p-4 flex items-center justify-between shadow-sm"><div><p className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-1">Crescimento Saídas</p><p className="text-lg font-mono font-bold text-accent-red">+3.2%</p></div><div className="w-8 h-8 rounded-sm bg-accent-red/10 flex items-center justify-center text-accent-red"><Icon name="trending_up" size="sm" /></div></Card>
+                <Card className="p-4 flex items-center justify-between shadow-sm"><div><p className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-1">CRESCIMENTO SAÍDAS</p><p className="text-lg font-mono font-bold text-accent-red">+3.2%</p></div><div className="w-8 h-8 rounded-sm bg-accent-red/10 flex items-center justify-center text-accent-red"><Icon name="trending_up" size="sm" /></div></Card>
                 <Card className="p-4 shadow-sm relative overflow-hidden group">
-                    <div className="flex items-center justify-between relative z-10"><div><p className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-1">Meta de Otimização</p><p className="text-lg font-mono font-bold text-accent-purple">{savingsRate.toFixed(1)}% / {optimizationGoal}%</p></div><div className="w-8 h-8 rounded-sm bg-accent-purple/10 flex items-center justify-center text-accent-purple"><Icon name="savings" size="sm" /></div></div>
+                    <div className="flex items-center justify-between relative z-10"><div><p className="text-[10px] text-text-secondary font-bold uppercase tracking-wider mb-1">META DE OTIMIZAÇÃO</p><p className="text-lg font-mono font-bold text-accent-purple">{savingsRate.toFixed(1)}% / {optimizationGoal}%</p></div><div className="w-8 h-8 rounded-sm bg-accent-purple/10 flex items-center justify-center text-accent-purple"><Icon name="savings" size="sm" /></div></div>
                     <div className="w-full bg-border-panel h-1 rounded-full mt-3 overflow-hidden relative z-10"><div className="bg-accent-purple h-full rounded-full transition-all duration-1000" style={{width: `${Math.min((savingsRate/optimizationGoal)*100, 100)}%`}}></div></div>
                 </Card>
              </div>
@@ -538,7 +538,7 @@ const Finance: React.FC = () => {
           // TODO: Extract to FinanceTransactions.tsx
           <div className="flex flex-col gap-6 animate-in fade-in duration-300">
             <Card className="flex justify-between items-center p-4">
-                <h2 className="text-lg font-black text-text-primary uppercase tracking-wide flex items-center gap-2"><Icon name="receipt_long" className="text-brand-mint" /> Todas as Transações</h2>
+                <h2 className="text-lg font-black text-text-primary uppercase tracking-wide flex items-center gap-2"><Icon name="receipt_long" className="text-brand-mint" /> TODAS AS TRANSAÇÕES</h2>
                 <div className="flex gap-3">
                     <input type="text" placeholder="Buscar..." className="bg-header-bg border border-border-panel rounded-md px-3 py-1.5 text-base md:text-sm text-text-primary focus:border-brand-mint outline-none" />
                     <button className="bg-brand-mint text-black px-4 py-1.5 rounded-sm text-xs font-bold uppercase hover:bg-brand-mint/80 transition-colors">Exportar CSV</button>
@@ -629,7 +629,7 @@ const Finance: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                             <div className="h-1.5 w-full bg-border-panel rounded-full overflow-hidden"><div className="h-full bg-accent-blue" style={{width: '45%'}}></div></div>
-                            <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary"><span>Progresso: 45%</span><span className="text-accent-blue">Simular Antecipação</span></div>
+                            <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary"><span>Progresso: 45%</span><span className="text-accent-blue">SIMULAR ANTECIPAÇÃO</span></div>
                         </div>
                       </div>
                     </Card>
@@ -650,7 +650,7 @@ const Finance: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                             <div className="h-1.5 w-full bg-border-panel rounded-full overflow-hidden"><div className="h-full bg-accent-orange" style={{width: '60%'}}></div></div>
-                            <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary"><span>Progresso: 60%</span><span className="text-accent-orange">Simular Antecipação</span></div>
+                            <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary"><span>Progresso: 60%</span><span className="text-accent-orange">SIMULAR ANTECIPAÇÃO</span></div>
                         </div>
                       </div>
                     </Card>
@@ -671,7 +671,7 @@ const Finance: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                             <div className="h-1.5 w-full bg-border-panel rounded-full overflow-hidden"><div className="h-full bg-accent-purple" style={{width: '30%'}}></div></div>
-                            <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary"><span>Progresso: 30%</span><span className="text-accent-purple">Simular Antecipação</span></div>
+                            <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary"><span>Progresso: 30%</span><span className="text-accent-purple">SIMULAR ANTECIPAÇÃO</span></div>
                         </div>
                       </div>
                     </Card>
@@ -692,7 +692,7 @@ const Finance: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                             <div className="h-1.5 w-full bg-border-panel rounded-full overflow-hidden"><div className="h-full bg-brand-mint" style={{width: '85%'}}></div></div>
-                            <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary"><span>Progresso: 85%</span><span className="text-brand-mint">Simular Antecipação</span></div>
+                            <div className="flex justify-between text-[10px] font-bold uppercase text-text-secondary"><span>Progresso: 85%</span><span className="text-brand-mint">SIMULAR ANTECIPAÇÃO</span></div>
                         </div>
                       </div>
                     </Card>
@@ -752,7 +752,7 @@ const Finance: React.FC = () => {
 
               {/* Score Card - Reduced Size & Square & Flatter */}
               <Card className="p-4 shadow-lg flex flex-col items-center justify-between shrink-0 h-auto gap-4 group">
-                 <h3 className="text-[10px] font-bold text-text-secondary uppercase tracking-widest w-full text-left">Score de Crédito</h3>
+                 <h3 className="text-[10px] font-bold text-text-secondary uppercase tracking-widest w-full text-left">SCORE DE CRÉDITO</h3>
 
                  <div className="flex flex-col items-center justify-center">
                     {/* Square Indicator - Smaller */}
@@ -876,7 +876,7 @@ const Finance: React.FC = () => {
                 {/* Allocation Circle */}
                 <Card className="shadow-lg p-6 flex-1 min-h-0 flex flex-col relative overflow-hidden">
                     <div className="flex justify-between items-center mb-6 relative z-10">
-                        <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-[0.1em]">Alocação Atual</h3>
+                        <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-[0.1em]">ALOCAÇÃO ATUAL</h3>
                         <button className="text-accent-purple"><Icon name="more_horiz" size="sm" /></button>
                     </div>
                     <div className="flex-1 flex items-center justify-center relative">

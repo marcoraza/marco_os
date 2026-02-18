@@ -11,7 +11,7 @@ export function SectionLabel({ children, icon, className, ...props }: SectionLab
   return (
     <h3 
       className={cn(
-        'text-[9px] font-black uppercase tracking-[0.2em] text-text-secondary flex items-center gap-2',
+        'text-[9px] font-black uppercase tracking-[0.12em] text-text-secondary flex items-center gap-2',
         className
       )}
       {...props}

@@ -153,7 +153,7 @@ export default function AgentsMissionControl({ onAgentClick }: AgentsMissionCont
               <SectionLabel icon="send" className="mb-4">DISPATCH RÁPIDO</SectionLabel>
               <div className="space-y-3">
                 <div>
-                  <label className="text-[8px] font-black uppercase tracking-widest text-text-secondary block mb-1">Missão</label>
+                  <label className="text-[8px] font-black uppercase tracking-widest text-text-secondary block mb-1">MISSÃO</label>
                   <textarea
                     value={missionText}
                     onChange={(e) => setMissionText(e.target.value)}

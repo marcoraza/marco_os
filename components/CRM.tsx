@@ -86,7 +86,7 @@ const CRM: React.FC = () => {
         {/* Header Stats */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-border-panel">
           <div>
-            <h1 className="text-lg font-black text-accent-blue uppercase tracking-tight">Inteligência de Rede</h1>
+            <h1 className="text-lg font-black text-accent-blue uppercase tracking-tight">INTELIGÊNCIA DE REDE</h1>
             <p className="text-xs text-text-secondary mt-1">Gerencie conexões estratégicas e mantenha sua rede ativa.</p>
           </div>
           <div className="text-right">
@@ -177,7 +177,7 @@ const CRM: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-[9px] text-text-secondary uppercase font-black mb-1 tracking-[0.1em]">Último Contato</p>
+                    <p className="text-[9px] text-text-secondary uppercase font-black mb-1 tracking-[0.1em]">ÚLTIMO CONTATO</p>
                     {contact.lastContact.includes('45') || contact.lastContact.includes('60') ? (
                       <div className="flex items-center gap-1 text-accent-red bg-accent-red/10 px-2 py-1 rounded-sm">
                         <Icon name="warning" size="xs" />
@@ -236,7 +236,7 @@ const CRM: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-accent-blue/10 border border-accent-blue/20 p-4 rounded-md text-center">
                 <h4 className="text-xl font-black text-accent-blue">84%</h4>
-                <p className="text-[9px] font-black uppercase text-text-secondary mt-1 tracking-[0.1em]">Saúde da Rede</p>
+                <p className="text-[9px] font-black uppercase text-text-secondary mt-1 tracking-[0.1em]">SAÚDE DA REDE</p>
               </div>
               <Card className="p-4 text-center">
                 <h4 className="text-xl font-black text-text-primary">12</h4>

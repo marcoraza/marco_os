@@ -116,7 +116,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
             <div>
               <h1 className="text-sm font-black text-text-primary">Mission Control</h1>
               <p className="text-[8px] font-bold text-text-secondary uppercase tracking-widest mt-0.5">
-                Gerenciamento de Agentes & Missões
+                GERENCIAMENTO DE AGENTES & MISSÕES
               </p>
             </div>
             <div className="flex items-center gap-1 ml-2">
@@ -138,7 +138,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
               <span className="text-[9px] font-black text-accent-orange font-mono">{inProgressCount}</span>
             </div>
             <div className="flex items-center gap-1.5 bg-surface/50 border border-border-panel px-2.5 py-1.5 rounded-sm">
-              <span className="text-[8px] font-bold text-text-secondary uppercase">Revisão</span>
+              <span className="text-[8px] font-bold text-text-secondary uppercase">REVISÃO</span>
               <span className="text-[9px] font-black text-accent-purple font-mono">{reviewCount}</span>
             </div>
             <div className="flex items-center gap-1.5 bg-surface/50 border border-border-panel px-2.5 py-1.5 rounded-sm">
@@ -152,7 +152,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
         <div className="mt-4 p-3 bg-surface/30 border border-border-panel rounded-md space-y-3">
           <div className="flex items-center gap-2">
             <Icon name="send" size="xs" className="text-brand-mint" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Nova Missão</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">NOVA MISSÃO</span>
           </div>
           <div className="flex items-stretch gap-2">
             <input
@@ -253,7 +253,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
 
                   {/* Current Mission */}
                   <div className="mb-3 px-2 py-1.5 bg-bg-base rounded-sm border border-border-panel/50">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-0.5">Missão Atual</p>
+                    <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-0.5">MISSÃO ATUAL</p>
                     <p className="text-[9px] text-text-primary font-medium truncate">{agent.currentMission || 'Idle — Aguardando'}</p>
                   </div>
 
@@ -435,7 +435,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
               <p className="text-lg font-black text-brand-mint font-mono">{onlineCount}<span className="text-text-secondary text-xs">/{agents.length}</span></p>
             </Card>
             <Card className="p-3">
-              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">Total Missões</p>
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">TOTAL MISSÕES</p>
               <p className="text-lg font-black text-text-primary font-mono">{allTasks.length}</p>
             </Card>
           </div>

@@ -221,7 +221,7 @@ export default function AgentAddModal({ open, onClose, onCreate }: Props) {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Domínio</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">DOMÍNIO</label>
                   <input
                     value={form.domain}
                     onChange={(e) => setForm(s => ({ ...s, domain: e.target.value }))}
@@ -244,7 +244,7 @@ export default function AgentAddModal({ open, onClose, onCreate }: Props) {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Instruções</label>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">INSTRUÇÕES</label>
                 <textarea
                   value={form.instructions}
                   onChange={(e) => setForm(s => ({ ...s, instructions: e.target.value }))}
@@ -283,7 +283,7 @@ export default function AgentAddModal({ open, onClose, onCreate }: Props) {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Tools / Integrações</label>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">TOOLS / INTEGRAÇÕES</label>
                 <div className="grid grid-cols-2 gap-2">
                   {(
                     [

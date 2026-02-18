@@ -886,7 +886,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
           <div className="p-4 border-b border-border-panel bg-accent-red/[0.02] shrink-0">
             <div className="flex items-center gap-1.5 mb-2">
               <Icon name="warning" size="xs" className="text-accent-red" />
-              <span className="text-[8px] font-black uppercase tracking-widest text-accent-red">Miss\u00e3o Cr\u00edtica</span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-accent-red">MISSÃO CRÍTICA</span>
             </div>
             <Card className="p-2.5 border-accent-red/20 cursor-pointer hover:border-accent-red/40 transition-colors" onClick={() => onTaskClick && onTaskClick(criticalMission.id)}>
               <p className="text-[10px] font-medium text-text-primary leading-tight mb-1.5">{criticalMission.title}</p>

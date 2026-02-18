@@ -193,7 +193,7 @@ const Health: React.FC = () => {
                   </div>
                   <div className="flex flex-col items-center py-6 border-y border-border-panel mb-8">
                     <span className="text-4xl font-black font-mono text-accent-orange">14</span>
-                    <span className="text-[10px] uppercase font-bold text-text-secondary tracking-[0.2em] mt-2">Dias Consecutivos</span>
+                    <span className="text-[10px] uppercase font-bold text-text-secondary tracking-[0.2em] mt-2">DIAS CONSECUTIVOS</span>
                   </div>
                   <div className="space-y-6">
                     <SectionLabel className="text-[10px]">Resumo do Dia</SectionLabel>
