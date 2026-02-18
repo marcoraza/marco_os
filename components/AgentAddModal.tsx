@@ -80,7 +80,7 @@ export default function AgentAddModal({ open, onClose, onCreate }: Props) {
           {step === 'choose' && (
             <div className="space-y-3">
               <Card className="p-3">
-                <SectionLabel icon="groups">Opções</SectionLabel>
+                <SectionLabel icon="groups">OPÇÕES</SectionLabel>
                 <p className="mt-2 text-[10px] text-text-secondary font-bold">
                   Selecione como deseja adicionar um agente ao seu Centro de Agentes.
                 </p>

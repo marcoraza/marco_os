@@ -249,7 +249,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
             <div className="flex items-center gap-3">
               <Icon name="layers" size="lg" className="text-brand-mint" />
               <div>
-                  <SectionLabel className="text-[12px] tracking-[0.1em] text-text-primary">Fila de Miss\u00f5es</SectionLabel>
+                  <SectionLabel className="text-[12px] tracking-[0.1em] text-text-primary">Fila de MISSÕES</SectionLabel>
                   <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest flex items-center gap-1.5">
                     {activeProject && (
                       <span className="size-1.5 rounded-full inline-block" style={{ backgroundColor: activeProject.color }}></span>
@@ -577,7 +577,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                     ) : (
                       <div className="flex-1 flex items-center justify-center gap-2 py-3 bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm text-[10px] font-black uppercase tracking-widest">
                         <Icon name="check_circle" size="xs" />
-                        Conclu\u00edda!
+                        CONCLUÍDA!
                       </div>
                     )}
                     <button

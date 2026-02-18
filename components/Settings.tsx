@@ -48,7 +48,7 @@ const Settings: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border-panel pb-6">
             <div>
-                <h1 className="text-lg font-black uppercase tracking-tight text-text-primary mb-1">Configurações</h1>
+                <h1 className="text-lg font-black uppercase tracking-tight text-text-primary mb-1">CONFIGURAÇÕES</h1>
                 <p className="text-xs text-text-secondary font-medium">Gerencie suas preferências globais, integrações e perfil.</p>
             </div>
             <span className="text-[9px] text-text-secondary font-mono">Auto-save ativo</span>
@@ -71,7 +71,7 @@ const Settings: React.FC = () => {
                 </div>
                 <div className="flex-grow grid grid-cols-2 gap-6">
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-text-secondary uppercase">Nome de Exibição</label>
+                        <label className="text-[10px] font-bold text-text-secondary uppercase">NOME DE EXIBIÇÃO</label>
                         <input
                           className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
                           type="text"
@@ -80,7 +80,7 @@ const Settings: React.FC = () => {
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-text-secondary uppercase">Função</label>
+                        <label className="text-[10px] font-bold text-text-secondary uppercase">FUNÇÃO</label>
                         <div className="w-full bg-bg-base/50 border border-border-panel rounded-md p-2 text-base md:text-sm text-text-secondary cursor-not-allowed flex justify-between items-center">
                             <span>Fundador</span>
                             <Icon name="lock" size="sm" />
@@ -101,7 +101,7 @@ const Settings: React.FC = () => {
 
         {/* Appearance */}
         <Card className="p-6">
-            <SectionLabel icon="palette" className="mb-6">Aparência</SectionLabel>
+            <SectionLabel icon="palette" className="mb-6">APARÊNCIA</SectionLabel>
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
@@ -116,7 +116,7 @@ const Settings: React.FC = () => {
                 <div className="w-full h-[1px] bg-border-panel/50"></div>
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-bold text-text-primary">Animações Reduzidas</p>
+                        <p className="text-sm font-bold text-text-primary">ANIMAÇÕES REDUZIDAS</p>
                         <p className="text-[10px] text-text-secondary mt-0.5">Desativar transições para maior performance.</p>
                     </div>
                     <label className="switch">
@@ -150,7 +150,7 @@ const Settings: React.FC = () => {
 
         {/* Notifications */}
         <Card className="p-6">
-            <SectionLabel icon="notifications" className="mb-6">Notificações</SectionLabel>
+            <SectionLabel icon="notifications" className="mb-6">NOTIFICAÇÕES</SectionLabel>
             <div className="space-y-4">
                 <div className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ const Settings: React.FC = () => {
 
         {/* Integrations */}
         <Card className="p-6">
-            <SectionLabel icon="extension" className="mb-6">Integrações</SectionLabel>
+            <SectionLabel icon="extension" className="mb-6">INTEGRAÇÕES</SectionLabel>
             <div className="space-y-3">
                 <div className="flex items-center justify-between p-4 bg-bg-base border border-border-panel rounded-md hover:border-text-secondary/30 transition-colors">
                     <div className="flex items-center gap-4">
@@ -261,7 +261,7 @@ const Settings: React.FC = () => {
         {/* Users */}
         <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
-                <SectionLabel icon="group">Usuários</SectionLabel>
+                <SectionLabel icon="group">USUÁRIOS</SectionLabel>
                 <button className="text-brand-mint text-[10px] font-black uppercase tracking-wide hover:text-text-primary transition-colors flex items-center gap-1">
                     <Icon name="add" size="sm" />
                     Convidar Usuário
@@ -306,7 +306,7 @@ const Settings: React.FC = () => {
         {/* Spaces */}
         <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
-                <SectionLabel icon="workspaces">Espaços</SectionLabel>
+                <SectionLabel icon="workspaces">ESPAÇOS</SectionLabel>
                 <button className="text-brand-mint text-[10px] font-black uppercase tracking-wide hover:text-text-primary transition-colors flex items-center gap-1">
                     <Icon name="add" size="sm" />
                     Novo Espaço

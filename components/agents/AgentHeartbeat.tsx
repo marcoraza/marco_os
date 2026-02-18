@@ -114,7 +114,7 @@ export default function AgentHeartbeat({ agentId }: AgentHeartbeatProps) {
           </Card>
 
           <Card className="p-4 space-y-2">
-            <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Latência Média</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">LATÊNCIA MÉDIA</span>
             <div className="text-sm font-mono text-text-primary">{stats.avgLatency}ms</div>
           </Card>
         </div>

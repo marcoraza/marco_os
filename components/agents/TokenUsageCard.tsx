@@ -127,7 +127,7 @@ export default function TokenUsageCard({ agentId, compact }: TokenUsageCardProps
       {/* 7-Day Bar Chart */}
       {usage.last7Days.length > 0 && (
         <div className="space-y-2">
-          <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Últimos 7 dias</span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">ÚLTIMOS 7 DIAS</span>
           <div className="flex items-end gap-1.5 h-[32px]">
             {usage.last7Days.map((day) => {
               const inH = Math.max(2, (day.tokensIn / maxTokens) * 32);

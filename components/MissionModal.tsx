@@ -54,7 +54,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
             
             {/* Title */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Título da Missão</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">TÍTULO DA MISSÃO</label>
               <input 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -66,7 +66,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Descrição</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">DESCRIÇÃO</label>
               <textarea 
                 placeholder="Adicione detalhes, links ou sub-tarefas necessárias..." 
                 rows={3}
@@ -77,7 +77,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {/* Space */}
               <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Espaço</label>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">ESPAÇO</label>
                 <div className="relative">
                   <select className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary appearance-none focus:outline-none focus:border-accent-blue cursor-pointer">
                     <option>🏢 Trabalho</option>
@@ -90,7 +90,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
 
               {/* Responsible */}
               <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Responsável</label>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">RESPONSÁVEL</label>
                 <div className="flex items-center w-full bg-header-bg border border-border-panel rounded-md px-3 py-2.5 cursor-pointer hover:border-text-secondary transition-colors">
                   <div className="w-6 h-6 rounded-full bg-border-panel mr-3 border border-text-secondary"></div>
                   <span className="text-sm text-text-primary flex-1">Marco Silva</span>
@@ -101,7 +101,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
 
             {/* Priority */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Prioridade</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">PRIORIDADE</label>
               <div className="grid grid-cols-4 gap-2">
                 {['urgente', 'alta', 'normal', 'baixa'].map((p) => (
                   <button
@@ -124,7 +124,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
 
             {/* Energy */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Nível de Energia</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">NÍVEL DE ENERGIA</label>
               <div className="flex gap-3">
                 {['low', 'medium', 'high'].map((e) => (
                   <button

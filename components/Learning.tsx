@@ -74,7 +74,7 @@ const Learning: React.FC = () => {
                         <Icon name="check_circle" className="text-green-500" />
                         <span className="font-bold text-text-primary text-sm md:text-base">SEMANA 1 — Mentalidade</span>
                         </div>
-                        <span className="text-[10px] md:text-xs text-text-secondary uppercase">Concluído</span>
+                        <span className="text-[10px] md:text-xs text-text-secondary uppercase">CONCLUÍDO</span>
                     </div>
                     </div>
                     <div className="mb-4 md:mb-6 relative z-10 md:pl-10 group">
@@ -84,7 +84,7 @@ const Learning: React.FC = () => {
                         <Icon name="check_circle" className="text-green-500" />
                         <span className="font-bold text-text-primary text-sm md:text-base">SEMANA 2-4 — Lógica</span>
                         </div>
-                        <span className="text-[10px] md:text-xs text-text-secondary uppercase">Concluído</span>
+                        <span className="text-[10px] md:text-xs text-text-secondary uppercase">CONCLUÍDO</span>
                     </div>
                     </div>
 
@@ -257,7 +257,7 @@ const Learning: React.FC = () => {
                                 <Icon name="bolt" className="text-sm" />
                             </div>
                             <div>
-                                <SectionLabel className="mb-1 text-text-secondary">Item de Ação</SectionLabel>
+                                <SectionLabel className="mb-1 text-text-secondary">ITEM DE AÇÃO</SectionLabel>
                                 <p className={`text-xs md:text-sm font-medium text-text-primary ${card.done ? 'line-through opacity-50' : ''}`}>{card.action}</p>
                             </div>
                         </div>
@@ -361,13 +361,13 @@ const Learning: React.FC = () => {
                 {/* Statistics Card */}
                 <div className="bg-surface rounded-md p-5 border border-border-panel">
                     <div className="flex items-center justify-between mb-4">
-                    <SectionLabel className="text-text-secondary">Estatísticas</SectionLabel>
+                    <SectionLabel className="text-text-secondary">ESTATÍSTICAS</SectionLabel>
                     <Icon name="bar_chart" className="text-text-secondary text-sm" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                     <div className="bg-header-bg rounded-md p-3 text-center">
                         <span className="block text-lg font-bold text-text-primary mb-1">12</span>
-                        <span className="text-[10px] text-text-secondary uppercase">Anotações</span>
+                        <span className="text-[10px] text-text-secondary uppercase">ANOTAÇÕES</span>
                     </div>
                     <div className="bg-header-bg rounded-md p-3 text-center">
                         <span className="block text-lg font-bold text-accent-purple mb-1">5</span>
@@ -496,13 +496,13 @@ const Learning: React.FC = () => {
                     </div>
                     <div className="bg-surface rounded-md p-4 border border-border-panel text-center">
                         <span className="block text-lg font-bold text-emerald-500 mb-1">85%</span>
-                        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Retenção</span>
+                        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">RETENÇÃO</span>
                     </div>
                 </div>
 
                 {/* Tags Cloud */}
                 <div className="bg-surface rounded-md p-6 border border-border-panel">
-                    <SectionLabel className="mb-4 text-text-secondary">Top Tópicos</SectionLabel>
+                    <SectionLabel className="mb-4 text-text-secondary">TOP TÓPICOS</SectionLabel>
                     <div className="flex flex-wrap gap-2">
                         <a className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel" href="#">#inteligencia-artificial</a>
                         <a className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel" href="#">#produtividade</a>

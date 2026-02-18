@@ -150,7 +150,7 @@ const Health: React.FC = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
                     <div className="space-y-6">
-                      <SectionLabel className="text-xs border-b border-border-panel pb-2">Hábitos Críticos</SectionLabel>
+                      <SectionLabel className="text-xs border-b border-border-panel pb-2">HÁBITOS CRÍTICOS</SectionLabel>
                       <div className="space-y-4">
                         {[
                           { label: 'Meditação Diária', key: 'meditation' },
@@ -171,7 +171,7 @@ const Health: React.FC = () => {
                       </div>
                     </div>
                     <div className="space-y-6">
-                      <SectionLabel className="text-xs border-b border-border-panel pb-2">Observações</SectionLabel>
+                      <SectionLabel className="text-xs border-b border-border-panel pb-2">OBSERVAÇÕES</SectionLabel>
                       <textarea 
                         className="w-full h-[142px] bg-header-bg border border-border-panel border rounded-none py-3 px-4 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-accent-orange focus:border-accent-orange placeholder:text-text-secondary/30 resize-none custom-scrollbar text-text-primary" 
                         placeholder="Notas sobre o desempenho físico ou mental de hoje..."
@@ -188,7 +188,7 @@ const Health: React.FC = () => {
               <div className="lg:col-span-4 space-y-6">
                 <div className="bg-header-bg border border-border-panel p-6">
                   <div className="flex items-center justify-between mb-8">
-                    <SectionLabel className="text-xs">Sequência de Hábitos</SectionLabel>
+                    <SectionLabel className="text-xs">SEQUÊNCIA DE HÁBITOS</SectionLabel>
                     <Icon name="local_fire_department" className="text-accent-orange" />
                   </div>
                   <div className="flex flex-col items-center py-6 border-y border-border-panel mb-8">
@@ -207,7 +207,7 @@ const Health: React.FC = () => {
                       </div>
                       <div className="grid grid-cols-2 gap-4 mt-6">
                         <div className="bg-bg-base p-4 border border-border-panel">
-                          <p className="text-[9px] uppercase font-bold text-text-secondary mb-1">Hábitos</p>
+                          <p className="text-[9px] uppercase font-bold text-text-secondary mb-1">HÁBITOS</p>
                           <p className="text-lg font-mono font-black text-brand-mint">2/3</p>
                         </div>
                         <div className="bg-bg-base p-4 border border-border-panel">
@@ -226,7 +226,7 @@ const Health: React.FC = () => {
                 </div>
                 <div className="p-6 border border-dashed border-border-panel flex flex-col items-center gap-3">
                   <Icon name="sync" className="text-text-secondary" />
-                  <p className="text-[9px] uppercase font-bold text-text-secondary tracking-widest text-center">Última sincronização com biometric wearable às 08:42 AM</p>
+                  <p className="text-[9px] uppercase font-bold text-text-secondary tracking-widest text-center">ÚLTIMA SINCRONIZAÇÃO COM BIOMETRIC WEARABLE ÀS 08:42 AM</p>
                 </div>
               </div>
             </main>
@@ -253,7 +253,7 @@ const Health: React.FC = () => {
                   <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono mb-1">Métricas de Saúde — 14 Dias</h3>
+                        <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono mb-1">MÉTRICAS DE SAÚDE — 14 Dias</h3>
                         <p className="text-xs text-text-secondary">Evolução diária dos 5 indicadores principais</p>
                       </div>
                     </div>
@@ -294,7 +294,7 @@ const Health: React.FC = () => {
 
                     {/* Stacked Bar: Habits Streak */}
                     <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm">
-                      <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono mb-4">Streak de Hábitos</h3>
+                      <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono mb-4">STREAK DE HÁBITOS</h3>
                       <div className="h-52 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={habitsStreakData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
@@ -409,7 +409,7 @@ const Health: React.FC = () => {
                   <div className="absolute top-0 right-0 p-2 opacity-10">
                     <Icon name="auto_awesome" className="text-6xl text-accent-orange" />
                   </div>
-                  <h3 className="text-xs font-bold text-accent-orange uppercase tracking-wider mb-2">Sugestão do Sistema</h3>
+                  <h3 className="text-xs font-bold text-accent-orange uppercase tracking-wider mb-2">SUGESTÃO DO SISTEMA</h3>
                   <p className="text-sm text-text-primary leading-snug">
                     Baseado nas tendências atuais, agendar uma sessão de <span className="text-text-primary font-medium">Breathwork às 20:00</span> pode melhorar a qualidade do sono profundo em 8%.
                   </p>

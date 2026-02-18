@@ -574,7 +574,7 @@ const App: React.FC = () => {
           <aside className="w-[220px] bg-header-bg border-r border-border-panel flex-col shrink-0 hidden md:flex z-10 transition-colors duration-300">
             <div className="flex-grow overflow-y-auto py-6">
               <div className="px-4 mb-8">
-                <SectionLabel className="mb-4 px-3">Navegação</SectionLabel>
+                <SectionLabel className="mb-4 px-3">NAVEGAÇÃO</SectionLabel>
                 <nav className="space-y-1">
                   {[
                     { id: 'dashboard', icon: 'dashboard',      label: 'Central de Comando' },
@@ -1019,7 +1019,7 @@ const App: React.FC = () => {
             </button>
             <button onClick={() => setCurrentView('finance')} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
               <Icon name="payments" size="md" className={currentView === 'finance' ? 'text-brand-mint' : 'text-text-secondary'} />
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'finance' ? 'text-brand-mint' : 'text-text-secondary'}`}>Finanças</span>
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'finance' ? 'text-brand-mint' : 'text-text-secondary'}`}>FINANÇAS</span>
             </button>
             <div className="relative -top-5">
               <button
@@ -1031,7 +1031,7 @@ const App: React.FC = () => {
             </div>
             <button onClick={() => setCurrentView('health')} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
               <Icon name="monitor_heart" size="md" className={currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'} />
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>Saúde</span>
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>SAÚDE</span>
             </button>
             <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
               <Icon name="more_horiz" size="md" className={isMobileMoreOpen || ['learning','planner','notes','crm','agents-overview','agent-detail','settings'].includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />

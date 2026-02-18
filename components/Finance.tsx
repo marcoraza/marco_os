@@ -414,7 +414,7 @@ const Finance: React.FC = () => {
                             </div>
                             <div className="group">
                                 <div className="flex justify-between items-end mb-1">
-                                    <div className="flex items-center gap-2"><div className="p-1 rounded-sm bg-surface-hover text-accent-orange border border-border-panel"><Icon name="restaurant" className="text-[10px]" /></div><span className="text-[10px] font-semibold text-text-secondary">Alimentação</span></div>
+                                    <div className="flex items-center gap-2"><div className="p-1 rounded-sm bg-surface-hover text-accent-orange border border-border-panel"><Icon name="restaurant" className="text-[10px]" /></div><span className="text-[10px] font-semibold text-text-secondary">ALIMENTAÇÃO</span></div>
                                     <div className="text-right"><span className="block text-[10px] font-bold font-mono text-text-primary">R$ 2.800</span></div>
                                 </div>
                                 <div className="w-full bg-header-bg border border-border-panel rounded-sm h-1.5"><div className="bg-accent-orange h-full rounded-sm relative" style={{width: '25%'}}></div></div>
@@ -433,7 +433,7 @@ const Finance: React.FC = () => {
                 <div className="lg:col-span-4 flex flex-col h-full min-h-0">
                     <Card className="flex flex-col h-full overflow-hidden">
                         <div className="p-3 border-b border-border-panel flex justify-between items-center bg-surface-hover shrink-0">
-                            <SectionLabel className="tracking-[0.1em]">Próximos Pagamentos</SectionLabel>
+                            <SectionLabel className="tracking-[0.1em]">PRÓXIMOS PAGAMENTOS</SectionLabel>
                         </div>
                         <div className="p-3 space-y-2 flex-grow overflow-y-auto custom-scrollbar">
                             <div className="flex items-center justify-between group">
@@ -494,7 +494,7 @@ const Finance: React.FC = () => {
                 <Card className="flex flex-col overflow-hidden shadow-lg">
                     <div className="p-6 border-b border-border-panel bg-header-bg">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2"><Icon name="arrow_upward" className="text-accent-red" /> Saídas</h3>
+                            <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2"><Icon name="arrow_upward" className="text-accent-red" /> SAÍDAS</h3>
                             <button onClick={() => setIsExpenseModalOpen(true)} className="text-accent-red hover:text-text-primary transition-colors bg-accent-red/10 p-1.5 rounded-sm hover:bg-accent-red/20"><Icon name="add" size="lg" /></button>
                         </div>
                         <p className="text-2xl font-mono font-bold text-accent-red">- {formatBRL(totalExpenses)}</p>
@@ -514,7 +514,7 @@ const Finance: React.FC = () => {
                     <div className="flex-1 flex items-end justify-center gap-4 sm:gap-8 px-4 relative">
                         <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10 z-0 pb-6"><div className="w-full h-px bg-white"></div><div className="w-full h-px bg-white"></div><div className="w-full h-px bg-white"></div><div className="w-full h-px bg-white"></div></div>
                         <div className="flex flex-col items-center gap-2 z-10 w-16 group"><span className="text-[10px] font-bold text-brand-mint opacity-0 group-hover:opacity-100 transition-opacity">{(totalReceived/maxBarValue*100).toFixed(0)}%</span><div className="w-full bg-brand-mint rounded-t-sm relative transition-all duration-500" style={{height: `${(totalReceived/maxBarValue)*100}%`}}><div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div></div><span className="text-[10px] font-bold text-text-secondary uppercase">Entradas</span></div>
-                        <div className="flex flex-col items-center gap-2 z-10 w-16 group"><span className="text-[10px] font-bold text-accent-red opacity-0 group-hover:opacity-100 transition-opacity">{(totalExpenses/maxBarValue*100).toFixed(0)}%</span><div className="w-full bg-accent-red rounded-t-sm relative transition-all duration-500" style={{height: `${(totalExpenses/maxBarValue)*100}%`}}><div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div></div><span className="text-[10px] font-bold text-text-secondary uppercase">Saídas</span></div>
+                        <div className="flex flex-col items-center gap-2 z-10 w-16 group"><span className="text-[10px] font-bold text-accent-red opacity-0 group-hover:opacity-100 transition-opacity">{(totalExpenses/maxBarValue*100).toFixed(0)}%</span><div className="w-full bg-accent-red rounded-t-sm relative transition-all duration-500" style={{height: `${(totalExpenses/maxBarValue)*100}%`}}><div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div></div><span className="text-[10px] font-bold text-text-secondary uppercase">SAÍDAS</span></div>
                     </div>
                     <div className="mt-6 pt-6 border-t border-border-panel space-y-4">
                         <div className="flex justify-between items-center"><span className="text-xs text-text-secondary font-bold uppercase tracking-wide">SALDO LÍQUIDO</span><span className={`text-sm font-mono font-bold ${netResult >= 0 ? 'text-accent-blue' : 'text-accent-red'}`}>{netResult >= 0 ? '+' : ''} {formatBRL(netResult)}</span></div>
@@ -594,7 +594,7 @@ const Finance: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 shrink-0">
                 <Card className="p-5 shadow-lg relative overflow-hidden group hover:border-accent-red/30 transition-colors">
                   <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10"><Icon name="trending_down" className="text-6xl text-accent-red" /></div>
-                  <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-[0.1em] mb-2">Total em Débitos</h3>
+                  <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-[0.1em] mb-2">TOTAL EM DÉBITOS</h3>
                   <div className="flex items-baseline gap-2"><span className="text-2xl font-bold font-mono text-text-primary">R$ 183.750,00</span></div>
                   <div className="mt-2 flex items-center text-xs text-red-500 font-medium"><Icon name="arrow_upward" className="text-sm mr-1" />Juros acumulados: +2.1%</div>
                 </Card>
@@ -609,7 +609,7 @@ const Finance: React.FC = () => {
               <Card className="shadow-lg p-6 flex-1 min-h-0 flex flex-col">
                  <div className="flex justify-between items-center mb-4 shrink-0">
                     <h2 className="text-lg font-black text-text-primary flex items-center gap-2 uppercase tracking-wide"><span className="w-1 h-5 bg-accent-blue"></span> MEUS DÉBITOS</h2>
-                    <button className="flex items-center gap-2 px-3 py-1.5 bg-accent-blue hover:bg-accent-blue/90 text-white text-[10px] font-bold uppercase rounded-sm transition-colors"><Icon name="add" size="sm" /> Novo Débito</button>
+                    <button className="flex items-center gap-2 px-3 py-1.5 bg-accent-blue hover:bg-accent-blue/90 text-white text-[10px] font-bold uppercase rounded-sm transition-colors"><Icon name="add" size="sm" /> NOVO DÉBITO</button>
                  </div>
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 overflow-y-auto custom-scrollbar p-1">
@@ -736,7 +736,7 @@ const Finance: React.FC = () => {
                     </div>
 
                     <div className="flex-1 min-h-0 flex flex-col">
-                        <h3 className="text-[10px] font-bold text-text-secondary uppercase mb-3 shrink-0">Próximos Vencimentos (30 dias)</h3>
+                        <h3 className="text-[10px] font-bold text-text-secondary uppercase mb-3 shrink-0">PRÓXIMOS VENCIMENTOS (30 dias)</h3>
                         <div className="space-y-2 overflow-y-auto custom-scrollbar pr-2 flex-1">
                             <div className="flex justify-between items-center p-2 bg-header-bg rounded-md border border-border-panel hover:border-accent-orange/30 transition-colors"><div className="flex items-center gap-2"><span className="w-1 h-8 bg-accent-orange rounded-full"></span><div><p className="text-xs font-bold text-text-primary">Cartão Black</p><p className="text-[10px] text-text-secondary">Vence Amanhã</p></div></div><span className="text-xs font-mono font-bold text-text-primary">R$ 4.250</span></div>
                             <div className="flex justify-between items-center p-2 bg-header-bg rounded-md border border-border-panel"><div className="flex items-center gap-2"><span className="w-1 h-8 bg-accent-orange rounded-full"></span><div><p className="text-xs font-bold text-text-primary">Seguro Auto</p><p className="text-[10px] text-text-secondary">Vence em 5 dias</p></div></div><span className="text-xs font-mono font-bold text-text-primary">R$ 390</span></div>
@@ -1044,7 +1044,7 @@ const Finance: React.FC = () => {
                 {/* Converter (Orange) */}
                 <div className="bg-gradient-to-br from-surface to-surface-hover rounded-md border border-border-panel p-4 flex flex-col justify-center shadow-lg relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-4 opacity-5"><Icon name="currency_exchange" className="text-6xl text-accent-orange" /></div>
-                    <div className="flex justify-between items-center mb-3"><h3 className="text-[9px] font-black text-text-primary uppercase tracking-[0.1em] flex items-center gap-2"><Icon name="swap_horiz" className="text-accent-orange" size="sm" /> Conversor Rápido</h3></div>
+                    <div className="flex justify-between items-center mb-3"><h3 className="text-[9px] font-black text-text-primary uppercase tracking-[0.1em] flex items-center gap-2"><Icon name="swap_horiz" className="text-accent-orange" size="sm" /> CONVERSOR RÁPIDO</h3></div>
                     <div className="flex flex-col gap-2 relative z-10">
                         <div className="bg-header-bg rounded-md p-2 border border-border-panel group focus-within:border-accent-orange transition-colors flex justify-between items-center">
                             <input type="number" value={calcAmount} onChange={(e) => setCalcAmount(parseFloat(e.target.value))} className="bg-transparent border-none p-0 text-text-primary font-mono font-bold text-sm w-20 focus:ring-0 outline-none" />
@@ -1074,9 +1074,9 @@ const Finance: React.FC = () => {
                  <button onClick={() => setIsIncomeModalOpen(false)} className="text-text-secondary hover:text-text-primary transition-colors"><Icon name="close" /></button>
               </div>
               <div className="p-6 space-y-4">
-                 <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Descrição</label><input type="text" placeholder="Ex: Salário, Freelance..." className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-brand-mint outline-none transition-colors" /></div>
+                 <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">DESCRIÇÃO</label><input type="text" placeholder="Ex: Salário, Freelance..." className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-brand-mint outline-none transition-colors" /></div>
                  <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Valor (R$)</label><input type="number" placeholder="0,00" className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-brand-mint outline-none transition-colors" /></div><div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Data</label><input type="date" className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-secondary focus:border-brand-mint outline-none transition-colors" /></div></div>
-                 <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Categoria</label><select className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-secondary focus:border-brand-mint outline-none transition-colors"><option>Salário</option><option>Freelance</option><option>Investimentos</option><option>Outros</option></select></div>
+                 <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">CATEGORIA</label><select className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-secondary focus:border-brand-mint outline-none transition-colors"><option>SALÁRIO</option><option>Freelance</option><option>Investimentos</option><option>Outros</option></select></div>
               </div>
               <div className="p-6 border-t border-border-panel bg-header-bg flex justify-end gap-3"><button onClick={() => setIsIncomeModalOpen(false)} className="px-4 py-2 rounded-sm text-xs font-bold uppercase text-text-secondary hover:text-text-primary hover:bg-border-panel transition-colors">Cancelar</button><button className="px-6 py-2 rounded-sm bg-brand-mint text-black text-xs font-bold uppercase hover:bg-brand-mint/80 transition-colors shadow-lg shadow-brand-mint/20">Confirmar</button></div>
            </div>
@@ -1091,9 +1091,9 @@ const Finance: React.FC = () => {
                  <button onClick={() => setIsExpenseModalOpen(false)} className="text-text-secondary hover:text-text-primary transition-colors"><Icon name="close" /></button>
               </div>
               <div className="p-6 space-y-4">
-                 <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Descrição</label><input type="text" placeholder="Ex: Aluguel, Mercado..." className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-accent-red outline-none transition-colors" /></div>
+                 <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">DESCRIÇÃO</label><input type="text" placeholder="Ex: Aluguel, Mercado..." className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-accent-red outline-none transition-colors" /></div>
                  <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Valor (R$)</label><input type="number" placeholder="0,00" className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-accent-red outline-none transition-colors" /></div><div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Data</label><input type="date" className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-secondary focus:border-accent-red outline-none transition-colors" /></div></div>
-                 <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Categoria</label><select className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-secondary focus:border-accent-red outline-none transition-colors"><option>Moradia</option><option>Alimentação</option><option>Transporte</option><option>Lazer</option><option>Saúde</option></select></div>
+                 <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Categoria</label><select className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-secondary focus:border-accent-red outline-none transition-colors"><option>Moradia</option><option>ALIMENTAÇÃO</option><option>Transporte</option><option>Lazer</option><option>SAÚDE</option></select></div>
               </div>
               <div className="p-6 border-t border-border-panel bg-header-bg flex justify-end gap-3"><button onClick={() => setIsExpenseModalOpen(false)} className="px-4 py-2 rounded-sm text-xs font-bold uppercase text-text-secondary hover:text-text-primary hover:bg-border-panel transition-colors">Cancelar</button><button className="px-6 py-2 rounded-sm bg-accent-red text-white text-xs font-bold uppercase hover:bg-accent-red/90 transition-colors shadow-lg shadow-accent-red/20">Confirmar</button></div>
            </div>
@@ -1144,8 +1144,8 @@ const Finance: React.FC = () => {
                  ) : (
                     <div className="space-y-4">
                         <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Nome do Ativo</label><input type="text" placeholder="Ex: PETR4, AAPL..." className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-accent-purple outline-none transition-colors" /></div>
-                        <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Quantidade</label><input type="number" className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-accent-purple outline-none transition-colors" /></div><div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Preço Médio</label><input type="number" className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-accent-purple outline-none transition-colors" /></div></div>
-                        <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Classe</label><select className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-secondary focus:border-accent-purple outline-none transition-colors"><option>Ações BR</option><option>Stocks</option><option>FIIs</option><option>Cripto</option></select></div>
+                        <div className="grid grid-cols-2 gap-4"><div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">Quantidade</label><input type="number" className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-accent-purple outline-none transition-colors" /></div><div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">PREÇO MÉDIO</label><input type="number" className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-primary focus:border-accent-purple outline-none transition-colors" /></div></div>
+                        <div className="space-y-2"><label className="text-[10px] font-bold text-text-secondary uppercase">CLASSE</label><select className="w-full bg-header-bg border border-border-panel rounded-md p-3 text-base md:text-sm text-text-secondary focus:border-accent-purple outline-none transition-colors"><option>AÇÕES BR</option><option>Stocks</option><option>FIIs</option><option>Cripto</option></select></div>
                     </div>
                  )}
               </div>

@@ -257,11 +257,11 @@ export default function AgentCronJobs({ agentId }: AgentCronJobsProps) {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-bg-base rounded p-2">
-                        <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">Última execução</div>
+                        <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">ÚLTIMA EXECUÇÃO</div>
                         <div className="text-[10px] font-mono text-text-primary">{job.lastRun || '—'}</div>
                       </div>
                       <div className="bg-bg-base rounded p-2">
-                        <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">Próxima execução</div>
+                        <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">PRÓXIMA EXECUÇÃO</div>
                         <div className="text-[10px] font-mono text-text-primary">{job.nextRun || '—'}</div>
                       </div>
                     </div>

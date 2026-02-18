@@ -199,7 +199,7 @@ const CRM: React.FC = () => {
             <Card className="overflow-hidden shadow-lg">
               <div className="p-4 bg-header-bg border-b border-border-panel flex justify-between items-center">
                 <SectionLabel className="text-brand-mint" icon="bolt">
-                  Fila de Reconexão
+                  Fila de RECONEXÃO
                 </SectionLabel>
               </div>
               <div className="p-4 space-y-4">
@@ -342,7 +342,7 @@ const CRM: React.FC = () => {
 
               <div className="p-6 pt-0">
                 <div className="flex items-center justify-between mb-4">
-                  <SectionLabel>Histórico</SectionLabel>
+                  <SectionLabel>HISTÓRICO</SectionLabel>
                 </div>
                 <div className="relative pl-4 space-y-6">
                   <div className="absolute left-4 top-2 bottom-4 w-0.5 bg-border-panel"></div>

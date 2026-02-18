@@ -153,7 +153,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
       {/* ─── Input Form ─────────────────────────────────────────────────── */}
       {!plan && (
         <div className="bg-surface border border-border-card rounded-lg p-5 space-y-4">
-          <SectionLabel>Entrada da Missão</SectionLabel>
+          <SectionLabel>ENTRADA DA MISSÃO</SectionLabel>
 
           {/* Title */}
           <div>
@@ -247,7 +247,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
         <div className="space-y-4">
           {/* Summary */}
           <div className="bg-surface border border-border-card rounded-lg p-4">
-            <SectionLabel>Sumário</SectionLabel>
+            <SectionLabel>SUMÁRIO</SectionLabel>
             <p className="text-sm text-text-primary mt-2">{plan.summary}</p>
           </div>
 
@@ -295,7 +295,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
 
           {/* Risks */}
           <div className="bg-surface border border-border-card rounded-lg p-4">
-            <SectionLabel>Riscos e Mitigações</SectionLabel>
+            <SectionLabel>RISCOS E MITIGAÇÕES</SectionLabel>
             <div className="mt-2 space-y-3">
               {plan.risks.map((r, i) => (
                 <div key={i} className="text-sm">

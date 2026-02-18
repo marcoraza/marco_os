@@ -83,7 +83,7 @@ const MissionDetail: React.FC<MissionDetailProps> = ({ task, onBack, onStatusCha
               {/* Status Switcher */}
               <Card className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Status da Missão</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">STATUS DA MISSÃO</span>
                   <button
                     onClick={() => setIsChangingStatus(!isChangingStatus)}
                     className="text-[8px] font-bold text-brand-mint uppercase tracking-widest hover:underline"
@@ -148,7 +148,7 @@ const MissionDetail: React.FC<MissionDetailProps> = ({ task, onBack, onStatusCha
               {/* Info Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-border-panel border border-border-panel rounded-sm overflow-hidden">
                 <div className="bg-surface p-4 space-y-1">
-                  <p className="text-[8px] uppercase font-black text-text-secondary tracking-widest">Responsável</p>
+                  <p className="text-[8px] uppercase font-black text-text-secondary tracking-widest">RESPONSÁVEL</p>
                   <div className="flex items-center gap-2">
                     {task.assignee.startsWith('http') ? (
                       <img src={task.assignee} className="size-5 rounded-sm object-cover" alt="" />
@@ -174,7 +174,7 @@ const MissionDetail: React.FC<MissionDetailProps> = ({ task, onBack, onStatusCha
                   <Badge variant="neutral" size="xs">{task.tag}</Badge>
                 </div>
                 <div className="bg-surface p-4 space-y-1">
-                  <p className="text-[8px] uppercase font-black text-text-secondary tracking-widest">Dependências</p>
+                  <p className="text-[8px] uppercase font-black text-text-secondary tracking-widest">DEPENDÊNCIAS</p>
                   <p className="text-[11px] font-bold text-text-primary font-mono">{task.dependencies || 0}</p>
                 </div>
                 <div className="bg-surface p-4 space-y-1">
@@ -288,7 +288,7 @@ const MissionDetail: React.FC<MissionDetailProps> = ({ task, onBack, onStatusCha
 
               {/* Quick info */}
               <Card className="p-4 space-y-3">
-                <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Resumo Rápido</span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary">RESUMO RÁPIDO</span>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[9px] text-text-secondary">Status</span>
