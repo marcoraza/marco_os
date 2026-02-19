@@ -147,17 +147,15 @@ export async function deleteAgentRun(id: string) {
   await db.delete('agentRuns', id);
 }
 
-export async function bootstrapEnsureAgents(agents: StoredAgent[]): Promise<StoredAgent[]> {
+export async function bootstrapAgentsIfEmpty(agents: StoredAgent[]) {
   const db = await getDb();
   const existing = await db.getAll('agents');
-  const existingIds = new Set(existing.map(a => a.id));
-  const missingAgents = agents.filter(a => !existingIds.has(a.id));
-
-  if (missingAgents.length) {
+  const expectedIds = new Set(agents.map(a => a.id));
+  const needsReseed = existing.length === 0 || !existing.some(a => expectedIds.has(a.id));
+  if (needsReseed && agents.length) {
     const tx = db.transaction('agents', 'readwrite');
-    for (const a of missingAgents) await tx.store.put(a);
+    await tx.store.clear();
+    for (const a of agents) await tx.store.put(a);
     await tx.done;
   }
-
-  return loadAgents();
 }
