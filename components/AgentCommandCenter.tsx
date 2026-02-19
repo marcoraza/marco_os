@@ -8,7 +8,7 @@ import {
   formatTokens,
   type KanbanStatus,
 } from '../data/agentMockData';
-import type { View } from '../App';
+import type { View } from '../lib/appTypes';
 import {
   useAgents,
   useKanban,

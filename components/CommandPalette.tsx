@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import type { Task, View } from '../App';
+import type { Task, View } from '../lib/appTypes';
 import type { StoredEvent, StoredNote, StoredContact } from '../data/models';
 import { Icon, SectionLabel } from './ui';
 import { cn } from '../utils/cn';

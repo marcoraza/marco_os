@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Task } from '../App';
+import type { Task } from '../lib/appTypes';
 import { Icon, Badge, Card, SectionLabel, StatusDot } from './ui';
 import { cn } from '../utils/cn';
 

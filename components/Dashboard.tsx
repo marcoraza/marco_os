@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Task, Project } from '../App';
+import type { Task, Project } from '../lib/appTypes';
 import type { StoredEvent } from '../data/models';
 import { Icon, Badge, Card, SectionLabel } from './ui';
 import { cn } from '../utils/cn';

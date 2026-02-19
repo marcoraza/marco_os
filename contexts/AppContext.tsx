@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Storage, STORAGE_KEYS } from '../lib/storage';
-import type { Task, Project } from '../App';
+import type { Task, Project } from '../lib/appTypes';
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────
 

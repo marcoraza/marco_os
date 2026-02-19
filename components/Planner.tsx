@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Icon, Card, SectionLabel } from './ui';
-import type { Project, Task } from '../App';
+import type { Project, Task } from '../lib/appTypes';
 import type { StoredPlan, StoredPlanStep } from '../data/models';
 import { loadPlans, putPlan, deletePlan } from '../data/repository';
 import { cn } from '../utils/cn';
