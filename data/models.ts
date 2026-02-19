@@ -59,6 +59,40 @@ export interface StoredContact {
   updatedAt: string;
 }
 
+// ─── Plans ────────────────────────────────────────────────────────────────────
+export interface StoredPlanStep {
+  text: string;
+  done: boolean;
+}
+
+export interface StoredPlanRisk {
+  risk: string;
+  mitigation: string;
+}
+
+export interface StoredPlanSuggestedTask {
+  title: string;
+  tag: string;
+  priority: 'high' | 'medium' | 'low';
+  deadline: string;
+}
+
+export interface StoredPlan {
+  id: string;
+  title: string;
+  context: string;
+  projectId: string;
+  summary: string;
+  objectives: string[];
+  steps: StoredPlanStep[];
+  risks: StoredPlanRisk[];
+  checklist: string[];
+  suggestedTasks: StoredPlanSuggestedTask[];
+  exported: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Agents ───────────────────────────────────────────────────────────────────
 export type StoredAgentStatus = 'online' | 'busy' | 'idle' | 'offline';
 export type StoredAgentRole = 'coordinator' | 'sub-agent' | 'integration';

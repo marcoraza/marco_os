@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHotkeys, useGoKeys, SHORTCUTS } from './hooks/useHotkeys';
-import type { StoredAgent, StoredEvent, StoredNote } from './data/models';
-import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, putAgent, saveAgents, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
+import type { StoredAgent, StoredContact, StoredEvent, StoredNote } from './data/models';
+import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, loadContacts, putAgent, saveAgents, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
 import { defaultAgents } from './data/agentsSeed';
 import Dashboard from './components/Dashboard';
 import type { Agent } from './types/agents';
@@ -221,9 +221,10 @@ const App: React.FC = () => {
   // ─── Tasks (projectId replaces context) ────────────────────────────────────
   const [tasks, setTasks] = useState<Task[]>(DEFAULT_TASKS);
 
-  // ─── Notes & Events (persisted; used by Command Palette) ───────────────────
+  // ─── Notes, Events & Contacts (persisted; used by Command Palette) ─────────
   const [notes, setNotes] = useState<StoredNote[]>([]);
   const [events, setEvents] = useState<StoredEvent[]>([]);
+  const [paletteContacts, setPaletteContacts] = useState<StoredContact[]>([]);
 
   // ─── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -288,6 +289,9 @@ const App: React.FC = () => {
           setAgentRoster(agents.map(storedAgentToAgent));
           if (!agents.some(a => a.id === activeAgentId)) setActiveAgentId(agents[0].id);
         }
+        // Load contacts for Command Palette search
+        const cts = await loadContacts();
+        setPaletteContacts(cts);
       } finally {
         didHydrateRef.current = true;
       }
@@ -425,6 +429,11 @@ const App: React.FC = () => {
   const openTaskFromPalette = (_taskId: number, projectId: string) => {
     setActiveProjectId(projectId);
     setCurrentView('dashboard');
+  };
+
+  const openNoteFromPalette = (noteId: string) => {
+    // Navigate to notes view — the NotesPanel will show the note
+    setCurrentView('notes');
   };
 
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
@@ -1049,7 +1058,10 @@ const App: React.FC = () => {
         tasks={tasks}
         notes={notes}
         events={events}
+        contacts={paletteContacts}
         onOpenTask={openTaskFromPalette}
+        onOpenNote={openNoteFromPalette}
+        onNavigate={(view) => { setCurrentView(view); }}
         onCreateTask={createTaskFromPalette}
         onCreateNote={createNoteFromPalette}
         onCreateEvent={createEventFromPalette}

@@ -1,4 +1,4 @@
-import type { StoredAgent, StoredAgentRun, StoredContact, StoredEvent, StoredNote, StoredProject, StoredTask } from './models';
+import type { StoredAgent, StoredAgentRun, StoredContact, StoredEvent, StoredNote, StoredPlan, StoredProject, StoredTask } from './models';
 import { getDb } from './db';
 
 export type BootstrapPayload = {
@@ -126,6 +126,30 @@ export async function bootstrapContactsIfEmpty(contacts: StoredContact[]) {
     for (const c of contacts) await tx.store.put(c);
     await tx.done;
   }
+}
+
+// ─── Plans CRUD ───────────────────────────────────────────────────────────────
+
+export async function loadPlans(projectId?: string): Promise<StoredPlan[]> {
+  const db = await getDb();
+  let all: StoredPlan[];
+  if (projectId) {
+    all = await db.getAllFromIndex('plans', 'by-project', projectId);
+  } else {
+    all = await db.getAll('plans');
+  }
+  all.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return all;
+}
+
+export async function putPlan(plan: StoredPlan) {
+  const db = await getDb();
+  await db.put('plans', plan);
+}
+
+export async function deletePlan(id: string) {
+  const db = await getDb();
+  await db.delete('plans', id);
 }
 
 // ─── Agents CRUD ──────────────────────────────────────────────────────────────

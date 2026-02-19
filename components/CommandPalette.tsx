@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import type { Task } from '../App';
-import type { StoredEvent, StoredNote } from '../data/models';
+import type { Task, View } from '../App';
+import type { StoredEvent, StoredNote, StoredContact } from '../data/models';
 import { Icon, SectionLabel } from './ui';
 import { cn } from '../utils/cn';
 
 type PaletteItem =
+  | { kind: 'nav'; id: string; title: string; subtitle?: string; icon: string; view: View }
   | { kind: 'task'; id: number; title: string; subtitle?: string; projectId: string }
   | { kind: 'note'; id: string; title: string; subtitle?: string; projectId?: string }
   | { kind: 'event'; id: string; title: string; subtitle?: string; projectId?: string }
+  | { kind: 'contact'; id: string; title: string; subtitle?: string }
   | { kind: 'create-task'; title: string }
   | { kind: 'create-note'; title: string }
   | { kind: 'create-event'; title: string };
@@ -19,11 +21,26 @@ interface CommandPaletteProps {
   tasks: Task[];
   notes: StoredNote[];
   events: StoredEvent[];
+  contacts?: StoredContact[];
   onOpenTask?: (taskId: number, projectId: string) => void;
+  onOpenNote?: (noteId: string) => void;
+  onNavigate?: (view: View) => void;
   onCreateTask: (title: string) => void;
   onCreateNote: (title: string) => void;
   onCreateEvent: (title: string) => void;
 }
+
+const NAV_COMMANDS: { id: View; icon: string; label: string; subtitle: string }[] = [
+  { id: 'dashboard', icon: 'dashboard', label: 'Central de Comando', subtitle: 'Ir para o dashboard' },
+  { id: 'finance', icon: 'payments', label: 'Finanças', subtitle: 'Ir para finanças' },
+  { id: 'health', icon: 'monitor_heart', label: 'Saúde', subtitle: 'Ir para saúde' },
+  { id: 'learning', icon: 'school', label: 'Aprendizado', subtitle: 'Ir para aprendizado' },
+  { id: 'planner', icon: 'event_note', label: 'Planejador', subtitle: 'Ir para planejador' },
+  { id: 'notes', icon: 'sticky_note_2', label: 'Notas', subtitle: 'Ir para notas' },
+  { id: 'crm', icon: 'contacts', label: 'Gestão de Contatos', subtitle: 'Ir para CRM' },
+  { id: 'agents-overview', icon: 'hub', label: 'Mission Control', subtitle: 'Ir para centro de agentes' },
+  { id: 'settings', icon: 'settings', label: 'Configurações', subtitle: 'Ir para configurações' },
+];
 
 export default function CommandPalette(props: CommandPaletteProps) {
   const {
@@ -32,7 +49,10 @@ export default function CommandPalette(props: CommandPaletteProps) {
     tasks,
     notes,
     events,
+    contacts = [],
     onOpenTask,
+    onOpenNote,
+    onNavigate,
     onCreateTask,
     onCreateNote,
     onCreateEvent,
@@ -46,12 +66,24 @@ export default function CommandPalette(props: CommandPaletteProps) {
     if (!open) return;
     setQuery('');
     setActiveIndex(0);
-    // small delay so the element exists in DOM
     setTimeout(() => inputRef.current?.focus(), 0);
   }, [open]);
 
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
+
+    // Navigation commands (show when query matches or when empty with ">" prefix or just empty)
+    const navItems: PaletteItem[] = NAV_COMMANDS
+      .filter(nav => !q || nav.label.toLowerCase().includes(q) || nav.subtitle.toLowerCase().includes(q))
+      .slice(0, q ? 4 : 3)
+      .map(nav => ({
+        kind: 'nav',
+        id: nav.id,
+        title: nav.label,
+        subtitle: nav.subtitle,
+        icon: nav.icon,
+        view: nav.id,
+      }));
 
     const taskItems: PaletteItem[] = (q ? tasks.filter(t => t.title.toLowerCase().includes(q) || t.tag.toLowerCase().includes(q)) : tasks)
       .slice(0, 6)
@@ -83,6 +115,15 @@ export default function CommandPalette(props: CommandPaletteProps) {
         projectId: e.projectId,
       }));
 
+    const contactItems: PaletteItem[] = (q ? contacts.filter(c => (c.name + ' ' + c.company + ' ' + c.email).toLowerCase().includes(q)) : [])
+      .slice(0, 4)
+      .map(c => ({
+        kind: 'contact',
+        id: c.id,
+        title: c.name,
+        subtitle: `${c.role} • ${c.company}`,
+      }));
+
     const create: PaletteItem[] = q
       ? [
           { kind: 'create-task', title: query.trim() },
@@ -91,8 +132,45 @@ export default function CommandPalette(props: CommandPaletteProps) {
         ]
       : [];
 
-    return [...create, ...taskItems, ...noteItems, ...eventItems];
-  }, [query, tasks, notes, events]);
+    return [...create, ...(q ? [] : navItems), ...taskItems, ...noteItems, ...eventItems, ...contactItems, ...(q ? navItems : [])];
+  }, [query, tasks, notes, events, contacts]);
+
+  const executeItem = (item: PaletteItem) => {
+    switch (item.kind) {
+      case 'nav':
+        onNavigate?.(item.view);
+        onClose();
+        break;
+      case 'task':
+        onOpenTask?.(item.id, item.projectId);
+        onClose();
+        break;
+      case 'note':
+        onOpenNote?.(item.id);
+        onClose();
+        break;
+      case 'event':
+        // Events don't have a dedicated view yet, but navigate to dashboard
+        onClose();
+        break;
+      case 'contact':
+        onNavigate?.('crm');
+        onClose();
+        break;
+      case 'create-task':
+        onCreateTask(item.title);
+        onClose();
+        break;
+      case 'create-note':
+        onCreateNote(item.title);
+        onClose();
+        break;
+      case 'create-event':
+        onCreateEvent(item.title);
+        onClose();
+        break;
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -116,57 +194,51 @@ export default function CommandPalette(props: CommandPaletteProps) {
       if (e.key === 'Enter') {
         e.preventDefault();
         const item = items[activeIndex];
-        if (!item) return;
-
-        if (item.kind === 'task') {
-          onOpenTask?.(item.id, item.projectId);
-          onClose();
-          return;
-        }
-        if (item.kind === 'create-task') {
-          onCreateTask(item.title);
-          onClose();
-          return;
-        }
-        if (item.kind === 'create-note') {
-          onCreateNote(item.title);
-          onClose();
-          return;
-        }
-        if (item.kind === 'create-event') {
-          onCreateEvent(item.title);
-          onClose();
-          return;
-        }
-
-        // notes/events currently only persist (no dedicated screen yet)
-        if (item.kind === 'note' || item.kind === 'event') {
-          onClose();
-          return;
-        }
+        if (item) executeItem(item);
       }
     };
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [open, onClose, items, activeIndex, onOpenTask, onCreateTask, onCreateNote, onCreateEvent]);
+  }, [open, onClose, items, activeIndex]);
 
   if (!open) return null;
 
-  const renderIcon = (kind: PaletteItem['kind']) => {
+  const renderIcon = (kind: PaletteItem['kind'], item?: PaletteItem) => {
+    if (kind === 'nav' && item && 'icon' in item) return <Icon name={item.icon} size="sm" className="text-accent-purple" />;
     if (kind === 'task') return <Icon name="check_circle" size="sm" className="text-brand-mint" />;
     if (kind === 'note') return <Icon name="description" size="sm" className="text-accent-blue" />;
     if (kind === 'event') return <Icon name="event" size="sm" className="text-accent-orange" />;
+    if (kind === 'contact') return <Icon name="person" size="sm" className="text-accent-purple" />;
     if (kind === 'create-task') return <Icon name="add" size="sm" className="text-brand-mint" />;
     if (kind === 'create-note') return <Icon name="note_add" size="sm" className="text-accent-blue" />;
     return <Icon name="add" size="sm" className="text-accent-orange" />;
   };
 
   const renderLabel = (item: PaletteItem) => {
+    if (item.kind === 'nav') return `Ir para: ${item.title}`;
     if (item.kind === 'create-task') return `Criar task: ${item.title}`;
     if (item.kind === 'create-note') return `Criar nota: ${item.title}`;
     if (item.kind === 'create-event') return `Criar evento: ${item.title}`;
+    if (item.kind === 'contact') return item.title;
     return item.title;
+  };
+
+  const renderBadge = (kind: PaletteItem['kind']) => {
+    const badges: Record<string, { label: string; color: string }> = {
+      nav: { label: 'NAV', color: 'text-accent-purple bg-accent-purple/10' },
+      task: { label: 'TASK', color: 'text-brand-mint bg-brand-mint/10' },
+      note: { label: 'NOTA', color: 'text-accent-blue bg-accent-blue/10' },
+      event: { label: 'EVENTO', color: 'text-accent-orange bg-accent-orange/10' },
+      contact: { label: 'CONTATO', color: 'text-accent-purple bg-accent-purple/10' },
+    };
+    const badge = badges[kind];
+    if (!badge) return null;
+    return (
+      <span className={cn('text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm', badge.color)}>
+        {badge.label}
+      </span>
+    );
   };
 
   return (
@@ -194,8 +266,8 @@ export default function CommandPalette(props: CommandPaletteProps) {
               <input
                 ref={inputRef}
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar ou criar… (tasks, notas, eventos)"
+                onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
+                placeholder="Buscar ou criar… (tasks, notas, eventos, contatos, navegação)"
                 className="flex-1 bg-bg-base border border-border-panel rounded-md px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary/40 focus:outline-none focus:border-brand-mint transition-colors"
               />
               <div className="hidden sm:flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-text-secondary">
@@ -219,32 +291,7 @@ export default function CommandPalette(props: CommandPaletteProps) {
                   <button
                     key={`${item.kind}-${'id' in item ? (item as any).id : item.title}-${idx}`}
                     onMouseEnter={() => setActiveIndex(idx)}
-                    onClick={() => {
-                      // mimic Enter behavior
-                      const it = items[idx];
-                      if (!it) return;
-                      if (it.kind === 'task') {
-                        onOpenTask?.(it.id, it.projectId);
-                        onClose();
-                        return;
-                      }
-                      if (it.kind === 'create-task') {
-                        onCreateTask(it.title);
-                        onClose();
-                        return;
-                      }
-                      if (it.kind === 'create-note') {
-                        onCreateNote(it.title);
-                        onClose();
-                        return;
-                      }
-                      if (it.kind === 'create-event') {
-                        onCreateEvent(it.title);
-                        onClose();
-                        return;
-                      }
-                      onClose();
-                    }}
+                    onClick={() => executeItem(item)}
                     className={cn(
                       'w-full flex items-start gap-3 px-3 py-2 rounded-md border transition-colors text-left',
                       idx === activeIndex
@@ -252,10 +299,13 @@ export default function CommandPalette(props: CommandPaletteProps) {
                         : 'bg-surface border-transparent hover:bg-surface-hover'
                     )}
                   >
-                    <div className="mt-0.5">{renderIcon(item.kind)}</div>
+                    <div className="mt-0.5">{renderIcon(item.kind, item)}</div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-black text-text-primary truncate">
-                        {renderLabel(item)}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-text-primary truncate">
+                          {renderLabel(item)}
+                        </span>
+                        {renderBadge(item.kind)}
                       </div>
                       {'subtitle' in item && item.subtitle && (
                         <div className="text-[10px] font-bold text-text-secondary mt-0.5 truncate">
