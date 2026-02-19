@@ -292,9 +292,17 @@ const App: React.FC = () => {
         if (agents.length) {
           setAgentRoster(agents.map(storedAgentToAgent));
           if (!agents.some(a => a.id === activeAgentId)) setActiveAgentId(agents[0].id);
+        } else {
+          // Fallback: DB returned empty — use seed data directly in memory
+          console.warn('[Marco OS] No agents in DB after bootstrap — using in-memory fallback');
+          setAgentRoster(defaultAgents.map(storedAgentToAgent));
+          setActiveAgentId(defaultAgents[0].id);
         }
       } catch (err) {
         console.error('[Marco OS] hydration (agents):', err);
+        // Hard fallback: if DB fails entirely, still show agents from seed
+        setAgentRoster(defaultAgents.map(storedAgentToAgent));
+        setActiveAgentId(defaultAgents[0].id);
       }
 
       // Contacts — optional, for Command Palette search
