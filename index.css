@@ -130,15 +130,6 @@ html, body {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Reset form inputs only — buttons are styled by Tailwind classes */
-input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
-select, textarea {
-    border-color: var(--color-border-panel);
-}
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    box-shadow: none;
-}
 
 body, header, aside, footer, main,
 [class*="bg-"], [class*="border-"], [class*="text-"],

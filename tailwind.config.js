@@ -11,6 +11,9 @@ export default {
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
+      borderColor: {
+        DEFAULT: 'var(--color-border-panel)',
+      },
       colors: {
         'header-bg': 'var(--color-bg-header)',
         'bg-base': 'var(--color-bg-base)',
