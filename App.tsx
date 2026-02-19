@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { StoredAgent, StoredEvent, StoredNote } from './data/models';
-import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, putAgent, saveAgents, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
+import { bootstrapEnsureAgents, bootstrapIfEmpty, loadAll, putAgent, saveAgents, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
 import { defaultAgents } from './data/agentsSeed';
 import Dashboard from './components/Dashboard';
 import Finance from './components/Finance';
@@ -246,7 +246,7 @@ const App: React.FC = () => {
     (async () => {
       try {
         await bootstrapIfEmpty({ projects: DEFAULT_PROJECTS, tasks: DEFAULT_TASKS, notes: [], events: [] });
-        await bootstrapAgentsIfEmpty(defaultAgents);
+        const agents = await bootstrapEnsureAgents(defaultAgents);
         const { projects: p, tasks: t, notes: n, events: e } = await loadAll();
         if (p.length) setProjects(p);
         if (t.length) setTasks(t);
@@ -254,8 +254,7 @@ const App: React.FC = () => {
         setEvents(e);
         // ensure active project stays valid
         if (p.length && !p.some(x => x.id === activeProjectId)) setActiveProjectId(p[0].id);
-        // Load agents from IndexedDB
-        const agents = await loadAgents();
+        // Load agents from IndexedDB (after ensuring defaults exist)
         if (agents.length) {
           setAgentRoster(agents.map(storedAgentToAgent));
           if (!agents.some(a => a.id === activeAgentId)) setActiveAgentId(agents[0].id);
