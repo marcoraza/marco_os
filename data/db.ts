@@ -47,42 +47,66 @@ interface MarcoOSDbSchema extends DBSchema {
 
 let dbPromise: Promise<IDBPDatabase<MarcoOSDbSchema>> | null = null;
 
+// Force nuke & rebuild if DB is stuck from a bad migration
+const DB_RESET_KEY = 'marco-os-db-reset-v5';
+async function ensureCleanDb() {
+  if (!localStorage.getItem(DB_RESET_KEY)) {
+    console.warn('[Marco OS] Forcing DB reset to v5…');
+    try {
+      const delReq = indexedDB.deleteDatabase('marco-os');
+      await new Promise<void>((resolve, reject) => {
+        delReq.onsuccess = () => resolve();
+        delReq.onerror = () => reject(delReq.error);
+        delReq.onblocked = () => {
+          console.warn('[Marco OS] DB delete blocked — proceeding anyway');
+          resolve();
+        };
+      });
+    } catch (e) {
+      console.warn('[Marco OS] DB delete failed:', e);
+    }
+    localStorage.setItem(DB_RESET_KEY, '1');
+  }
+}
+
 export function getDb() {
   if (!dbPromise) {
-    dbPromise = openDB<MarcoOSDbSchema>('marco-os', 4, {
-      upgrade(db, oldVersion) {
-        if (oldVersion < 1) {
-          db.createObjectStore('projects', { keyPath: 'id' });
+    dbPromise = ensureCleanDb().then(() =>
+      openDB<MarcoOSDbSchema>('marco-os', 4, {
+        upgrade(db, oldVersion) {
+          if (oldVersion < 1) {
+            db.createObjectStore('projects', { keyPath: 'id' });
 
-          const tasks = db.createObjectStore('tasks', { keyPath: 'id' });
-          tasks.createIndex('by-project', 'projectId');
+            const tasks = db.createObjectStore('tasks', { keyPath: 'id' });
+            tasks.createIndex('by-project', 'projectId');
 
-          const notes = db.createObjectStore('notes', { keyPath: 'id' });
-          notes.createIndex('by-project', 'projectId');
+            const notes = db.createObjectStore('notes', { keyPath: 'id' });
+            notes.createIndex('by-project', 'projectId');
 
-          const events = db.createObjectStore('events', { keyPath: 'id' });
-          events.createIndex('by-project', 'projectId');
+            const events = db.createObjectStore('events', { keyPath: 'id' });
+            events.createIndex('by-project', 'projectId');
 
-          db.createObjectStore('meta', { keyPath: 'key' });
-        }
+            db.createObjectStore('meta', { keyPath: 'key' });
+          }
 
-        if (oldVersion < 2) {
-          db.createObjectStore('agents', { keyPath: 'id' });
+          if (oldVersion < 2) {
+            db.createObjectStore('agents', { keyPath: 'id' });
 
-          const runs = db.createObjectStore('agentRuns', { keyPath: 'id' });
-          runs.createIndex('by-agent', 'agentId');
-        }
+            const runs = db.createObjectStore('agentRuns', { keyPath: 'id' });
+            runs.createIndex('by-agent', 'agentId');
+          }
 
-        if (oldVersion < 3) {
-          db.createObjectStore('contacts', { keyPath: 'id' });
-        }
+          if (oldVersion < 3) {
+            db.createObjectStore('contacts', { keyPath: 'id' });
+          }
 
-        if (oldVersion < 4) {
-          const plans = db.createObjectStore('plans', { keyPath: 'id' });
-          plans.createIndex('by-project', 'projectId');
-        }
-      },
-    });
+          if (oldVersion < 4) {
+            const plans = db.createObjectStore('plans', { keyPath: 'id' });
+            plans.createIndex('by-project', 'projectId');
+          }
+        },
+      })
+    );
   }
   return dbPromise;
 }
