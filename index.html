@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Marco OS — Central de Comando</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/marco_os/manifest.json">
+    <meta name="theme-color" content="#00FF95">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Marco OS">
+    <link rel="apple-touch-icon" href="/marco_os/icons/icon-192.svg">
+
+    <script id="theme-boot">
+      (function(){
+        try {
+          var stored = localStorage.getItem('marco-os-theme');
+          var theme = stored || 'system';
+          var effective = theme;
+          if (theme === 'system') {
+            effective = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.classList.toggle('dark', effective === 'dark');
+          document.documentElement.setAttribute('data-theme', effective);
+        } catch (e) {}
+      })();
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&subset=latin,latin-ext&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script type="module" crossorigin src="/marco_os/assets/index-CHHj4BLY.js"></script>
+  <link rel="stylesheet" crossorigin href="/marco_os/assets/index-N5xOlyTZ.css">
+</head>
+<body class="antialiased overflow-hidden h-screen flex flex-col selection:bg-brand-mint selection:text-black">
+    <div id="root"></div>
+    <script>
+      // Kill any existing service worker and clear caches
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(r => r.unregister());
+        });
+        if ('caches' in window) {
+          caches.keys().then(names => names.forEach(n => caches.delete(n)));
+        }
+      }
+    </script>
+</body>
+</html>
