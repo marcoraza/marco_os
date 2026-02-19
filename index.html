@@ -34,10 +34,14 @@
 <body class="antialiased overflow-hidden h-screen flex flex-col selection:bg-brand-mint selection:text-black">
     <div id="root"></div>
     <script>
+      // Kill any existing service worker and clear caches
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/marco_os/sw.js').catch(() => {});
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          regs.forEach(r => r.unregister());
         });
+        if ('caches' in window) {
+          caches.keys().then(names => names.forEach(n => caches.delete(n)));
+        }
       }
     </script>
     <script type="module" src="/index.tsx"></script>
