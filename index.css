@@ -54,34 +54,35 @@
 
 [data-theme="light"] {
     /* Layer 2: Semantic — LIGHT
-       Warm cream/stone palette, not flat white.
-       Inspired by Linear, Vercel, premium design systems. */
-    --color-bg-base: #F8F7F4;
-    --color-bg-header: #FFFFFF;
-    --color-bg-surface: #FFFFFF;
-    --color-bg-surface-hover: #F0EDE8;
-    --color-border-panel: #E4E0D9;
-    --color-border-card: #E4E0D9;
-    --color-text-primary: #1A1A1A;
-    --color-text-secondary: #6B6560;
+       Warm stone palette with layered depth.
+       Base is darkest bg → surfaces rise lighter → cards on top.
+       Inspired by Notion, Linear, Figma — never pure white. */
+    --color-bg-base: #E8E6E1;
+    --color-bg-header: #F0EEE9;
+    --color-bg-surface: #F5F3EF;
+    --color-bg-surface-hover: #E2DFDA;
+    --color-border-panel: #CDC9C1;
+    --color-border-card: #D5D1CA;
+    --color-text-primary: #1C1917;
+    --color-text-secondary: #78716C;
 
-    /* Accents — LIGHT (Balanced for white bg — deep but vibrant) */
-    --color-brand-mint: #10B981;
-    --color-brand-flame: #EA580C;
-    --color-accent-blue: #2563EB;
-    --color-accent-blue-dim: #3B82F6;
-    --color-accent-red: #DC2626;
-    --color-accent-orange: #D97706;
-    --color-accent-purple: #7C3AED;
+    /* Accents — LIGHT (Rich and saturated on warm bg) */
+    --color-brand-mint: #059669;
+    --color-brand-flame: #DC4A14;
+    --color-accent-blue: #1D4ED8;
+    --color-accent-blue-dim: #2563EB;
+    --color-accent-red: #B91C1C;
+    --color-accent-orange: #B45309;
+    --color-accent-purple: #6D28D9;
 
     /* Overlay & Glass */
-    --color-overlay: rgba(0, 0, 0, 0.3);
-    --color-glass-bg: rgba(255, 255, 255, 0.85);
-    --color-glass-border: rgba(0, 0, 0, 0.06);
-    --color-grid-line: rgba(0, 0, 0, 0.04);
-    --color-shadow: rgba(0, 0, 0, 0.08);
-    --color-shadow-sm: rgba(0, 0, 0, 0.04);
-    --color-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --color-overlay: rgba(0, 0, 0, 0.35);
+    --color-glass-bg: rgba(245, 243, 239, 0.9);
+    --color-glass-border: rgba(0, 0, 0, 0.08);
+    --color-grid-line: rgba(0, 0, 0, 0.05);
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-shadow-sm: rgba(0, 0, 0, 0.06);
+    --color-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
 
     /* Toggle */
     --color-switch-knob: #FFFFFF;
@@ -100,29 +101,25 @@
     opacity: 1 !important;
 }
 
-/* Badge / pill opacity variants — ensure readable on light bg */
-[data-theme="light"] .bg-brand-mint\/10 { background-color: rgba(16, 185, 129, 0.08) !important; }
-[data-theme="light"] .bg-brand-mint\/5 { background-color: rgba(16, 185, 129, 0.04) !important; }
-[data-theme="light"] .bg-accent-blue\/10 { background-color: rgba(37, 99, 235, 0.08) !important; }
-[data-theme="light"] .bg-accent-red\/10 { background-color: rgba(220, 38, 38, 0.08) !important; }
-[data-theme="light"] .bg-accent-red\/5 { background-color: rgba(220, 38, 38, 0.04) !important; }
-[data-theme="light"] .bg-accent-orange\/10 { background-color: rgba(217, 119, 6, 0.08) !important; }
-[data-theme="light"] .bg-accent-purple\/10 { background-color: rgba(124, 58, 237, 0.08) !important; }
+/* Badge / pill opacity variants — ensure readable on warm bg */
+[data-theme="light"] .bg-brand-mint\/10 { background-color: rgba(5, 150, 105, 0.10) !important; }
+[data-theme="light"] .bg-brand-mint\/5 { background-color: rgba(5, 150, 105, 0.06) !important; }
+[data-theme="light"] .bg-accent-blue\/10 { background-color: rgba(29, 78, 216, 0.10) !important; }
+[data-theme="light"] .bg-accent-blue\/20 { background-color: rgba(29, 78, 216, 0.14) !important; }
+[data-theme="light"] .bg-accent-red\/10 { background-color: rgba(185, 28, 28, 0.10) !important; }
+[data-theme="light"] .bg-accent-red\/5 { background-color: rgba(185, 28, 28, 0.06) !important; }
+[data-theme="light"] .bg-accent-orange\/10 { background-color: rgba(180, 83, 9, 0.10) !important; }
+[data-theme="light"] .bg-accent-purple\/10 { background-color: rgba(109, 40, 217, 0.10) !important; }
 
 /* Black overlays softer in light */
-[data-theme="light"] .bg-black\/60 { background-color: rgba(0, 0, 0, 0.3) !important; }
-[data-theme="light"] .bg-black\/80 { background-color: rgba(0, 0, 0, 0.4) !important; }
+[data-theme="light"] .bg-black\/60 { background-color: rgba(0, 0, 0, 0.35) !important; }
+[data-theme="light"] .bg-black\/80 { background-color: rgba(0, 0, 0, 0.45) !important; }
 
 /* Grayscale images → color in light */
 [data-theme="light"] .grayscale { filter: none !important; }
 
 /* Fix text that uses white directly */
 [data-theme="light"] .text-white { color: #FFFFFF !important; }
-
-/* Subtle card elevation in light mode */
-[data-theme="light"] .border-border-panel {
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    BASE STYLES
@@ -233,8 +230,8 @@ button, [role="button"], nav, a, .select-none {
     border-left: 2px solid var(--color-brand-mint);
 }
 [data-theme="light"] .nav-item-active {
-    background-color: rgba(16, 185, 129, 0.06);
-    box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.1);
+    background-color: rgba(5, 150, 105, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(5, 150, 105, 0.12);
 }
 
 .nav-item-inactive {
@@ -356,7 +353,7 @@ input:checked + .slider:before {
     background-color: var(--color-bg-base);
 }
 [data-theme="light"] input:checked + .slider:before {
-    background-color: #FFFFFF;
+    background-color: #F5F3EF;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -239,7 +239,7 @@ const App: React.FC = () => {
   useHotkeys([
     { key: 'k', mod: true, handler: () => setIsPaletteOpen(true), description: 'Command Palette' },
     { key: '?', shift: true, handler: () => setIsShortcutsOpen(o => !o), description: 'Toggle shortcuts' },
-    { key: 'Escape', handler: () => { setIsShortcutsOpen(false); setIsPaletteOpen(false); setIsMissionModalOpen(false); setIsAgentModalOpen(false); }, description: 'Close overlay' },
+    { key: 'Escape', handler: () => { setIsShortcutsOpen(false); setIsPaletteOpen(false); setIsMissionModalOpen(false); setIsAddAgentOpen(false); }, description: 'Close overlay' },
   ]);
 
   useGoKeys(navigate);
