@@ -281,20 +281,31 @@ const App: React.FC = () => {
         if (t.length) setTasks(t);
         setNotes(n);
         setEvents(e);
-        // ensure active project stays valid
         if (p.length && !p.some(x => x.id === activeProjectId)) setActiveProjectId(p[0].id);
-        // Load agents from IndexedDB
+      } catch (err) {
+        console.error('[Marco OS] hydration (core):', err);
+      }
+
+      // Agents — isolated so core data still loads if agents fail
+      try {
         const agents = await loadAgents();
         if (agents.length) {
           setAgentRoster(agents.map(storedAgentToAgent));
           if (!agents.some(a => a.id === activeAgentId)) setActiveAgentId(agents[0].id);
         }
-        // Load contacts for Command Palette search
+      } catch (err) {
+        console.error('[Marco OS] hydration (agents):', err);
+      }
+
+      // Contacts — optional, for Command Palette search
+      try {
         const cts = await loadContacts();
         setPaletteContacts(cts);
-      } finally {
-        didHydrateRef.current = true;
+      } catch (err) {
+        console.error('[Marco OS] hydration (contacts):', err);
       }
+
+      didHydrateRef.current = true;
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

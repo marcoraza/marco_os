@@ -309,7 +309,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                         className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm border transition-all ${
                             priorityFilter === p.val
                             ? p.color
-                            : 'text-text-secondary border-border-panel hover:text-text-primary bg-surface'
+                            : 'text-text-secondary border-transparent hover:text-text-primary hover:border-border-panel'
                         }`}
                     >
                         {p.label}
@@ -327,7 +327,7 @@ const Dashboard: React.FC<DashboardProps> = ({ tasks, setTasks, onTaskClick, act
                         className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-sm border transition-all whitespace-nowrap ${
                             tagFilter === tag
                             ? 'text-brand-mint border-brand-mint/30 bg-brand-mint/10'
-                            : 'text-text-secondary border-border-panel hover:text-text-primary bg-surface'
+                            : 'text-text-secondary border-transparent hover:text-text-primary hover:border-border-panel'
                         }`}
                     >
                         {tag}
