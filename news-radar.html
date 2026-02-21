@@ -305,7 +305,7 @@ a{color:inherit;text-decoration:none}
     <div id="feed-root"><div class="feed-loading"><span class="spin">·</span> Buscando...</div></div>
     <div style="font-size:10px;color:var(--dim2);margin-top:8px;text-align:right" id="feed-count"></div>
   </div>
-  <div class="col-side">
+  <div class="col-side" id="col-side">
     <div class="side-section">
       <div class="side-title">TOP 10 — Score Marco</div>
       <div id="top10-list"></div>
@@ -1341,6 +1341,9 @@ function setView(v) {
   activeView = v;
   document.getElementById('vt-digest').classList.toggle('active', v === 'digest');
   document.getElementById('vt-hn').classList.toggle('active', v === 'hn');
+  // sidebar: visível no digest, oculta no feed
+  var side = document.getElementById('col-side');
+  if (side) side.style.display = v === 'hn' ? 'none' : '';
   renderAll();
 }
 
@@ -1378,21 +1381,31 @@ function renderDigest() {
     items.slice(2, 8).forEach(function(item) { gridSec.appendChild(buildGridCard(item)); });
     root.appendChild(gridSec);
   }
-
-  // COMPACT: resto
-  if (items.length > 8) {
-    var cLabel = document.createElement('div');
-    cLabel.className = 'section-label';
-    cLabel.textContent = 'Mais ' + (items.length - 8) + ' itens';
-    root.appendChild(cLabel);
-    var cList = document.createElement('div');
-    cList.className = 'compact-list';
-    items.slice(8).forEach(function(item) { cList.appendChild(buildCompactItem(item)); });
-    root.appendChild(cList);
-  }
+  // sem overflow — o resto fica no Feed
 }
 
 // ── RENDER HN ─────────────────────────────────────────────────────────────────
+var HN_TOPIC_COLORS = {
+  'EUA':'#60a5fa','Russia/UA':'#f87171','Europa':'#c084fc',
+  'China':'#fbbf24','Medio Oriente':'#fb923c','America Latina':'#4ade80',
+  'Outros':'#6b7280',
+  // tech/ai
+  'AI':'#60a5fa','Open Source':'#4ade80','Produto':'#fb923c','Dev':'#c084fc',
+  'Pesquisa':'#fbbf24','Hardware':'#22d3ee',
+  // crypto
+  'Bitcoin':'#fbbf24','Ethereum':'#c084fc','Altcoins':'#60a5fa',
+  'DeFi':'#4ade80','Regulacao':'#f87171','Web3':'#fb923c',
+  // brasil
+  'Politica':'#f87171','Economia':'#fbbf24','Tech BR':'#60a5fa','Negocios':'#4ade80'
+};
+function hnItemColor(item) {
+  if (item.heat === 'hot') return 'var(--red)';
+  if (item.heat === 'rising') return 'var(--yellow)';
+  if (item.topic && HN_TOPIC_COLORS[item.topic]) return HN_TOPIC_COLORS[item.topic];
+  // fallback: hash do label
+  var av = srcAvatar(item.label || '');
+  return av.bg;
+}
 function renderHN() {
   var items = getSorted(getFiltered());
   var root = document.getElementById('feed-root');
@@ -1405,23 +1418,25 @@ function renderHN() {
   var list = document.createElement('div');
   list.className = 'hn-list';
   items.forEach(function(item, i) {
+    var color = hnItemColor(item);
     var el = document.createElement('div');
     el.className = 'hn-item' + (isRead(item.id) ? ' is-read' : '');
+    el.style.borderLeft = '2px solid ' + color;
+    el.style.paddingLeft = '10px';
     var ms = item.marcoScore;
     var msHtml = ms >= 40
       ? '<span class="hn-ms ' + (ms >= 60 ? 'hi' : 'mid') + '">' + ms + '</span>'
       : '';
     var scoreStr = item.score > 0 ? '+' + fmtScore(item.score) : '';
     el.innerHTML =
-      '<span class="hn-num">' + (i + 1) + '</span>' +
-      '<div class="hn-dot ' + (item.heat || 'normal') + '"></div>' +
+      '<span class="hn-num" style="color:' + color + '">' + (i + 1) + '</span>' +
       '<div class="hn-body">' +
         '<div class="hn-title">' + esc(item.title) + '</div>' +
         '<div class="hn-meta">' +
           '<span class="hn-src">' + esc(item.label) + '</span>' +
           (scoreStr ? '<span class="hn-score">' + scoreStr + '</span>' : '') +
           '<span>' + item.age + '</span>' +
-          (item.topic ? '<span class="hn-topic">' + esc(item.topic) + '</span>' : '') +
+          (item.topic ? '<span class="hn-topic" style="color:' + color + ';opacity:.7">' + esc(item.topic) + '</span>' : '') +
         '</div>' +
       '</div>' +
       msHtml;
