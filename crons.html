@@ -200,6 +200,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         Alertas
       </a>
+      <span class="sep">·</span>
+      <a href="https://www.notion.so/30eb72d5042d8161ba97f505dea92e2f" target="_blank">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Skills
+      </a>
     </div>
   </div>
   <div class="header-right">
@@ -311,6 +316,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <a class="link-card" href="https://notion.so/30eb72d5042d812abcc4c1f3232c0b1e" target="_blank"><div class="lc-icon">🚨</div><div class="lc-title">Notion — Alertas</div><div class="lc-sub">Falhas consecutivas · incidentes</div></a>
     <a class="link-card" href="https://marcoraza.github.io/marco_os" target="_blank"><div class="lc-icon">🖥</div><div class="lc-title">Marco OS</div><div class="lc-sub">Dashboard principal</div></a>
     <a class="link-card" href="https://clawdia-gamma.vercel.app" target="_blank"><div class="lc-icon">🚀</div><div class="lc-title">ClawdIA Preview</div><div class="lc-sub">clawdia-gamma.vercel.app</div></a>
+    <a class="link-card" href="https://www.notion.so/30eb72d5042d8161ba97f505dea92e2f" target="_blank"><div class="lc-icon">📦</div><div class="lc-title">Notion — Skills</div><div class="lc-sub">10 skills documentadas · manual completo</div></a>
     <a class="link-card" href="https://clawhub.com" target="_blank"><div class="lc-icon">🔧</div><div class="lc-title">ClawHub</div><div class="lc-sub">Skills · marketplace OpenClaw</div></a>
   </div>
   <div class="section-title" style="margin-bottom:14px">Comandos úteis</div>
@@ -539,8 +545,9 @@ function buildCronList(){
         '<div class="cr-cat">'+c.freq+'</div>'+
         '<div class="cr-status">'+(past?'<span class="badge ok">✓ ok</span>':'<span class="badge idle">—</span>')+'</div>'+
         '<div class="cr-dur">'+(past?c.dur:'')+'</div>'+
-        '<div><button class="ic-btn" title="Detalhes" onclick="event.stopPropagation();openDrawer(\''+c.n.replace(/'/g,"\\'")+'\')" style="color:var(--dim)">→</button></div>';
-      row.onclick=()=>openDrawer(c.n);
+        '<div><button class="ic-btn" title="Abrir no Notion" onclick="event.stopPropagation();openNotionPage(\''+c.n.replace(/'/g,"\\'")+'\')" style="color:var(--dim)">↗</button></div>';
+      row.onclick=()=>openNotionPage(c.n);
+      row.style.cursor='pointer';
       list.appendChild(row);
     });
     root.appendChild(list);
@@ -647,6 +654,8 @@ function buildKanban(){
     items.forEach(c=>{
       const card=document.createElement('div');
       card.className='kb-card';
+      card.style.cursor='pointer';
+      card.onclick=()=>openNotionPage(c.n);
       const statusBadge=col.id==='done'
         ?'<span class="badge ok" style="font-size:9px;padding:1px 6px">✓ ok</span>'
         :(col.id==='weekly'?'<span class="badge idle" style="font-size:9px;padding:1px 6px">'+c.freq+'</span>':'');
@@ -668,6 +677,43 @@ function switchTab(name){
   document.querySelectorAll('.tab')[idx].classList.add('on');
   if(name==='logs')buildLogs();
   if(name==='perf')buildPerf();
+}
+
+// ── NOTION LINKS ────────────────────────────────────────────────────────────
+const NOTION_PAGES = {
+  "Radar Noturno Coleta 1":    "https://www.notion.so/30eb72d5042d81f2928fd13569eeb30b",
+  "Radar Noturno Coleta 2":    "https://www.notion.so/30eb72d5042d81ddb802e2e3e98f5d1d",
+  "Radar Noturno Coleta 3":    "https://www.notion.so/30eb72d5042d8143aeace4420fd82f89",
+  "Radar Noturno Entregável":  "https://www.notion.so/30eb72d5042d8195bfb3e0163902b80d",
+  "Radar Crypto & AI":         "https://www.notion.so/30eb72d5042d815ab56cd82958d9859f",
+  "Brief Matinal":             "https://www.notion.so/30eb72d5042d81d0b25fd7103c3da2ff",
+  "AI Self-Improvement":       "https://www.notion.so/30eb72d5042d8180a5dbe1cc0cf907c2",
+  "Heartbeat 10h":             "https://www.notion.so/30eb72d5042d81ba9e84c1aa2161ea31",
+  "RADAR Diário YT+X":         "https://www.notion.so/30eb72d5042d81baa586e5d318c856a7",
+  "Heartbeat 14h":             "https://www.notion.so/30eb72d5042d81dd940eec318dc56caf",
+  "Heartbeat 18h":             "https://www.notion.so/30eb72d5042d816cbbe0e91b62250d93",
+  "YouTube Scanner":           "https://www.notion.so/30eb72d5042d8133a4f3df02363d6af8",
+  "Recording Pipeline 14h":    "https://www.notion.so/30eb72d5042d812a9a7edc3670be4f52",
+  "Recording Pipeline 20:30":  "https://www.notion.so/30eb72d5042d81beb77fd77809360503",
+  "Revisão de Crons":          "https://www.notion.so/30eb72d5042d812bb99ce43f6e39743b",
+  "Twitter Radar":             "https://www.notion.so/30eb72d5042d819cb22bd3e792d6e6da",
+  "NotionOps":                 "https://www.notion.so/30eb72d5042d819999e3df99ecafeabb",
+  "Checklist + Highlights":    "https://www.notion.so/30eb72d5042d8199b6a1f03deea19202",
+  "Consolidação Mid-Week":     "https://www.notion.so/30eb72d5042d8140bee3e30cc50599b9",
+  "Agenda Semanal":            "https://www.notion.so/30eb72d5042d8119818e2c7dd4f876d71",
+  "Digest Semanal":            "https://www.notion.so/30eb72d5042d8158bce0df4840855646",
+  "NFTs Digest":               "https://www.notion.so/30eb72d5042d81094473da71407e9eaf",
+};
+const SKILLS_NOTION_DB = "https://www.notion.so/30eb72d5042d8161ba97f505dea92e2f";
+
+function openNotionPage(cronName) {
+  const url = NOTION_PAGES[cronName];
+  if (url) {
+    window.open(url, '_blank');
+  } else {
+    // Fallback: abre o DB de crons
+    window.open('https://www.notion.so/30eb72d5042d81aa94f8f5c7ef21d030', '_blank');
+  }
 }
 
 // ── DRAWER ──────────────────────────────────────────────────────────────────
