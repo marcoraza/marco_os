@@ -202,6 +202,30 @@ a{color:inherit;text-decoration:none}
 .toast.ok{border-color:rgba(74,222,128,.3);color:var(--green)}
 .toast.err{border-color:rgba(248,113,113,.3);color:var(--red)}
 
+/* ── HN FEED ─────────────────────────────────────────────────────────────── */
+.hn-list{display:flex;flex-direction:column;gap:0}
+.hn-item{display:flex;align-items:baseline;gap:10px;padding:7px 6px;border-radius:6px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--sep)}
+.hn-item:last-child{border-bottom:none}
+.hn-item:hover{background:rgba(255,255,255,.03)}
+.hn-item.is-read{opacity:.38}
+.hn-item.is-read:hover{opacity:.65}
+.hn-num{font-size:11px;font-weight:700;color:var(--dim2);width:22px;flex-shrink:0;text-align:right;font-variant-numeric:tabular-nums}
+.hn-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.hn-dot.hot{background:var(--red)}.hn-dot.rising{background:var(--yellow)}.hn-dot.notable{background:var(--blue)}.hn-dot.normal{background:var(--dim2)}
+.hn-body{flex:1;min-width:0}
+.hn-title{font-size:13px;font-weight:500;line-height:1.4;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hn-meta{font-size:10px;color:var(--dim2);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hn-src{color:var(--dim2)}.hn-score{color:var(--green)}.hn-topic{text-transform:uppercase;letter-spacing:.05em;font-size:9px}
+.hn-ms{font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:auto;flex-shrink:0}
+.hn-ms.hi{background:rgba(74,222,128,.12);color:var(--green)}
+.hn-ms.mid{background:rgba(251,191,36,.1);color:var(--yellow)}
+
+/* ── VIEW TOGGLE ─────────────────────────────────────────────────────────── */
+.view-toggle{display:flex;border:1px solid var(--sep2);border-radius:6px;overflow:hidden;flex-shrink:0}
+.vt-btn{padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;color:var(--dim);background:transparent;border:none;transition:all .15s;display:flex;align-items:center;gap:4px}
+.vt-btn:hover{color:var(--text)}
+.vt-btn.active{background:var(--bg3);color:var(--text)}
+
 /* ── COMPAT ──────────────────────────────────────────────────────────────── */
 .src-icon.reddit{color:var(--orange)}.src-icon.x{color:var(--dim)}.src-icon.rss{color:var(--green)}
 .tag{display:inline-block;padding:2px 6px;border-radius:7px;font-size:10px;font-weight:500;background:var(--bg3);color:var(--dim2);border:1px solid var(--sep)}
@@ -262,6 +286,14 @@ a{color:inherit;text-decoration:none}
       <button class="btn" id="btn-weights" onclick="openWeights()">Pesos</button>
       <div class="toolbar-r">
         <span id="read-count"></span>
+        <div class="view-toggle">
+          <button class="vt-btn active" id="vt-digest" onclick="setView('digest')" title="Digest">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="vt-btn" id="vt-hn" onclick="setView('hn')" title="Feed">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
         <div class="search">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" placeholder="Filtrar..." oninput="filterNews(this.value)" id="search-input">
@@ -311,6 +343,7 @@ var tabs={
 var activeTab='global';
 var activeFilter={src:'all',topic:null,query:''};
 var activeSort='smart';
+var activeView='digest';
 var currentDrawerItem=null;
 var frankCache={};
 var lastLoad={};
@@ -1303,8 +1336,22 @@ function buildCompactItem(item) {
   return el;
 }
 
-// ── RENDER FEED ──────────────────────────────────────────────────────────────
+// ── SET VIEW ──────────────────────────────────────────────────────────────────
+function setView(v) {
+  activeView = v;
+  document.getElementById('vt-digest').classList.toggle('active', v === 'digest');
+  document.getElementById('vt-hn').classList.toggle('active', v === 'hn');
+  renderAll();
+}
+
+// ── RENDER FEED (router) ──────────────────────────────────────────────────────
 function renderFeed() {
+  if (activeView === 'hn') { renderHN(); return; }
+  renderDigest();
+}
+
+// ── RENDER DIGEST ─────────────────────────────────────────────────────────────
+function renderDigest() {
   var items = getSorted(getFiltered());
   var root = document.getElementById('feed-root');
   document.getElementById('feed-count').textContent = items.length + ' itens';
@@ -1343,6 +1390,45 @@ function renderFeed() {
     items.slice(8).forEach(function(item) { cList.appendChild(buildCompactItem(item)); });
     root.appendChild(cList);
   }
+}
+
+// ── RENDER HN ─────────────────────────────────────────────────────────────────
+function renderHN() {
+  var items = getSorted(getFiltered());
+  var root = document.getElementById('feed-root');
+  document.getElementById('feed-count').textContent = items.length + ' itens';
+  if (!items.length) {
+    root.innerHTML = '<div class="feed-empty"><p>Nenhum resultado</p><small>Tente outro filtro ou Atualizar</small></div>';
+    return;
+  }
+  root.innerHTML = '';
+  var list = document.createElement('div');
+  list.className = 'hn-list';
+  items.forEach(function(item, i) {
+    var el = document.createElement('div');
+    el.className = 'hn-item' + (isRead(item.id) ? ' is-read' : '');
+    var ms = item.marcoScore;
+    var msHtml = ms >= 40
+      ? '<span class="hn-ms ' + (ms >= 60 ? 'hi' : 'mid') + '">' + ms + '</span>'
+      : '';
+    var scoreStr = item.score > 0 ? '+' + fmtScore(item.score) : '';
+    el.innerHTML =
+      '<span class="hn-num">' + (i + 1) + '</span>' +
+      '<div class="hn-dot ' + (item.heat || 'normal') + '"></div>' +
+      '<div class="hn-body">' +
+        '<div class="hn-title">' + esc(item.title) + '</div>' +
+        '<div class="hn-meta">' +
+          '<span class="hn-src">' + esc(item.label) + '</span>' +
+          (scoreStr ? '<span class="hn-score">' + scoreStr + '</span>' : '') +
+          '<span>' + item.age + '</span>' +
+          (item.topic ? '<span class="hn-topic">' + esc(item.topic) + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      msHtml;
+    el.onclick = function() { markRead(item.id); openDrawer(item.id); el.classList.add('is-read'); };
+    list.appendChild(el);
+  });
+  root.appendChild(list);
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
