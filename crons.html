@@ -763,6 +763,8 @@ function switchTab(name){
 
 // ── DRAWER ──────────────────────────────────────────────────────────────────
 const API = 'http://127.0.0.1:8743/cron-api';
+const NOTION_PROXY = 'https://notion-proxy.marcoaquilino.workers.dev';
+const EXECUCOES_DB = '30eb72d5042d81abb817d8bedf906713';
 let drawerCron = null;
 
 function switchDrawerTab(tab) {
@@ -1025,37 +1027,88 @@ async function restoreVersion(vNum) {
 }
 
 async function fetchCronLogs(cronName) {
+  const container = document.getElementById('dr-logs');
+  const empty = document.getElementById('dr-logs-empty');
+  const source = document.getElementById('dr-logs-source');
+
+  // Tenta cron-api local primeiro; fallback para Notion via CF Worker
+  let logs = [];
+  let usedSource = '';
+
   try {
-    const r = await fetch(`${API}/logs?name=${encodeURIComponent(cronName)}`, {signal: AbortSignal.timeout(8000)});
+    const r = await fetch(`${API}/logs?name=${encodeURIComponent(cronName)}`, {signal: AbortSignal.timeout(4000)});
     const data = await r.json();
-    const logs = data.logs || [];
-
-    const container = document.getElementById('dr-logs');
-    const empty = document.getElementById('dr-logs-empty');
-
-    if (!logs.length) {
-      empty.textContent = 'Nenhum log ainda — integre cron_log() nos scripts';
+    logs = data.logs || [];
+    usedSource = '(local)';
+  } catch(_) {
+    // Local offline — tenta Notion via CF Worker
+    try {
+      const r = await fetch(`${NOTION_PROXY}/databases/${EXECUCOES_DB}/query`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        signal: AbortSignal.timeout(8000),
+        body: JSON.stringify({
+          page_size: 10,
+          sorts: [{ property: 'Data', direction: 'descending' }],
+          filter: {
+            property: 'Cron',
+            relation: { is_not_empty: true }
+          }
+        })
+      });
+      const data = await r.json();
+      // Filtra pelo nome do cron e mapeia para o formato esperado
+      logs = (data.results || [])
+        .filter(p => {
+          const rel = p.properties?.Cron?.relation || [];
+          // Aceita qualquer execução por enquanto (sem título do cron disponível sem fetch extra)
+          return rel.length > 0;
+        })
+        .map(p => {
+          const props = p.properties || {};
+          return {
+            run_id:     props['ID Run']?.rich_text?.[0]?.text?.content || '—',
+            data:       props['Data']?.date?.start || null,
+            status:     props['Status']?.select?.name || '—',
+            duracao_ms: props['Duração (ms)']?.number || 0,
+            output:     props['Output Preview']?.rich_text?.[0]?.text?.content || '',
+            erro:       props['Erro']?.rich_text?.[0]?.text?.content || '',
+            items:      props['Items Gerados']?.number || 0,
+          };
+        })
+        // Filtra pelo nome do cron no run_id (ex: "Brief Matinal-131454")
+        .filter(l => l.run_id.toLowerCase().startsWith(cronName.toLowerCase().slice(0,10)));
+      usedSource = '(Notion)';
+    } catch(e2) {
+      source.textContent = '(offline)';
       return;
     }
-
-    empty.style.display = 'none';
-    document.getElementById('dr-logs-source').textContent = '(Notion live)';
-
-    logs.forEach(l => {
-      const row = document.createElement('div');
-      row.className = 'drawer-log-row';
-      const dt = l.data ? new Date(l.data).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
-      const dur = l.duracao_ms > 0 ? (l.duracao_ms > 60000 ? Math.round(l.duracao_ms/60000)+'m' : Math.round(l.duracao_ms/1000)+'s') : '—';
-      row.innerHTML =
-        `<span class="dl-time">${dt}</span>`+
-        `<span class="dl-out">${l.output || l.erro || '—'}</span>`+
-        `<span class="cr-status"><span class="badge ${l.status==='ok'?'ok':'err'}" style="font-size:9px">${l.status}</span></span>`+
-        `<span class="dl-dur">${dur}</span>`;
-      container.insertBefore(row, empty);
-    });
-  } catch(e) {
-    document.getElementById('dr-logs-source').textContent = '(offline)';
   }
+
+  // Limpa logs anteriores
+  container.querySelectorAll('.drawer-log-row').forEach(el => el.remove());
+
+  if (!logs.length) {
+    empty.style.display = '';
+    empty.textContent = 'Nenhum log ainda — cron_log() ainda não rodou';
+    return;
+  }
+
+  empty.style.display = 'none';
+  source.textContent = usedSource;
+
+  logs.forEach(l => {
+    const row = document.createElement('div');
+    row.className = 'drawer-log-row';
+    const dt = l.data ? new Date(l.data).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
+    const dur = l.duracao_ms > 0 ? (l.duracao_ms > 60000 ? Math.round(l.duracao_ms/60000)+'m' : Math.round(l.duracao_ms/1000)+'s') : '—';
+    row.innerHTML =
+      `<span class="dl-time">${dt}</span>`+
+      `<span class="dl-out">${l.output || l.erro || '—'}</span>`+
+      `<span class="cr-status"><span class="badge ${l.status==='ok'?'ok':'err'}" style="font-size:9px">${l.status}</span></span>`+
+      `<span class="dl-dur">${dur}</span>`;
+    container.insertBefore(row, empty);
+  });
 }
 
 async function saveDrawer() {
