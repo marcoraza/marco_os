@@ -164,7 +164,14 @@ a{color:inherit;text-decoration:none}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--bg2);border:1px solid var(--sep2);border-radius:7px;padding:9px 14px;font-size:12px;color:var(--text);z-index:300;transform:translateY(14px);opacity:0;transition:all .2s;pointer-events:none;max-width:280px}
 .toast.on{transform:translateY(0);opacity:1}
 .toast.ok{border-color:rgba(74,222,128,.3);color:var(--green)}
-.toast.err{border-color:rgba(248,113,113,.3);color:var(--red)}</style>
+.toast.err{border-color:rgba(248,113,113,.3);color:var(--red)}
+/* FEATURES */
+.is-read{opacity:.45}
+.is-read:hover{opacity:.75}
+#read-count{font-size:10px;color:var(--dim2);padding:2px 8px;background:var(--bg3);border-radius:10px;margin-left:8px;display:none}
+.modal-btn{padding:7px 14px;border-radius:5px;font-size:11px;cursor:pointer}
+input[type=range]{height:4px;cursor:pointer}
+</style>
 </head>
 <body>
 <div class="page">
@@ -196,11 +203,14 @@ a{color:inherit;text-decoration:none}
 </div>
 <div class="toolbar">
   <button class="btn primary" id="btn-refresh" onclick="loadTab(true)">Atualizar</button>
+  <button class="btn" id="btn-brief" onclick="gerarBrief()" style="margin-left:8px">Gerar Brief</button>
+  <button class="btn" id="btn-weights" onclick="openWeights()" style="font-size:11px">Pesos</button>
   <div class="sort-btns">
     <div class="sort-btn active" id="sort-smart" onclick="setSort('smart')">Smart</div>
     <div class="sort-btn" id="sort-hot" onclick="setSort('hot')">Hot</div>
     <div class="sort-btn" id="sort-new" onclick="setSort('new')">Recente</div>
   </div>
+  <span id="read-count"></span>
   <div class="toolbar-r">
     <div class="search">
       <input type="text" placeholder="Filtrar..." oninput="filterNews(this.value)" id="search-input">
@@ -254,6 +264,43 @@ var activeSort='smart';
 var currentDrawerItem=null;
 var frankCache={};
 var lastLoad={};
+
+
+// ─── FEATURE 2: BADGE DE NOVOS NAS TABS ──────────────────────────────────────
+var tabNewCounts={global:0,brasil:0,tech:0,crypto:0};
+function markTabNew(tab, count){
+  tabNewCounts[tab]=count;
+  var el=document.getElementById('tc-'+tab);
+  if(!el)return;
+  if(count>0){
+    el.textContent=tabs[tab].items.length+' +'+count;
+    el.style.background='rgba(74,222,128,.2)';el.style.color='var(--green)';
+  }else{
+    el.textContent=tabs[tab].items.length;
+    el.style.background='';el.style.color='';
+  }
+}
+
+// ─── FEATURE 1: TAB CACHE (localStorage, TTL 15min) ──────────────────────────
+var CACHE_TTL = 15 * 60 * 1000; // 15min
+function saveTabCache(tab, items){
+  try{
+    localStorage.setItem('radar_cache_'+tab, JSON.stringify({ts:Date.now(), items:items}));
+  }catch(e){}
+}
+function loadTabCache(tab){
+  try{
+    var raw=localStorage.getItem('radar_cache_'+tab);
+    if(!raw)return null;
+    var p=JSON.parse(raw);
+    if(Date.now()-p.ts>CACHE_TTL)return null;
+    return p.items;
+  }catch(e){return null}
+}
+function clearTabCache(tab){
+  try{localStorage.removeItem('radar_cache_'+tab)}catch(e){}
+}
+
 function pad(n){return String(n).padStart(2,'0')}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function fmtScore(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
@@ -334,27 +381,7 @@ function detectTags(t,heat){
   return r.slice(0,3);
 }
 
-// ─── MARCO RELEVANCE SCORE ────────────────────────────────────────────────────
-// Score 0-100 baseado no perfil do Marco: entrepreneur, cripto, AI, negócios digitais, Brasil
-function marcoScore(item){
-  var s=0,t=(item.title+' '+(item.preview||'')).toLowerCase();
-  // AI/Tech: alta relevância
-  if(/openai|anthropic|claude|gpt|llm|ai\b|artificial intelligence|machine learning|nvidia|automation/.test(t))s+=40;
-  // Cripto
-  if(/bitcoin|btc|ethereum|eth\b|crypto|defi|web3|blockchain|solana|binance/.test(t))s+=35;
-  // Negócios/startup
-  if(/startup|saas|funding|revenue|monetiz|growth|mrr|arr|valuation|venture/.test(t))s+=25;
-  // Brasil - contexto direto
-  if(/brasil|brazil|lula|real\b|selic|brl|mercado livre|ifood|nubank/.test(t))s+=20;
-  // Geopolítica com impacto econômico
-  if(/tariff|sanction|trade war|oil price|supply chain/.test(t))s+=15;
-  // Hot = mais urgente
-  if(item.heat==='hot')s+=10;
-  if(item.heat==='rising')s+=5;
-  // Score Reddit alto = validação de mercado
-  if(item.score>10000)s+=10;else if(item.score>3000)s+=5;
-  return Math.min(100,s);
-}
+// marcoScore: ver Feature 5 (com pesos editaveis)
 // ─── FETCH FUNCTIONS ─────────────────────────────────────────────────────────
 async function fetchReddit(sub,tab){
   var r=await fetch(PROXY+'/reddit?sub='+sub+'&limit=20');
@@ -488,12 +515,31 @@ async function loadTab(force){
 
   var btn=document.getElementById('btn-refresh');
   btn.disabled=true;btn.textContent='Buscando...';
-  document.getElementById('feed-root').innerHTML='<div class="feed-loading"><span class="spin">·</span> Buscando...</div>';
   document.getElementById('error-banner').classList.remove('on');
   document.getElementById('top10-list').innerHTML='';
   activeFilter.topic=null;
   document.querySelector('#search-input').value='';
   activeFilter.query='';
+
+  // FEATURE 1: tenta cache primeiro (só se não for force)
+  if(!force){
+    var cached=loadTabCache(tab);
+    if(cached&&cached.length>0){
+      tabs[tab].items=cached;
+      tabs[tab].loaded=true;
+      lastLoad[tab]=Date.now()-CACHE_TTL+1; // marca como carregado do cache
+      var srcMap={};
+      cached.forEach(function(x){srcMap[x.srcType]=(srcMap[x.srcType]||0)+1});
+      tabs[tab].srcLabels=srcMap;
+      document.getElementById('tc-'+tab).textContent=cached.length;
+      updateStats();buildSrcFilters();buildHeatMap();renderAll();
+      btn.disabled=false;btn.textContent='Atualizar';
+      document.getElementById('last-update').textContent='Cache';
+      return;
+    }
+  }
+
+  document.getElementById('feed-root').innerHTML='<div class="feed-loading"><span class="spin">·</span> Buscando...</div>';
 
   var fetches=TAB_FETCHES[tab];
   var res=await Promise.allSettled(fetches.map(function(f){return f()}));
@@ -511,11 +557,24 @@ async function loadTab(force){
   // Compute marco score
   items.forEach(function(x){x.marcoScore=marcoScore(x)});
 
+  // FEATURE 2: detecta itens novos vs cache anterior
+  var prevCache=loadTabCache(tab)||[];
+  var prevUrls={};prevCache.forEach(function(x){prevUrls[x.url]=1});
+  var newCount=items.filter(function(x){return !prevUrls[x.url]}).length;
+  items.forEach(function(x){x.isNew=!prevUrls[x.url]});
+
+  // FEATURE 1: salva cache
+  saveTabCache(tab, items);
+
   tabs[tab].items=items;
   tabs[tab].loaded=true;
   lastLoad[tab]=Date.now();
 
-  // Build src labels for filter
+  // FEATURE 2: mostra badge de novos
+  if(newCount>0 && force){
+    showToast(newCount+' novo'+(newCount>1?'s':'')+' em '+tab,'ok');
+  }
+
   var srcMap={};
   items.forEach(function(x){srcMap[x.srcType]=(srcMap[x.srcType]||0)+1});
   tabs[tab].srcLabels=srcMap;
@@ -623,7 +682,7 @@ function renderTop10(){
     var ms=item.marcoScore;
     var msClass=ms>=50?'hi':ms>=25?'mid':'lo';
     var msLabel=ms>=50?'&#9733; '+ms:ms>=25?ms:'';
-    var el=document.createElement('div');el.className='top10-item';
+    var el=document.createElement('div');el.className='top10-item'+(isRead(item.id)?' is-read':'');
     el.innerHTML=
       '<div class="top10-rank '+rankClass+'">'+(rank<=3?['1.','2.','3.'][rank-1]:rank)+'</div>'+
       '<div style="flex:1;min-width:0">'+
@@ -651,7 +710,7 @@ function renderFeed(){
     var msClass=ms>=50?'hi':ms>=25?'mid':'lo';
     var scoreHtml=item.score>0?'<span style="color:'+(item.score>10000?'var(--green)':item.score>3000?'var(--yellow)':'var(--dim2)')+'">&#8593;'+fmtScore(item.score)+'</span>':'';
     var tagsHtml=item.tags.map(function(t){return'<span class="tag '+t.c+'">'+esc(t.l)+'</span>'}).join('');
-    var card=document.createElement('div');card.className='news-card '+item.heat;
+    var card=document.createElement('div');card.className='news-card '+item.heat+(isRead(item.id)?' is-read':'');
     card.innerHTML=
       '<div class="card-head">'+
       '<div class="src-icon '+item.srcType+'">'+(item.srcType==='reddit'?'R':item.srcType==='rss'?'RSS':'X')+'</div>'+
@@ -683,6 +742,7 @@ function findItem(id){
 function openDrawer(id){
   var item=findItem(id);if(!item)return;
   currentDrawerItem=item;
+  markRead(id);updateReadBadge();
   document.getElementById('dr-title').textContent=item.title;
   var ms=item.marcoScore;
   var msStr=ms>=50?'&#9733; '+ms+' Marco':ms>=25?ms+' Marco':'';
@@ -746,15 +806,39 @@ async function saveToDrive(){
   var btn=document.getElementById('btn-drive');
   btn.disabled=true;btn.textContent='Salvando...';
   try{
-    var r=await fetch(PROXY+'/brave?q='+encodeURIComponent(item.title)+'&count=1');
-    // Drive save via message to Frank (opens Telegram)
-    var msg='Salvar no Drive: '+item.title+'\n'+item.url;
-    window.open('https://t.me/ImFrankBot?text='+encodeURIComponent(msg),'_blank');
-    showToast('Abriu Telegram — manda pro Frank salvar no Drive','ok');
-    btn.textContent='+ Drive';btn.disabled=false;
+    // FEATURE 3: chama CF Worker /save-drive que aciona pipeline drive-research
+    var frankTake=getFrankTake(item.id)||'';
+    var payload={
+      title:item.title,
+      url:item.url,
+      preview:item.preview||'',
+      frank_take:frankTake,
+      topic:item.topic||'',
+      source:item.label||'',
+      tab:activeTab
+    };
+    var r=await fetch(PROXY+'/save-drive',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    if(r.ok){
+      var data=await r.json();
+      showToast('Salvo no Drive — '+item.title.slice(0,40),'ok');
+      btn.textContent='Salvo';
+      setTimeout(function(){btn.textContent='+ Drive';btn.disabled=false},2000);
+    }else{
+      throw new Error('status '+r.status);
+    }
   }catch(e){
+    // Fallback: abre Telegram
+    var msg='drive-research: salvar
+Titulo: '+item.title+'
+URL: '+item.url+'
+Frank: '+getFrankTake(item.id);
+    window.open('https://t.me/ImFrankBot?text='+encodeURIComponent(msg),'_blank');
+    showToast('Abrindo Telegram como fallback','ok');
     btn.textContent='+ Drive';btn.disabled=false;
-    showToast('Erro: '+e.message,'err');
   }
 }
 
@@ -806,6 +890,250 @@ function setSort(s){
   renderAll();
 }
 function filterNews(q){activeFilter.query=q;renderAll()}
+
+
+// ─── FEATURE 4: GERAR BRIEF ──────────────────────────────────────────────────
+async function gerarBrief(){
+  var btn=document.getElementById('btn-brief');
+  btn.disabled=true;btn.textContent='Gerando...';
+
+  // Coleta TOP 5 de cada tab com dados carregados
+  var sections=[];
+  var tabKeys=['global','brasil','tech','crypto'];
+  var tabNames={global:'Global',brasil:'Brasil',tech:'Tech / AI',crypto:'Cripto'};
+  tabKeys.forEach(function(t){
+    if(!tabs[t].items||!tabs[t].items.length)return;
+    var top5=tabs[t].items.slice().sort(function(a,b){return b.marcoScore-a.marcoScore}).slice(0,5);
+    sections.push('== '+tabNames[t]+' ==');
+    top5.forEach(function(item,i){
+      sections.push((i+1)+'. '+item.title+' [score:'+item.marcoScore+']');
+    });
+  });
+
+  if(!sections.length){
+    showToast('Carregue pelo menos uma tab antes de gerar o brief','err');
+    btn.disabled=false;btn.textContent='Gerar Brief';
+    return;
+  }
+
+  var prompt='Voce eh Frank, analista de negocios para um empreendedor brasileiro (SaaS, cripto, AI). '+
+    'Gere um brief executivo de hoje em 10-12 linhas, organizado por tema, focando no que impacta '+
+    'negocios digitais, cripto e o contexto brasileiro. Direto, sem intro, sem emojis, em PT-BR.\n\n'+
+    'Noticias do momento:\n'+sections.join('\n');
+
+  try{
+    var r=await fetch(PROXY+'/frank-take',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title:'BRIEF EXECUTIVO — '+new Date().toLocaleDateString('pt-BR'),preview:sections.join(' | ')})
+    });
+    var data=await r.json();
+    var brief=data.take||'Falhou ao gerar brief.';
+
+    // Mostra modal com o brief
+    showBriefModal(brief);
+    btn.disabled=false;btn.textContent='Gerar Brief';
+  }catch(e){
+    showToast('Erro ao gerar brief: '+e.message,'err');
+    btn.disabled=false;btn.textContent='Gerar Brief';
+  }
+}
+
+function showBriefModal(text){
+  // Remove modal existente se houver
+  var existing=document.getElementById('brief-modal');
+  if(existing)existing.remove();
+
+  var overlay=document.createElement('div');
+  overlay.id='brief-modal';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};
+
+  var box=document.createElement('div');
+  box.style.cssText='background:#1a1a1a;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:24px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;position:relative';
+
+  var date=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  box.innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'+
+    '<div><div style="font-size:14px;font-weight:700;color:#e2e2e2">Brief Executivo</div>'+
+    '<div style="font-size:11px;color:#888;margin-top:2px">'+date+'</div></div>'+
+    '<button onclick="this.closest('#brief-modal').remove()" style="background:none;border:none;color:#888;cursor:pointer;font-size:16px;padding:4px">x</button>'+
+    '</div>'+
+    '<div style="font-size:13px;color:#e2e2e2;line-height:1.8;white-space:pre-wrap">'+escHtml(text)+'</div>'+
+    '<div style="margin-top:16px;display:flex;gap:8px">'+
+    '<button onclick="copyBrief()" style="padding:7px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#222;color:#888;font-size:11px;cursor:pointer">Copiar</button>'+
+    '<button onclick="sendBriefTelegram()" style="padding:7px 14px;border-radius:5px;border:1px solid rgba(74,222,128,.25);background:rgba(74,222,128,.08);color:#4ade80;font-size:11px;cursor:pointer">Enviar Telegram</button>'+
+    '</div>';
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  // Fecha com ESC
+  var keyHandler=function(e){if(e.key==='Escape'){overlay.remove();document.removeEventListener('keydown',keyHandler)}};
+  document.addEventListener('keydown',keyHandler);
+}
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+async function copyBrief(){
+  var el=document.querySelector('#brief-modal div[style*="pre-wrap"]');
+  if(!el)return;
+  try{await navigator.clipboard.writeText(el.textContent);showToast('Copiado','ok')}
+  catch(e){showToast('Erro ao copiar','err')}
+}
+
+function sendBriefTelegram(){
+  var el=document.querySelector('#brief-modal div[style*="pre-wrap"]');
+  if(!el)return;
+  var text=el.textContent;
+  window.open('https://t.me/ImFrankBot?text='+encodeURIComponent(text),'_blank');
+}
+
+
+// ─── FEATURE 5: SCORE MARCO EDITAVEL ─────────────────────────────────────────
+var DEFAULT_WEIGHTS={ai:40,crypto:35,startup:25,brasil:20,geopolitics:15,hot:10,rising:5,score_hi:10,score_mid:5};
+var scoreWeights=Object.assign({},DEFAULT_WEIGHTS);
+(function(){
+  try{var w=localStorage.getItem('radar_weights');if(w)scoreWeights=JSON.parse(w)}catch(e){}
+})();
+
+function marcoScore(item){
+  var s=0,t=(item.title+' '+(item.preview||'')).toLowerCase();
+  if(/openai|anthropic|claude|gpt|llm|\bai\b|artificial intelligence|nvidia|automation/.test(t))s+=scoreWeights.ai;
+  if(/bitcoin|btc|ethereum|\beth\b|crypto|defi|web3|blockchain|solana|binance/.test(t))s+=scoreWeights.crypto;
+  if(/startup|saas|funding|revenue|monetiz|growth|mrr|arr|valuation|venture/.test(t))s+=scoreWeights.startup;
+  if(/brasil|brazil|lula|\breal\b|selic|brl|mercado livre|nubank/.test(t))s+=scoreWeights.brasil;
+  if(/tariff|sanction|trade war|oil price|supply chain/.test(t))s+=scoreWeights.geopolitics;
+  if(item.heat==='hot')s+=scoreWeights.hot;
+  if(item.heat==='rising')s+=scoreWeights.rising;
+  if(item.score>10000)s+=scoreWeights.score_hi;else if(item.score>3000)s+=scoreWeights.score_mid;
+  return Math.min(100,s);
+}
+
+function openWeights(){
+  var existing=document.getElementById('weights-modal');
+  if(existing){existing.remove();return}
+
+  var overlay=document.createElement('div');
+  overlay.id='weights-modal';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};
+
+  var labels={ai:'AI / LLM',crypto:'Cripto',startup:'Startup / SaaS',brasil:'Brasil',geopolitics:'Geopolitica',hot:'Breaking (hot)',rising:'Rising',score_hi:'Reddit >10k',score_mid:'Reddit >3k'};
+
+  var rows=Object.keys(DEFAULT_WEIGHTS).map(function(k){
+    var v=scoreWeights[k];
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
+      '<div style="width:140px;font-size:12px;color:#888">'+labels[k]+'</div>'+
+      '<input type="range" id="w_'+k+'" min="0" max="60" value="'+v+'" '+
+      'style="flex:1;accent-color:#4ade80" oninput="document.getElementById('wv_'+k+'').textContent=this.value">'+
+      '<div id="wv_'+k+'" style="width:24px;font-size:12px;color:#4ade80;text-align:right">'+v+'</div>'+
+      '</div>';
+  }).join('');
+
+  var box=document.createElement('div');
+  box.style.cssText='background:#1a1a1a;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:24px;max-width:480px;width:100%;position:relative';
+  box.innerHTML=
+    '<div style="font-size:14px;font-weight:700;margin-bottom:4px">Pesos do Score Marco</div>'+
+    '<div style="font-size:11px;color:#888;margin-bottom:16px">Ajusta o que importa mais pro seu contexto agora</div>'+
+    rows+
+    '<div style="display:flex;gap:8px;margin-top:16px">'+
+    '<button onclick="applyWeights()" style="flex:1;padding:8px;border-radius:5px;border:1px solid rgba(74,222,128,.25);background:rgba(74,222,128,.08);color:#4ade80;font-size:12px;cursor:pointer">Aplicar</button>'+
+    '<button onclick="resetWeights()" style="padding:8px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#222;color:#888;font-size:12px;cursor:pointer">Reset</button>'+
+    '<button onclick="document.getElementById('weights-modal').remove()" style="padding:8px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#222;color:#888;font-size:12px;cursor:pointer">Fechar</button>'+
+    '</div>';
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+function applyWeights(){
+  Object.keys(DEFAULT_WEIGHTS).forEach(function(k){
+    var el=document.getElementById('w_'+k);
+    if(el)scoreWeights[k]=parseInt(el.value,10);
+  });
+  try{localStorage.setItem('radar_weights',JSON.stringify(scoreWeights))}catch(e){}
+  // Recalcula scores de todas as tabs
+  ['global','brasil','tech','crypto'].forEach(function(t){
+    if(tabs[t].items)tabs[t].items.forEach(function(x){x.marcoScore=marcoScore(x)});
+  });
+  renderAll();
+  document.getElementById('weights-modal').remove();
+  showToast('Pesos aplicados — ranking atualizado','ok');
+}
+
+function resetWeights(){
+  scoreWeights=Object.assign({},DEFAULT_WEIGHTS);
+  Object.keys(DEFAULT_WEIGHTS).forEach(function(k){
+    var el=document.getElementById('w_'+k);
+    if(el){el.value=DEFAULT_WEIGHTS[k];document.getElementById('wv_'+k).textContent=DEFAULT_WEIGHTS[k]}
+  });
+}
+
+
+// ─── FEATURE 6: HISTORICO DE LEITURA ─────────────────────────────────────────
+var readItems={};
+(function(){
+  try{
+    var raw=localStorage.getItem('radar_read');
+    if(raw){
+      var data=JSON.parse(raw);
+      // Limpa itens com mais de 7 dias
+      var week=7*24*60*60*1000;
+      Object.keys(data).forEach(function(k){if(Date.now()-data[k]>week)delete data[k]});
+      readItems=data;
+    }
+  }catch(e){}
+})();
+
+function markRead(id){
+  readItems[id]=Date.now();
+  try{localStorage.setItem('radar_read',JSON.stringify(readItems))}catch(e){}
+}
+
+function isRead(id){return !!readItems[id]}
+
+function getReadCount(){return Object.keys(readItems).length}
+
+function updateReadBadge(){
+  var el=document.getElementById('read-count');
+  if(el){
+    var count=getReadCount();
+    el.textContent=count>0?count+' lidos hoje':'';
+    el.style.display=count>0?'block':'none';
+  }
+}
+
+
+// Auto-refresh background tabs a cada 20min
+async function bgRefreshOtherTabs(){
+  var tabKeys=['global','brasil','tech','crypto'];
+  for(var i=0;i<tabKeys.length;i++){
+    var t=tabKeys[i];
+    if(t===activeTab)continue;
+    var ts=lastLoad[t];
+    if(!ts||(Date.now()-ts>CACHE_TTL)){
+      try{
+        var fetches=TAB_FETCHES[t];
+        var res=await Promise.allSettled(fetches.map(function(f){return f()}));
+        var items=[];
+        for(var j=0;j<res.length;j++){if(res[j].status==='fulfilled')items=items.concat(res[j].value)}
+        var seen={};items=items.filter(function(x){if(seen[x.url])return false;seen[x.url]=1;return true});
+        items.forEach(function(x){x.marcoScore=marcoScore(x)});
+        var prevCache=loadTabCache(t)||[];
+        var prevUrls={};prevCache.forEach(function(x){prevUrls[x.url]=1});
+        var newCount=items.filter(function(x){return !prevUrls[x.url]}).length;
+        saveTabCache(t,items);
+        tabs[t].items=items;tabs[t].loaded=true;lastLoad[t]=Date.now();
+        document.getElementById('tc-'+t).textContent=items.length+(newCount>0?' +'+newCount:'');
+        if(newCount>0){
+          var el=document.getElementById('tc-'+t);
+          if(el){el.style.background='rgba(74,222,128,.2)';el.style.color='var(--green)'}
+        }
+      }catch(e){}
+    }
+  }
+}
+setInterval(bgRefreshOtherTabs, CACHE_TTL);
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 function showToast(msg,cls){
