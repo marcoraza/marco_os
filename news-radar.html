@@ -3,40 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Radar Político — Marco OS</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#111;--bg2:#1a1a1a;--bg3:#222;
-  --sep:rgba(255,255,255,.06);--sep2:rgba(255,255,255,.1);
-  --text:#e2e2e2;--dim:#888;--dim2:#555;
-  --green:#4ade80;--blue:#60a5fa;--yellow:#fbbf24;
-  --orange:#fb923c;--purple:#c084fc;--red:#f87171;--gold:#fcd34d;
-  --overlay:rgba(0,0,0,.6)
-}
+<title>Radar Politico - Marco OS</title>
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#111;--bg2:#1a1a1a;--bg3:#222;--sep:rgba(255,255,255,.06);--sep2:rgba(255,255,255,.1);--text:#e2e2e2;--dim:#888;--dim2:#555;--green:#4ade80;--blue:#60a5fa;--yellow:#fbbf24;--orange:#fb923c;--purple:#c084fc;--red:#f87171;--gold:#fcd34d;--overlay:rgba(0,0,0,.6)}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
 .page{max-width:900px;margin:0 auto;padding:32px 24px 80px}
-/* HEADER */
 .header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
 .header h1{font-size:22px;font-weight:600;letter-spacing:-.4px;display:flex;align-items:center;gap:10px}
-.h1-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2);letter-spacing:0}
+.h1-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
 .header-sub{font-size:12px;color:var(--dim);margin-top:4px;display:flex;align-items:center;gap:10px}
-.sep{color:var(--dim2)}
 .header-right{display:flex;align-items:center;gap:14px;padding-top:4px}
 .status-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green)}
 .sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2.4s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .clock{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
-/* STATS */
 .stats{display:flex;gap:32px;padding:0 0 22px;border-bottom:1px solid var(--sep);margin-bottom:24px}
-.stat-val{font-size:22px;font-weight:700;line-height:1}
-.stat-lbl{font-size:11px;color:var(--dim);margin-top:3px}
-/* ACTIONS */
+.stat-val{font-size:22px;font-weight:700;line-height:1}.stat-lbl{font-size:11px;color:var(--dim);margin-top:3px}
 .actions{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.actions-r{margin-left:auto;display:flex;align-items:center;gap:6px}
+.actions-r{margin-left:auto}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--sep2);background:var(--bg2);color:var(--dim)}
 .btn:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
 .btn.primary{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.2);color:var(--green)}
@@ -45,7 +30,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .search{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--sep2);border-radius:5px;padding:5px 10px}
 .search input{background:none;border:none;outline:none;color:var(--text);font-size:12px;width:160px}
 .search input::placeholder{color:var(--dim2)}
-/* SOURCE FILTERS */
 .src-filters{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
 .sf{display:flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--sep2);background:var(--bg2);color:var(--dim);transition:all .15s;user-select:none}
 .sf:hover{color:var(--text)}
@@ -53,19 +37,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .sf.on.reddit{background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.25);color:var(--orange)}
 .sf.on.x{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);color:var(--text)}
 .src-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-/* HEAT MAP */
 .section-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--sep)}
 .section-head h3{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
-.heat-row{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
-.heat-tag{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none}
-.heat-tag:hover{opacity:.8}
-.heat-tag.active{opacity:1;box-shadow:0 0 0 1px rgba(255,255,255,.1)}
-/* ERROR */
+.heat-row{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;min-height:28px}
+.heat-tag{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none;opacity:.75}
+.heat-tag:hover,.heat-tag.active{opacity:1}
 .error-banner{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:16px;display:none;align-items:center;gap:8px}
 .error-banner.on{display:flex}
-/* FEED */
 .feed{display:flex;flex-direction:column;gap:8px}
-.news-card{background:var(--bg2);border:1px solid var(--sep);border-radius:8px;padding:14px 16px;cursor:pointer;transition:border-color .15s,background .15s;border-left-width:3px}
+.news-card{background:var(--bg2);border:1px solid var(--sep);border-left-width:3px;border-radius:8px;padding:14px 16px;cursor:pointer;transition:border-color .15s,background .15s}
 .news-card:hover{border-color:var(--sep2);background:#1d1d1d}
 .news-card.hot{border-left-color:var(--red)}
 .news-card.rising{border-left-color:var(--yellow)}
@@ -73,26 +53,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .nc-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
 .src-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px}
 .src-icon.reddit{background:rgba(251,146,60,.15);color:var(--orange)}
-.src-icon.x{background:rgba(255,255,255,.07);color:var(--text)}
-.nc-title{font-size:13px;font-weight:500;line-height:1.45;flex:1;color:var(--text)}
+.src-icon.x{background:rgba(255,255,255,.07);color:var(--dim)}
+.nc-title{font-size:13px;font-weight:500;line-height:1.45;flex:1}
 .nc-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--dim);flex-wrap:wrap;margin-bottom:4px}
-.nc-score{display:flex;align-items:center;gap:3px}
-.nc-score.hi{color:var(--green)}
-.nc-score.mid{color:var(--yellow)}
 .nc-preview{font-size:12px;color:var(--dim);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px}
 .nc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
 .tag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500;background:var(--bg3);color:var(--dim2);border:1px solid var(--sep)}
 .tag.hot{background:rgba(248,113,113,.08);color:var(--red);border-color:rgba(248,113,113,.2)}
 .tag.trend{background:rgba(251,191,36,.08);color:var(--yellow);border-color:rgba(251,191,36,.2)}
-.tag.break{background:rgba(96,165,250,.08);color:var(--blue);border-color:rgba(96,165,250,.2)}
-/* FEED STATES */
+.tag.brk{background:rgba(96,165,250,.08);color:var(--blue);border-color:rgba(96,165,250,.2)}
 .feed-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:64px 20px;color:var(--dim);font-size:13px}
 .spin{animation:spin .8s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
 .feed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 20px;gap:10px;color:var(--dim)}
-.feed-empty p{font-size:13px}
-.feed-empty small{font-size:11px;color:var(--dim2)}
-/* DRAWER */
 .drawer-overlay{position:fixed;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
 .drawer-overlay.on{opacity:1;pointer-events:all}
 .drawer{position:fixed;top:0;right:-540px;width:520px;max-width:95vw;height:100vh;background:var(--bg2);border-left:1px solid var(--sep2);z-index:101;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1)}
@@ -105,450 +78,319 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .drawer-body{flex:1;overflow-y:auto;padding:20px}
 .dr-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--sep)}
 .dr-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.dr-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);margin-bottom:10px}
+.dr-stitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);margin-bottom:10px}
 .dr-text{font-size:12px;color:var(--dim);line-height:1.8}
-.dr-frank-take{font-size:12px;color:var(--text);line-height:1.7;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.1);border-radius:6px;padding:12px 14px}
+.dr-frank{font-size:12px;color:var(--text);line-height:1.7;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.12);border-radius:6px;padding:12px 14px}
 .drawer-foot{padding:14px 20px;border-top:1px solid var(--sep);display:flex;align-items:center;gap:8px;flex-shrink:0}
 .btn-ext{text-decoration:none;display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:5px;font-size:12px;border:1px solid var(--sep2);background:var(--bg3);color:var(--dim);transition:all .15s;cursor:pointer}
 .btn-ext:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
-.btn-save{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);padding:7px 14px;border-radius:5px;font-size:12px;cursor:pointer;transition:all .15s}
-.btn-save:hover{background:rgba(74,222,128,.18)}
-/* TOAST */
+.btn-save{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);padding:7px 14px;border-radius:5px;font-size:12px;cursor:pointer}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--sep2);border-radius:7px;padding:10px 16px;font-size:12px;color:var(--text);z-index:300;transform:translateY(16px);opacity:0;transition:all .2s;pointer-events:none}
 .toast.on{transform:translateY(0);opacity:1}
-.toast.ok{border-color:rgba(74,222,128,.3);color:var(--green)}
-</style>
+.toast.ok{border-color:rgba(74,222,128,.3);color:var(--green)}</style>
 </head>
 <body>
 <div class="page">
-
 <div class="header">
   <div>
-    <h1>🌐 Radar Político <span class="h1-badge">GLOBAL</span></h1>
-    <div class="header-sub">
-      Últimas 24h · X + Reddit
-      <span class="sep">·</span>
-      <span id="last-update">—</span>
-    </div>
+    <h1>&#127758; Radar Pol&iacute;tico <span class="h1-badge">GLOBAL</span></h1>
+    <div class="header-sub">&#218;ltimas 24h &middot; X + Reddit &middot; <span id="last-update">&mdash;</span></div>
   </div>
   <div class="header-right">
     <div class="status-pill"><div class="sdot"></div>LIVE</div>
     <div class="clock" id="clock">--:-- BRT</div>
   </div>
 </div>
-
 <div class="stats">
-  <div><div class="stat-val" style="color:var(--red)" id="s-hot">—</div><div class="stat-lbl">🔥 Trending</div></div>
-  <div><div class="stat-val" style="color:var(--orange)" id="s-reddit">—</div><div class="stat-lbl">Reddit</div></div>
-  <div><div class="stat-val" style="color:var(--text)" id="s-x">—</div><div class="stat-lbl">X / News</div></div>
-  <div><div class="stat-val" style="color:var(--blue)" id="s-total">—</div><div class="stat-lbl">Total</div></div>
+  <div><div class="stat-val" style="color:var(--red)" id="s-hot">&mdash;</div><div class="stat-lbl">Trending</div></div>
+  <div><div class="stat-val" style="color:var(--orange)" id="s-reddit">&mdash;</div><div class="stat-lbl">Reddit</div></div>
+  <div><div class="stat-val" style="color:var(--text)" id="s-x">&mdash;</div><div class="stat-lbl">X / News</div></div>
+  <div><div class="stat-val" style="color:var(--blue)" id="s-total">&mdash;</div><div class="stat-lbl">Total</div></div>
 </div>
-
-<div class="section-head">
-  <h3>🌡 Tópicos em destaque</h3>
-  <span style="font-size:11px;color:var(--dim2)">clique para filtrar</span>
-</div>
+<div class="section-head"><h3>T&oacute;picos em destaque</h3><span style="font-size:11px;color:var(--dim2)">clique para filtrar</span></div>
 <div class="heat-row" id="heat-row"></div>
-
-<div class="error-banner" id="error-banner">
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-  <span id="error-msg">Parcialmente indisponível — mostrando dados disponíveis</span>
-</div>
-
+<div class="error-banner" id="error-banner">&#9888; <span id="error-msg">Parcialmente indispon&iacute;vel &mdash; mostrando dados dispon&iacute;veis</span></div>
 <div class="actions">
-  <button class="btn primary" id="btn-refresh" onclick="loadNews()">
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-    Atualizar
-  </button>
+  <button class="btn primary" id="btn-refresh" onclick="loadNews()">&#8635; Atualizar</button>
   <div class="actions-r">
     <div class="search">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Filtrar notícias..." oninput="filterNews(this.value)">
+      <input type="text" placeholder="Filtrar not&iacute;cias..." oninput="filterNews(this.value)">
     </div>
   </div>
 </div>
-
 <div class="src-filters">
-  <div class="sf on all" id="sf-all"    onclick="setSrc('all')"><div class="src-dot" style="background:var(--green)"></div>Todos</div>
-  <div class="sf reddit"  id="sf-reddit" onclick="setSrc('reddit')"><div class="src-dot" style="background:var(--orange)"></div>Reddit</div>
-  <div class="sf x"       id="sf-x"      onclick="setSrc('x')"><div class="src-dot" style="background:var(--dim)"></div>X / News</div>
+  <div class="sf on all" id="sf-all" onclick="setSrc('all')"><div class="src-dot" style="background:var(--green)"></div>Todos</div>
+  <div class="sf reddit" id="sf-reddit" onclick="setSrc('reddit')"><div class="src-dot" style="background:var(--orange)"></div>Reddit</div>
+  <div class="sf x" id="sf-x" onclick="setSrc('x')"><div class="src-dot" style="background:var(--dim)"></div>X / News</div>
 </div>
-
-<div id="feed-root">
-  <div class="feed-loading" id="feed-loading"><span class="spin">◌</span> Buscando notícias políticas...</div>
+<div id="feed-root"><div class="feed-loading"><span class="spin">&#9675;</span> Buscando not&iacute;cias pol&iacute;ticas...</div></div>
 </div>
-
-</div>
-
-<!-- DRAWER -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-head">
-    <div style="flex:1">
-      <div class="drawer-title" id="dr-title">—</div>
-      <div class="drawer-sub" id="dr-sub">—</div>
-    </div>
-    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    <div style="flex:1"><div class="drawer-title" id="dr-title">&mdash;</div><div class="drawer-sub" id="dr-sub">&mdash;</div></div>
+    <button class="drawer-close" onclick="closeDrawer()">&#10005;</button>
   </div>
   <div class="drawer-body" id="dr-body"></div>
   <div class="drawer-foot">
-    <a class="btn-ext" id="dr-link" href="#" target="_blank" rel="noopener">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      Ver original
-    </a>
-    <button class="btn-save" onclick="showToast('Feature em breve — Drive integration', 'ok')">+ Salvar no Drive</button>
+    <a class="btn-ext" id="dr-link" href="#" target="_blank" rel="noopener">&#8599; Ver original</a>
+    <button class="btn-save" onclick="showToast('Feature em breve','ok')">+ Salvar no Drive</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script>
-const BRAVE_KEY = 'BSArQjSpzjH7zbdVh4Arpx0dVzPYGxp';
-let allNews = [];
-let activeFilter = { src: 'all', topic: null, query: '' };
-let drawerItem = null;
-let lastLoad = null;
+var BRAVE_KEY='BSArQjSpzjH7zbdVh4Arpx0dVzPYGxp';
+var allNews=[],activeFilter={src:'all',topic:null,query:''},lastLoad=null;
 
-// ── CLOCK ────────────────────────────────────────────────────────────────────
 function pad(n){return String(n).padStart(2,'0')}
 function getBRT(){return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}))}
-function updateClock(){const d=getBRT();document.getElementById('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+' BRT'}
-setInterval(updateClock,15000); updateClock();
+function updateClock(){var d=getBRT();document.getElementById('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+' BRT'}
+setInterval(updateClock,15000);updateClock();
 
-// ── DETECT ───────────────────────────────────────────────────────────────────
-function detectHeat(text) {
-  const t = text.toLowerCase();
-  if (/breaking|war|crisis|coup|attack|invaded|bombed|killed|impeach|emergency/.test(t)) return 'hot';
-  if (/urgent|major|election|protest|sanctions|summit|deal|agreement|treaty/.test(t)) return 'rising';
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmtScore(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
+function formatAge(utc){
+  var diff=Math.floor(Date.now()/1000-utc);
+  if(diff<3600)return Math.floor(diff/60)+'min atras';
+  if(diff<86400)return Math.floor(diff/3600)+'h atras';
+  return Math.floor(diff/86400)+'d atras';
+}
+function detectHeat(t){
+  t=t.toLowerCase();
+  if(/breaking|crisis|coup|war\b|attack|invaded|bombed|impeach|emergency/.test(t))return 'hot';
+  if(/election|protest|sanctions|summit|deal|agreement|urgent|major/.test(t))return 'rising';
   return 'notable';
 }
-
-const TOPIC_MAP = {
-  'EUA':            /trump|biden|harris|america\b|usa\b|washington|congress|senate|white house|fbi|cia|republican|democrat/i,
-  'Brasil':         /lula|brazil|brasil|brasília|bolsonaro|petrobras|stf|congresso nacional|ministério/i,
-  'Europa':         /europe|nato|germany|france|uk\b|britain|spain|italia|macron|scholz|sunak|ursula|brussels|eu\b/i,
-  'Rússia/UA':      /russia|ukraine|putin|zelensky|kiev|kyiv|moscow|kremlin|donbas|crimea|nato.*russia/i,
-  'China':          /china|xi jinping|beijing|taiwan|hong kong|pla\b|ccp\b|beijing|tiangong|huawei/i,
-  'Médio Oriente':  /israel|gaza|iran|palestine|hamas|hezbollah|netanyahu|biden.*israel|middle east|beirut|tehran/i,
-  'América Latina': /venezuela|argentina|chile|colombia|mexico|peru|maduro|milei|boric|petro|amlo|mercosul/i,
-  'ONU/Diplomacia': /united nations|\bun\b|diplomat|summit|sanctions|ceasefire|treaty|accord|g7|g20|wto|imf\b/i,
+var TOPIC_RE=[
+  ['EUA',/trump|biden|harris|america\b|usa\b|washington|congress|senate|white house|republican|democrat/i],
+  ['Brasil',/lula|brazil|brasil|bolsonaro|petrobras|stf/i],
+  ['Europa',/europe\b|nato\b|germany|france|\buk\b|britain|spain|macron|scholz|brussels|\beu\b/i],
+  ['Russia/UA',/russia|ukraine|putin|zelensky|kiev|kyiv|kremlin|donbas|crimea/i],
+  ['China',/china|xi jinping|beijing|taiwan|hong kong|huawei/i],
+  ['Medio Oriente',/israel|gaza|\biran\b|palestine|hamas|hezbollah|netanyahu|beirut|tehran/i],
+  ['America Latina',/venezuela|argentina|chile|colombia|mexico\b|peru\b|maduro|milei|boric|petro/i],
+  ['ONU\/Diplomacia',/united nations|\bun\b|diplomat|summit|ceasefire|treaty|\bg7\b|\bg20\b|\bimf\b/i],
+];
+function detectTopic(t){for(var i=0;i<TOPIC_RE.length;i++){if(TOPIC_RE[i][1].test(t))return TOPIC_RE[i][0]}return 'Outros'}
+function detectTags(t,heat){
+  var r=[],tl=t.toLowerCase();
+  if(heat==='hot')r.push({l:'Breaking',c:'hot'});
+  if(/election|eleicao|vote/.test(tl))r.push({l:'Eleicao',c:'brk'});
+  if(/war\b|guerra|attack|conflict/.test(tl))r.push({l:'Conflito',c:'hot'});
+  if(/economy|inflation|gdp|market|economia/.test(tl))r.push({l:'Economia',c:'trend'});
+  if(/sanction|tariff|trade|acordo/.test(tl))r.push({l:'Diplomacia',c:'brk'});
+  return r.slice(0,3);
+}
+var FRANK={
+  'EUA':'Centro do poder geopolitico global. Qualquer mudanca aqui afeta mercados, cripto e aliancas.',
+  'Brasil':'Impacto direto no contexto de negocios. Politica interna = cambio, regulacao e custo operacional.',
+  'Europa':'Forte influencia em regulacao de cripto e tech. Decisoes aqui criam ou fecham janelas de mercado.',
+  'Russia/UA':'Guerra ativa com conexao a commodities, energia e sancoes. Afeta emergentes e cripto.',
+  'China':'Principal rival do ocidente. Cada sinal de Pequim move manufatura, semicondutores e Taiwan.',
+  'Medio Oriente':'Impacto em petroleo e rotas maritimas. Instabilidade cria flight to safety em cripto.',
+  'America Latina':'Regiao relevante pelo contexto do Marco. Instabilidade cria risco e oportunidade simultaneos.',
+  'ONU/Diplomacia':'Movimento que precede decisoes maiores. Monitorar tom oficial vs o que vazou informalmente.',
+  'Outros':'Evento com potencial geopolitico. Monitorar desdobramentos nas proximas 48h.',
+};
+var TSTYLES={
+  'EUA':{bg:'rgba(248,113,113,.12)',c:'#f87171',b:'rgba(248,113,113,.25)'},
+  'Brasil':{bg:'rgba(74,222,128,.12)',c:'#4ade80',b:'rgba(74,222,128,.25)'},
+  'Europa':{bg:'rgba(96,165,250,.12)',c:'#60a5fa',b:'rgba(96,165,250,.25)'},
+  'Russia/UA':{bg:'rgba(251,146,60,.12)',c:'#fb923c',b:'rgba(251,146,60,.25)'},
+  'China':{bg:'rgba(252,211,77,.12)',c:'#fcd34d',b:'rgba(252,211,77,.25)'},
+  'Medio Oriente':{bg:'rgba(192,132,252,.12)',c:'#c084fc',b:'rgba(192,132,252,.25)'},
+  'America Latina':{bg:'rgba(251,191,36,.12)',c:'#fbbf24',b:'rgba(251,191,36,.25)'},
+  'ONU/Diplomacia':{bg:'rgba(255,255,255,.05)',c:'#888',b:'rgba(255,255,255,.1)'},
+  'Outros':{bg:'rgba(255,255,255,.04)',c:'#555',b:'rgba(255,255,255,.06)'},
 };
 
-function detectTopic(text) {
-  for (const [topic, re] of Object.entries(TOPIC_MAP)) {
-    if (re.test(text)) return topic;
-  }
-  return 'Outros';
+async function fetchReddit(sub){
+  var r=await fetch('https://www.reddit.com/r/'+sub+'/hot.json?limit=15',{headers:{'User-Agent':'Frank/1.0'}});
+  if(!r.ok)throw new Error('Reddit '+sub+' '+r.status);
+  var data=await r.json();
+  return(data.data&&data.data.children||[]).filter(function(p){return !p.data.stickied}).map(function(p){
+    var d=p.data,heat=detectHeat(d.title);
+    return{id:'r_'+d.id,src:'reddit',label:'r/'+d.subreddit,title:d.title,
+      preview:(d.selftext||'').slice(0,220),url:'https://reddit.com'+d.permalink,
+      score:d.score,comments_count:d.num_comments,age:formatAge(d.created_utc),
+      heat:heat,topic:detectTopic(d.title+' '+(d.selftext||'')),tags:detectTags(d.title,heat)};
+  });
 }
-
-function detectTags(text, heat) {
-  const t = text.toLowerCase();
-  const tags = [];
-  if (heat === 'hot') tags.push({label:'🔥 Breaking', cls:'hot'});
-  if (/election|eleição|voto|vote/.test(t)) tags.push({label:'⚡ Eleição', cls:'break'});
-  if (/war|guerra|attack|conflict/.test(t)) tags.push({label:'⚔️ Conflito', cls:'hot'});
-  if (/economy|economia|inflation|gdp|market/.test(t)) tags.push({label:'📈 Economia', cls:'trend'});
-  if (/climate|energia|oil|gas|petróleo/.test(t)) tags.push({label:'🌍 Energia', cls:'trend'});
-  if (/sanction|tariff|trade|acordo/.test(t)) tags.push({label:'🤝 Diplomacia', cls:'break'});
-  return tags.slice(0,3);
-}
-
-function formatAge(utc) {
-  const diff = Math.floor(Date.now()/1000 - utc);
-  if (diff < 3600) return Math.floor(diff/60)+'min atrás';
-  if (diff < 86400) return Math.floor(diff/3600)+'h atrás';
-  return Math.floor(diff/86400)+'d atrás';
-}
-
-function fmtScore(n) {
-  if (n >= 1000) return (n/1000).toFixed(1)+'k';
-  return n;
-}
-
-// ── FRANK TAKE ───────────────────────────────────────────────────────────────
-const FRANK_TAKES = {
-  'EUA':            'Centro do poder geopolítico global. Qualquer mudança aqui afeta mercados, cripto e alianças. Atenção aos desdobramentos nas próximas 48h.',
-  'Brasil':         'Impacto direto no contexto de negócios. Política interna = custo operacional, câmbio e regulação. Monitor obrigatório.',
-  'Europa':         'Bloco econômico com forte influência em regulação de cripto e tech. Decisões aqui criam ou fecham janelas de mercado.',
-  'Rússia/UA':      'Guerra ativa com conexão direta a commodities, energia e sanções. Afeta mercados emergentes e preço de cripto.',
-  'China':          'Principal parceiro/rival do ocidente. Cada sinal de Pequim move manufatura, semicondutores e Taiwan.',
-  'Médio Oriente':  'Conflito com impacto em petróleo e rotas marítimas. Instabilidade → flight to safety → cripto reage.',
-  'América Latina': 'Região relevante pelo contexto de Marco. Instabilidade política cria risco e oportunidade de negócio simultâneos.',
-  'ONU/Diplomacia': 'Movimento de bastidores que precede decisões maiores. Vale monitorar o tom oficial vs. o que vazou informalmente.',
-  'Outros':         'Evento com potencial de relevância geopolítica. Monitorar desdobramentos nas próximas 48h.',
-};
-
-// ── FETCH ────────────────────────────────────────────────────────────────────
-async function fetchReddit(sub) {
-  const r = await fetch(`https://www.reddit.com/r/${sub}/hot.json?limit=12`, {headers:{'User-Agent':'Frank/1.0'}});
-  if (!r.ok) throw new Error(`Reddit ${sub} ${r.status}`);
-  const data = await r.json();
-  return (data.data?.children || []).filter(p => !p.data.stickied).map(p => {
-    const d = p.data;
-    const heat = detectHeat(d.title);
-    const topic = detectTopic(d.title + ' ' + (d.selftext||''));
-    return {
-      id: 'r_'+d.id,
-      src: 'reddit',
-      label: 'r/'+d.subreddit,
-      title: d.title,
-      preview: d.selftext?.slice(0,220) || '',
-      url: 'https://reddit.com'+d.permalink,
-      score: d.score,
-      comments_count: d.num_comments,
-      age: formatAge(d.created_utc),
-      heat, topic,
-      tags: detectTags(d.title, heat),
-    };
+async function fetchBrave(query){
+  var url='https://api.search.brave.com/res/v1/web/search?q='+encodeURIComponent(query)+'&count=12&freshness=pd';
+  var r=await fetch(url,{headers:{'Accept':'application/json','Accept-Encoding':'gzip','X-Subscription-Token':BRAVE_KEY}});
+  if(!r.ok)throw new Error('Brave '+r.status);
+  var data=await r.json();
+  return((data.web&&data.web.results)||[]).map(function(w){
+    var isR=!!(w.url&&w.url.includes('reddit.com'));
+    var sm=w.url&&w.url.match(/reddit\.com\/r\/([^\/]+)/);
+    var heat=detectHeat(w.title+' '+(w.description||''));
+    var host='';try{host=new URL(w.url||'https://news.com').hostname.replace('www.','')}catch(e){}
+    return{id:'b_'+(w.url||'x').replace(/[^a-z0-9]/gi,'').slice(-8),
+      src:isR?'reddit':'x',label:isR?(sm?'r/'+sm[1]:'Reddit'):host,
+      title:w.title,preview:w.description||'',url:w.url||'#',
+      score:0,comments_count:0,age:'Hoje',
+      heat:heat,topic:detectTopic(w.title+' '+(w.description||'')),tags:detectTags(w.title,heat)};
   });
 }
 
-async function fetchBrave(query) {
-  const url = `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=12&freshness=pd`;
-  const r = await fetch(url, {headers:{'Accept':'application/json','Accept-Encoding':'gzip','X-Subscription-Token':BRAVE_KEY}});
-  if (!r.ok) throw new Error('Brave '+r.status);
-  const data = await r.json();
-  return (data.web?.results || []).map(w => {
-    const heat = detectHeat(w.title + ' ' + (w.description||''));
-    const topic = detectTopic(w.title + ' ' + (w.description||''));
-    const isReddit = w.url?.includes('reddit.com');
-    const subMatch = w.url?.match(/reddit\.com\/r\/([^/]+)/);
-    return {
-      id: 'b_'+btoa(w.url||'').slice(0,10),
-      src: isReddit ? 'reddit' : 'x',
-      label: isReddit ? (subMatch ? 'r/'+subMatch[1] : 'Reddit') : (new URL(w.url||'https://x.com').hostname.replace('www.','')),
-      title: w.title,
-      preview: w.description || '',
-      url: w.url || '#',
-      score: 0,
-      comments_count: 0,
-      age: 'Hoje',
-      heat, topic,
-      tags: detectTags(w.title, heat),
-    };
-  });
-}
-
-async function loadNews() {
-  const btn = document.getElementById('btn-refresh');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin">◌</span> Buscando...';
-  document.getElementById('feed-root').innerHTML = '<div class="feed-loading"><span class="spin">◌</span> Buscando notícias políticas...</div>';
+async function loadNews(){
+  var btn=document.getElementById('btn-refresh');
+  btn.disabled=true;btn.textContent='Buscando...';
+  document.getElementById('feed-root').innerHTML='<div class="feed-loading"><span class="spin">&#9675;</span> Buscando...</div>';
   document.getElementById('error-banner').classList.remove('on');
-  activeFilter.topic = null;
+  activeFilter.topic=null;
 
-  const results = await Promise.allSettled([
-    fetchReddit('worldnews'),
-    fetchReddit('politics'),
-    fetchReddit('geopolitics'),
+  var res=await Promise.allSettled([
+    fetchReddit('worldnews'),fetchReddit('politics'),fetchReddit('geopolitics'),
     fetchBrave('world politics government election 2026 breaking news'),
-    fetchBrave('geopolitics international relations diplomacy 2026'),
+    fetchBrave('geopolitics international war diplomacy sanctions 2026'),
   ]);
 
-  let items = [];
-  let hasError = false;
-  for (const r of results) {
-    if (r.status === 'fulfilled') items.push(...r.value);
-    else hasError = true;
+  var items=[],err=false;
+  for(var i=0;i<res.length;i++){
+    if(res[i].status==='fulfilled')items=items.concat(res[i].value);
+    else{err=true;console.warn('fetch err',res[i].reason&&res[i].reason.message)}
   }
+  if(err)document.getElementById('error-banner').classList.add('on');
 
-  if (hasError) document.getElementById('error-banner').classList.add('on');
+  var seen={};
+  items=items.filter(function(x){if(seen[x.url])return false;seen[x.url]=1;return true});
+  var ho={hot:0,rising:1,notable:2};
+  items.sort(function(a,b){var d=ho[a.heat]-ho[b.heat];return d||b.score-a.score});
 
-  // Deduplica por URL
-  const seen = new Set();
-  items = items.filter(i => { if (seen.has(i.url)) return false; seen.add(i.url); return true; });
-
-  // Ordena: hot primeiro, depois por score desc
-  const heatOrder = {hot:0,rising:1,notable:2};
-  items.sort((a,b) => heatOrder[a.heat]-heatOrder[b.heat] || b.score-a.score);
-
-  allNews = items;
-  lastLoad = new Date();
-  updateStats();
-  buildHeatMap();
-  renderFeed();
-
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23,4 23,10 17,10"/><polyline points="1,20 1,14 7,14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Atualizar';
-  document.getElementById('last-update').textContent = 'Atualizado agora';
+  allNews=items;lastLoad=new Date();
+  updateStats();buildHeatMap();renderFeed();
+  btn.disabled=false;btn.textContent='&#8635; Atualizar';
+  document.getElementById('last-update').textContent='Atualizado agora';
 }
 
-// ── STATS ─────────────────────────────────────────────────────────────────────
-function updateStats() {
-  document.getElementById('s-hot').textContent    = allNews.filter(n=>n.heat==='hot').length;
-  document.getElementById('s-reddit').textContent = allNews.filter(n=>n.src==='reddit').length;
-  document.getElementById('s-x').textContent      = allNews.filter(n=>n.src==='x').length;
-  document.getElementById('s-total').textContent  = allNews.length;
+function updateStats(){
+  document.getElementById('s-hot').textContent=allNews.filter(function(n){return n.heat==='hot'}).length;
+  document.getElementById('s-reddit').textContent=allNews.filter(function(n){return n.src==='reddit'}).length;
+  document.getElementById('s-x').textContent=allNews.filter(function(n){return n.src==='x'}).length;
+  document.getElementById('s-total').textContent=allNews.length;
 }
 
-// ── HEAT MAP ──────────────────────────────────────────────────────────────────
-const TOPIC_STYLES = {
-  'EUA':            {bg:'rgba(248,113,113,.12)',  color:'var(--red)',    border:'rgba(248,113,113,.25)'},
-  'Brasil':         {bg:'rgba(74,222,128,.12)',   color:'var(--green)',  border:'rgba(74,222,128,.25)'},
-  'Europa':         {bg:'rgba(96,165,250,.12)',   color:'var(--blue)',   border:'rgba(96,165,250,.25)'},
-  'Rússia/UA':      {bg:'rgba(251,146,60,.12)',   color:'var(--orange)', border:'rgba(251,146,60,.25)'},
-  'China':          {bg:'rgba(252,211,77,.12)',   color:'var(--gold)',   border:'rgba(252,211,77,.25)'},
-  'Médio Oriente':  {bg:'rgba(192,132,252,.12)',  color:'var(--purple)', border:'rgba(192,132,252,.25)'},
-  'América Latina': {bg:'rgba(251,191,36,.12)',   color:'var(--yellow)', border:'rgba(251,191,36,.25)'},
-  'ONU/Diplomacia': {bg:'rgba(255,255,255,.05)',  color:'var(--dim)',    border:'var(--sep2)'},
-  'Outros':         {bg:'rgba(255,255,255,.04)',  color:'var(--dim2)',   border:'var(--sep)'},
-};
-
-function buildHeatMap() {
-  const counts = {};
-  allNews.forEach(n => { counts[n.topic] = (counts[n.topic]||0)+1; });
-  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).filter(([,c])=>c>0);
-  const row = document.getElementById('heat-row');
-  row.innerHTML = '';
-  sorted.forEach(([topic, count]) => {
-    const s = TOPIC_STYLES[topic] || TOPIC_STYLES['Outros'];
-    const el = document.createElement('div');
-    el.className = 'heat-tag' + (activeFilter.topic===topic?' active':'');
-    el.style.cssText = `background:${s.bg};color:${s.color};border-color:${s.border}`;
-    el.textContent = `${topic} (${count})`;
-    el.onclick = () => setTopic(topic);
+function buildHeatMap(){
+  var counts={};
+  allNews.forEach(function(n){counts[n.topic]=(counts[n.topic]||0)+1});
+  var sorted=Object.keys(counts).map(function(k){return[k,counts[k]]}).sort(function(a,b){return b[1]-a[1]});
+  var row=document.getElementById('heat-row');row.innerHTML='';
+  sorted.forEach(function(pair){
+    var t=pair[0],c=pair[1],s=TSTYLES[t]||TSTYLES['Outros'];
+    var el=document.createElement('div');
+    el.className='heat-tag'+(activeFilter.topic===t?' active':'');
+    el.style.background=s.bg;el.style.color=s.c;el.style.borderColor=s.b;
+    el.textContent=t+' ('+c+')';
+    (function(topic){el.onclick=function(){setTopic(topic)}})(t);
     row.appendChild(el);
   });
 }
 
-// ── RENDER FEED ───────────────────────────────────────────────────────────────
-function renderFeed() {
-  let items = allNews;
-  if (activeFilter.src !== 'all') items = items.filter(n=>n.src===activeFilter.src);
-  if (activeFilter.topic) items = items.filter(n=>n.topic===activeFilter.topic);
-  if (activeFilter.query) {
-    const q = activeFilter.query.toLowerCase();
-    items = items.filter(n=>n.title.toLowerCase().includes(q)||n.preview.toLowerCase().includes(q));
+function renderFeed(){
+  var items=allNews.slice();
+  if(activeFilter.src!=='all')items=items.filter(function(n){return n.src===activeFilter.src});
+  if(activeFilter.topic)items=items.filter(function(n){return n.topic===activeFilter.topic});
+  if(activeFilter.query){
+    var q=activeFilter.query.toLowerCase();
+    items=items.filter(function(n){return n.title.toLowerCase().indexOf(q)>-1||n.preview.toLowerCase().indexOf(q)>-1});
   }
-
-  const root = document.getElementById('feed-root');
-  if (!items.length) {
-    root.innerHTML = '<div class="feed-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>Nenhum resultado</p><small>Tente outro filtro ou clique em Atualizar</small></div>';
+  var root=document.getElementById('feed-root');
+  if(!items.length){
+    root.innerHTML='<div class="feed-empty"><p>Nenhum resultado</p><small>Tente outro filtro ou Atualizar</small></div>';
     return;
   }
-
-  const feed = document.createElement('div');
-  feed.className = 'feed';
-  items.forEach(item => {
-    const card = document.createElement('div');
-    card.className = `news-card ${item.heat}`;
-    const scoreClass = item.score > 10000 ? 'hi' : item.score > 3000 ? 'mid' : '';
-    const tagsHtml = item.tags.map(t=>`<span class="tag ${t.cls}">${t.label}</span>`).join('');
-    const scoreHtml = item.score > 0
-      ? `<span class="nc-score ${scoreClass}">↑ ${fmtScore(item.score)}</span>`
-      : '';
-    const commentsHtml = item.comments_count > 0
-      ? `<span>${item.comments_count} comentários</span>`
-      : '';
-    card.innerHTML = `
-      <div class="nc-head">
-        <div class="src-icon ${item.src}">${item.src==='reddit'?'R':'X'}</div>
-        <div class="nc-title">${escHtml(item.title)}</div>
-      </div>
-      <div class="nc-meta">
-        <span style="color:var(--dim2)">${escHtml(item.label)}</span>
-        ${scoreHtml}
-        ${commentsHtml}
-        <span class="nc-age" style="color:var(--dim2);margin-left:auto">${item.age}</span>
-      </div>
-      ${item.preview ? `<div class="nc-preview">${escHtml(item.preview)}</div>` : ''}
-      ${tagsHtml ? `<div class="nc-tags">${tagsHtml}</div>` : ''}
-    `;
-    card.onclick = () => openDrawer(item.id);
+  var feed=document.createElement('div');feed.className='feed';
+  items.forEach(function(item){
+    var card=document.createElement('div');
+    card.className='news-card '+item.heat;
+    var scoreHtml=item.score>0?'<span style="color:'+(item.score>10000?'var(--green)':item.score>3000?'var(--yellow)':'var(--dim)')+'">&#8593; '+fmtScore(item.score)+'</span>':'';
+    var cmtHtml=item.comments_count>0?'<span>'+item.comments_count+' cmts</span>':'';
+    var tagsHtml=item.tags.map(function(t){return '<span class="tag '+t.c+'">'+t.l+'</span>'}).join('');
+    card.innerHTML=
+      '<div class="nc-head">'+
+      '<div class="src-icon '+item.src+'">'+(item.src==='reddit'?'R':'X')+'</div>'+
+      '<div class="nc-title">'+esc(item.title)+'</div>'+
+      '</div>'+
+      '<div class="nc-meta">'+
+      '<span style="color:var(--dim2)">'+esc(item.label)+'</span>'+
+      scoreHtml+cmtHtml+
+      '<span style="color:var(--dim2);margin-left:auto">'+item.age+'</span>'+
+      '</div>'+
+      (item.preview?'<div class="nc-preview">'+esc(item.preview)+'</div>':'')+
+      (tagsHtml?'<div class="nc-tags">'+tagsHtml+'</div>':'');
+    (function(id){card.onclick=function(){openDrawer(id)}})(item.id);
     feed.appendChild(card);
   });
-  root.innerHTML = '';
-  root.appendChild(feed);
+  root.innerHTML='';root.appendChild(feed);
 }
 
-// ── FILTERS ───────────────────────────────────────────────────────────────────
-function filterNews(q) {
-  activeFilter.query = q;
-  renderFeed();
-}
-
-function setSrc(s) {
-  activeFilter.src = s;
-  ['all','reddit','x'].forEach(id => {
-    const el = document.getElementById('sf-'+id);
-    el.classList.toggle('on', id===s);
+function filterNews(q){activeFilter.query=q;renderFeed()}
+function setSrc(s){
+  activeFilter.src=s;
+  ['all','reddit','x'].forEach(function(id){
+    document.getElementById('sf-'+id).classList.toggle('on',id===s);
   });
   renderFeed();
 }
-
-function setTopic(t) {
-  activeFilter.topic = activeFilter.topic===t ? null : t;
-  buildHeatMap();
-  renderFeed();
+function setTopic(t){
+  activeFilter.topic=activeFilter.topic===t?null:t;
+  buildHeatMap();renderFeed();
 }
 
-// ── DRAWER ────────────────────────────────────────────────────────────────────
-function openDrawer(id) {
-  const item = allNews.find(n=>n.id===id);
-  if (!item) return;
-  drawerItem = item;
-  document.getElementById('dr-title').textContent = item.title;
-  document.getElementById('dr-sub').innerHTML =
-    `<span style="color:${item.src==='reddit'?'var(--orange)':'var(--dim)'}">${escHtml(item.label)}</span>` +
-    (item.score > 0 ? `<span>↑ ${fmtScore(item.score)}</span>` : '') +
-    `<span style="color:var(--dim2)">${item.age}</span>` +
-    `<span class="tag ${item.heat==='hot'?'hot':item.heat==='rising'?'trend':'break'}" style="font-size:10px">${item.topic}</span>`;
-  document.getElementById('dr-link').href = item.url;
-
-  const body = document.getElementById('dr-body');
-  body.innerHTML = `
-    <div class="dr-section">
-      <div class="dr-section-title">Conteúdo completo</div>
-      <div class="dr-text">${escHtml(item.preview || 'Sem preview disponível — ver original.')}</div>
-    </div>
-    <div class="dr-section">
-      <div class="dr-section-title">Frank's take</div>
-      <div class="dr-frank-take">${FRANK_TAKES[item.topic] || FRANK_TAKES['Outros']}</div>
-    </div>
-    <div class="dr-section">
-      <div class="dr-section-title">Metadados</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-        <div><span style="color:var(--dim2)">Fonte</span><br><span>${escHtml(item.label)}</span></div>
-        <div><span style="color:var(--dim2)">Tópico</span><br><span>${item.topic}</span></div>
-        <div><span style="color:var(--dim2)">Relevância</span><br><span>${item.heat==='hot'?'🔥 Trending':item.heat==='rising'?'📈 Rising':'📌 Notable'}</span></div>
-        <div><span style="color:var(--dim2)">Publicado</span><br><span>${item.age}</span></div>
-      </div>
-    </div>
-  `;
-
+function openDrawer(id){
+  var item=null;
+  for(var i=0;i<allNews.length;i++){if(allNews[i].id===id){item=allNews[i];break}}
+  if(!item)return;
+  document.getElementById('dr-title').textContent=item.title;
+  document.getElementById('dr-sub').innerHTML=
+    '<span style="color:'+(item.src==='reddit'?'var(--orange)':'var(--dim)')+'">'+esc(item.label)+'</span>'+
+    (item.score>0?'<span>&#8593; '+fmtScore(item.score)+'</span>':'')+
+    '<span style="color:var(--dim2)">'+item.age+'</span>';
+  document.getElementById('dr-link').href=item.url;
+  var frank=FRANK[item.topic]||FRANK['Outros'];
+  document.getElementById('dr-body').innerHTML=
+    '<div class="dr-section">'+
+    '<div class="dr-stitle">Conteudo</div>'+
+    '<div class="dr-text">'+esc(item.preview||'Ver original para conteudo completo.')+'</div>'+
+    '</div>'+
+    '<div class="dr-section">'+
+    '<div class="dr-stitle">Frank\'s take</div>'+
+    '<div class="dr-frank">'+esc(frank)+'</div>'+
+    '</div>'+
+    '<div class="dr-section">'+
+    '<div class="dr-stitle">Metadados</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">'+
+    '<div><span style="color:var(--dim2)">Fonte</span><br>'+esc(item.label)+'</div>'+
+    '<div><span style="color:var(--dim2)">Topico</span><br>'+esc(item.topic)+'</div>'+
+    '<div><span style="color:var(--dim2)">Relevancia</span><br>'+(item.heat==='hot'?'Trending':item.heat==='rising'?'Rising':'Notable')+'</div>'+
+    '<div><span style="color:var(--dim2)">Publicado</span><br>'+item.age+'</div>'+
+    '</div></div>';
   document.getElementById('drawer-overlay').classList.add('on');
   document.getElementById('drawer').classList.add('on');
 }
-
-function closeDrawer() {
+function closeDrawer(){
   document.getElementById('drawer-overlay').classList.remove('on');
   document.getElementById('drawer').classList.remove('on');
-  drawerItem = null;
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer()});
+
+function showToast(msg,cls){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast on'+(cls?' '+cls:'');
+  setTimeout(function(){t.className='toast'},3000);
 }
 
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+setInterval(function(){
+  if(lastLoad){
+    var mins=Math.floor((Date.now()-lastLoad)/60000);
+    document.getElementById('last-update').textContent='Atualizado ha '+mins+'min';
+    if(mins>=15)loadNews();
+  }
+},60000);
 
-// ── TOAST ─────────────────────────────────────────────────────────────────────
-function showToast(msg, cls='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast on' + (cls?' '+cls:'');
-  setTimeout(()=>{ t.className='toast'; }, 3000);
-}
-
-// ── UTILS ─────────────────────────────────────────────────────────────────────
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── AUTO-REFRESH (15min) ──────────────────────────────────────────────────────
-setInterval(() => {
-  const mins = lastLoad ? Math.floor((Date.now()-lastLoad)/60000) : 0;
-  if (lastLoad) document.getElementById('last-update').textContent = `Atualizado há ${mins}min`;
-  if (mins >= 15) loadNews();
-}, 60000);
-
-// ── INIT ──────────────────────────────────────────────────────────────────────
 loadNews();
 </script>
 </body>
