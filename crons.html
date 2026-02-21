@@ -765,6 +765,32 @@ function switchTab(name){
 const API = 'http://127.0.0.1:8743/cron-api';
 const NOTION_PROXY = 'https://notion-proxy.marcoaquilino.workers.dev';
 const EXECUCOES_DB = '30eb72d5042d81abb817d8bedf906713';
+
+// Mapa cron name → Notion page_id (para buscar versões via CF Worker)
+const CRON_PAGE_IDS = {
+  "Radar Noturno Coleta 1":   "30eb72d5-042d-81f2-928f-d13569eeb30b",
+  "Radar Noturno Coleta 2":   "30eb72d5-042d-81dd-b802-e2e3e98f5d1d",
+  "Radar Noturno Coleta 3":   "30eb72d5-042d-8143-aeac-e4420fd82f89",
+  "Radar Noturno Entregável": "30eb72d5-042d-8195-bfb3-e0163902b80d",
+  "Radar Crypto & AI":        "30eb72d5-042d-815a-b56c-d82958d9859f",
+  "Brief Matinal":            "30eb72d5-042d-81d0-b25f-d7103c3da2ff",
+  "AI Self-Improvement":      "30eb72d5-042d-8180-a5db-e1cc0cf907c2",
+  "Heartbeat 10h":            "30eb72d5-042d-81ba-9e84-c1aa2161ea31",
+  "RADAR Diário YT+X":        "30eb72d5-042d-81ba-a586-e5d318c856a7",
+  "Heartbeat 14h":            "30eb72d5-042d-81dd-940e-ec318dc56caf",
+  "Heartbeat 18h":            "30eb72d5-042d-816c-bbe0-e91b62250d93",
+  "YouTube Scanner":          "30eb72d5-042d-8133-a4f3-df02363d6af8",
+  "Recording Pipeline 14h":   "30eb72d5-042d-812a-9a7e-dc3670be4f52",
+  "Recording Pipeline 20:30": "30eb72d5-042d-81be-b77f-d77809360503",
+  "Revisão de Crons":         "30eb72d5-042d-812b-b99c-e43f6e39743b",
+  "Twitter Radar":            "30eb72d5-042d-819c-b22b-d3e792d6e6da",
+  "NotionOps":                "30eb72d5-042d-8199-99e3-df99ecafeabb",
+  "Checklist + Highlights":   "30eb72d5-042d-8199-b6a1-f03deea19202",
+  "Consolidação Mid-Week":    "30eb72d5-042d-8140-bee3-e30cc50599b9",
+  "Agenda Semanal":           "30eb72d5-042d-8119-8182-c7dd4f876d71",
+  "Digest Semanal":           "30eb72d5-042d-8158-bce0-df4840855646",
+  "NFTs Digest":              "30eb72d5-042d-8109-9473-da71407e9eaf",
+};
 let drawerCron = null;
 
 function switchDrawerTab(tab) {
@@ -974,32 +1000,82 @@ async function runCronNow() {
 
 // ── Versioning ──
 async function loadVersions(cronName) {
-  try {
-    const r = await fetch(`${API}/versions?name=${encodeURIComponent(cronName)}`, {signal: AbortSignal.timeout(5000)});
-    const data = await r.json();
-    renderVersions(data.versions || []);
-  } catch(e) { /* silencioso */ }
-}
-
-function renderVersions(versions) {
   const list = document.getElementById('dr-versions-list');
   const cnt = document.getElementById('versions-count');
   if (!list) return;
-  cnt.textContent = versions.length ? `(${versions.length})` : '';
+  cnt.textContent = '…';
+
+  // 1. Tenta API local
+  try {
+    const r = await fetch(`${API}/versions?name=${encodeURIComponent(cronName)}`, {signal: AbortSignal.timeout(3000)});
+    const data = await r.json();
+    renderVersions(data.versions || [], 'local');
+    return;
+  } catch(_) {}
+
+  // 2. Fallback: CF Worker lê toggles da página do cron no Notion
+  const pageId = CRON_PAGE_IDS[cronName];
+  if (!pageId) {
+    cnt.textContent = '';
+    list.innerHTML = '<div style="font-size:11px;color:var(--dim2);padding:4px 0">page_id não mapeado</div>';
+    return;
+  }
+  try {
+    const r = await fetch(`${NOTION_PROXY}/versions?page_id=${pageId}`, {signal: AbortSignal.timeout(8000)});
+    const data = await r.json();
+    // Converte formato Notion toggle → formato versions
+    const versions = (data.versions || []).map((v, i) => ({
+      v: data.versions.length - i,
+      diff: v.label,
+      ts: null,
+      code: v.code,
+      block_id: v.block_id,
+      _notion: true,
+    }));
+    renderVersions(versions, 'Notion');
+  } catch(e) {
+    cnt.textContent = '';
+    list.innerHTML = '<div style="font-size:11px;color:var(--dim2);padding:4px 0">Offline</div>';
+  }
+}
+
+function renderVersions(versions, source) {
+  const list = document.getElementById('dr-versions-list');
+  const cnt = document.getElementById('versions-count');
+  if (!list) return;
+  cnt.textContent = versions.length ? `(${versions.length}${source ? ' · ' + source : ''})` : '';
   list.innerHTML = '';
   if (!versions.length) {
     list.innerHTML = '<div style="font-size:11px;color:var(--dim2);padding:4px 0">Nenhuma versão ainda</div>';
     return;
   }
-  [...versions].reverse().forEach(v => {
+  versions.forEach(v => {
     const row = document.createElement('div');
     row.className = 'v-row';
-    const ts = new Date(v.ts).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'});
+    const tsStr = v.ts ? new Date(v.ts).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'}) : '';
+    const label = v._notion ? v.diff : `V${v.v} — ${v.diff}`;
+    const restoreBtn = v._notion ? '' : `<button class="v-restore" onclick="restoreVersion(${v.v})">↩ Restaurar</button>`;
     row.innerHTML =
       `<span class="v-badge">V${v.v}</span>`+
-      `<span class="v-diff">${v.diff}</span>`+
-      `<span class="v-ts">${ts}</span>`+
-      `<button class="v-restore" onclick="restoreVersion(${v.v})">↩ Restaurar</button>`;
+      `<span class="v-diff">${label}</span>`+
+      (tsStr ? `<span class="v-ts">${tsStr}</span>` : '')+
+      restoreBtn;
+    // Expandir código ao clicar (para versões Notion)
+    if (v._notion && v.code) {
+      row.style.cursor = 'pointer';
+      row.title = 'Clique para ver detalhes';
+      row.onclick = () => {
+        const existing = row.nextSibling;
+        if (existing && existing.classList?.contains('v-code-expand')) {
+          existing.remove(); return;
+        }
+        const pre = document.createElement('pre');
+        pre.className = 'v-code-expand';
+        pre.style.cssText = 'font-size:10px;color:var(--dim);background:var(--bg2);padding:8px;border-radius:4px;margin:4px 0;white-space:pre-wrap;word-break:break-all';
+        pre.textContent = v.code;
+        row.after(pre);
+      };
+    }
     list.appendChild(row);
   });
 }
