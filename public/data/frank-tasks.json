@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "generated_by": "frank-sync",
+    "updated_at": "2026-02-21T19:30:01.419853+00:00",
+    "source": "active-tasks.md"
+  },
+  "agents": [
+    {
+      "id": "frank-main",
+      "status": "active",
+      "task": "Frank — Sessão Principal",
+      "progress": [
+        "Monitorando. Aguardando comandos do Marco."
+      ],
+      "model": "anthropic/claude-sonnet-4-5",
+      "tokens": 0,
+      "owner": "Frank",
+      "createdAt": "2026-02-21T19:30:01.419853+00:00",
+      "updatedAt": "2026-02-21T19:30:01.419853+00:00"
+    }
+  ]
+}
