@@ -16,7 +16,7 @@
 html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px;line-height:1.5}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
 a{color:inherit;text-decoration:none}
-.page{max-width:1200px;margin:0 auto;padding:28px 24px 100px}
+.page{max-width:100%;padding:20px 32px 60px}
 
 /* ── HEADER ─────────────────────────────────────────────────────────────── */
 .header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}
@@ -42,9 +42,9 @@ a{color:inherit;text-decoration:none}
 .tab.active .tab-count{background:rgba(74,222,128,.12);color:var(--green)}
 
 /* ── MAIN LAYOUT ─────────────────────────────────────────────────────────── */
-.main-layout{display:flex;gap:28px;align-items:flex-start}
+.main-layout{display:flex;gap:20px;align-items:flex-start}
 .col-main{flex:1;min-width:0}
-.col-side{width:288px;flex-shrink:0;position:sticky;top:24px;max-height:calc(100vh - 48px);overflow-y:auto}
+.col-side{width:240px;flex-shrink:0;position:sticky;top:20px;max-height:calc(100vh - 40px);overflow-y:auto}
 .col-side::-webkit-scrollbar{width:3px}
 
 /* ── STATS ───────────────────────────────────────────────────────────────── */
@@ -116,8 +116,8 @@ a{color:inherit;text-decoration:none}
 .grid-card:hover{background:#1d1d1d;border-color:var(--sep2)}
 .grid-card.hot .grid-thumb-wrap::after{content:'HOT';position:absolute;top:7px;left:7px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.05em}
 .grid-card.rising .grid-thumb-wrap::after{content:'RISING';position:absolute;top:7px;left:7px;background:var(--yellow);color:#111;font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.05em}
-.grid-thumb-wrap{position:relative;height:110px;overflow:hidden;background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.grid-thumb-wrap>div{width:100%!important;height:110px!important;border-radius:0!important;font-size:28px!important}
+.grid-thumb-wrap{position:relative;height:80px;overflow:hidden;background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.grid-thumb-wrap>div{width:100%!important;height:80px!important;border-radius:0!important;font-size:24px!important}
 .grid-body{padding:11px 12px;flex:1;display:flex;flex-direction:column;gap:5px}
 .grid-eyebrow{display:flex;align-items:center;gap:5px}
 .grid-src{font-size:10px;color:var(--dim2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -153,20 +153,21 @@ a{color:inherit;text-decoration:none}
 .side-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dim2);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--sep)}
 
 /* ── TOP 10 ──────────────────────────────────────────────────────────────── */
-.top10-item{display:flex;align-items:flex-start;gap:8px;padding:8px 6px;border-radius:6px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--sep)}
+.top10-item{display:flex;align-items:flex-start;gap:7px;padding:6px 4px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--sep)}
 .top10-item:last-child{border-bottom:none}
 .top10-item:hover{background:rgba(255,255,255,.03)}
-.top10-rank{font-size:12px;font-weight:800;width:18px;flex-shrink:0;color:var(--dim2);font-variant-numeric:tabular-nums;padding-top:1px}
-.top10-rank.r1{color:var(--gold)}
-.top10-rank.r2{color:#bbb}
-.top10-rank.r3{color:var(--orange)}
-.top10-title{font-size:11px;font-weight:500;line-height:1.4;flex:1;color:var(--text)}
-.top10-meta{display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap}
+.top10-rank{font-size:11px;font-weight:700;width:16px;flex-shrink:0;color:var(--dim2);font-variant-numeric:tabular-nums;padding-top:1px;text-align:right}
+.top10-rank.r1{color:var(--gold)}.top10-rank.r2{color:#999}.top10-rank.r3{color:var(--orange)}
+.top10-title{font-size:11px;font-weight:400;line-height:1.35;flex:1;color:var(--dim);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.top10-meta{display:flex;align-items:center;gap:4px;margin-top:2px}
 .top10-score{font-size:10px;color:var(--dim2)}
 
-/* ── HEAT MAP ────────────────────────────────────────────────────────────── */
-.heat-row{display:flex;gap:5px;flex-wrap:wrap}
-.heat-tag{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none;opacity:.72}
+/* ── HEAT MAP — rodapé fixo ───────────────────────────────────────────────── */
+.topics-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(17,17,17,.94);border-top:1px solid var(--sep);backdrop-filter:blur(10px);padding:8px 32px;z-index:50;display:flex;align-items:center;gap:8px;overflow-x:auto}
+.topics-bar::-webkit-scrollbar{height:0}
+.topics-bar-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);flex-shrink:0;margin-right:4px}
+.heat-row{display:flex;gap:5px;flex-wrap:nowrap}
+.heat-tag{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none;opacity:.6;white-space:nowrap;flex-shrink:0}
 .heat-tag:hover,.heat-tag.active{opacity:1}
 
 /* ── DRAWER ──────────────────────────────────────────────────────────────── */
@@ -310,13 +311,10 @@ a{color:inherit;text-decoration:none}
       <div class="side-title">TOP 10 — Score Marco</div>
       <div id="top10-list"></div>
     </div>
-    <div class="side-section">
-      <div class="side-title">Topicos</div>
-      <div class="heat-row" id="heat-row"></div>
-    </div>
   </div>
 </div>
 </div>
+<div class="topics-bar" id="topics-bar"><span class="topics-bar-label">Topicos</span><div class="heat-row" id="heat-row"></div></div>
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-head">
@@ -767,14 +765,13 @@ function renderTop10(){
     var msLabel=ms>=50?'&#9733; '+ms:ms>=25?ms:'';
     var el=document.createElement('div');el.className='top10-item'+(isRead(item.id)?' is-read':'');
     el.innerHTML=
-      '<div class="top10-rank '+rankClass+'">'+(rank<=3?['1.','2.','3.'][rank-1]:rank)+'</div>'+
+      '<div class="top10-rank '+rankClass+'">'+rank+'</div>'+
       '<div style="flex:1;min-width:0">'+
       '<div class="top10-title">'+esc(item.title)+'</div>'+
       '<div class="top10-meta">'+
-      '<span class="top10-score" style="color:'+(item.srcType==='reddit'?'var(--orange)':'var(--dim2)')+'">'+esc(item.label)+'</span>'+
-      (item.score>0?'<span class="top10-score">&#8593;'+fmtScore(item.score)+'</span>':'')+
-      '<span class="top10-score">'+item.age+'</span>'+
-      (ms>0?'<span class="marco-score '+msClass+'">'+msLabel+'</span>':'')+
+      '<span class="top10-score">'+esc(item.label)+'</span>'+
+      (item.score>0?'<span class="top10-score"> · +'+fmtScore(item.score)+'</span>':'')+
+      '<span class="top10-score"> · '+item.age+'</span>'+
       '</div></div>';
     (function(id){el.onclick=function(){openDrawer(id)}})(item.id);
     list.appendChild(el);
