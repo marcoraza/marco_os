@@ -3,222 +3,376 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Radar Politico - Marco OS</title>
+<title>Radar de Noticias &mdash; Marco OS</title>
 <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#111;--bg2:#1a1a1a;--bg3:#222;--sep:rgba(255,255,255,.06);--sep2:rgba(255,255,255,.1);--text:#e2e2e2;--dim:#888;--dim2:#555;--green:#4ade80;--blue:#60a5fa;--yellow:#fbbf24;--orange:#fb923c;--purple:#c084fc;--red:#f87171;--gold:#fcd34d;--overlay:rgba(0,0,0,.6)}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
-.page{max-width:900px;margin:0 auto;padding:32px 24px 80px}
-.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
-.header h1{font-size:22px;font-weight:600;letter-spacing:-.4px;display:flex;align-items:center;gap:10px}
-.h1-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
-.header-sub{font-size:12px;color:var(--dim);margin-top:4px;display:flex;align-items:center;gap:10px}
-.header-right{display:flex;align-items:center;gap:14px;padding-top:4px}
-.status-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green)}
+:root{
+  --bg:#111;--bg2:#1a1a1a;--bg3:#222;--bg4:#252525;
+  --sep:rgba(255,255,255,.06);--sep2:rgba(255,255,255,.1);--sep3:rgba(255,255,255,.16);
+  --text:#e2e2e2;--dim:#888;--dim2:#555;
+  --green:#4ade80;--blue:#60a5fa;--yellow:#fbbf24;--orange:#fb923c;
+  --purple:#c084fc;--red:#f87171;--gold:#fcd34d;--cyan:#22d3ee;
+  --overlay:rgba(0,0,0,.65)
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px;line-height:1.5}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+a{color:inherit;text-decoration:none}
+.page{max-width:960px;margin:0 auto;padding:28px 20px 80px}
+
+/* HEADER */
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.header h1{font-size:20px;font-weight:700;letter-spacing:-.4px;display:flex;align-items:center;gap:8px}
+.h-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;letter-spacing:.04em}
+.h-badge.global{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.h-badge.br{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.h-badge.tech{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.h-badge.crypto{background:rgba(252,211,77,.1);color:var(--gold);border:1px solid rgba(252,211,77,.2)}
+.header-sub{font-size:11px;color:var(--dim);margin-top:3px}
+.header-right{display:flex;align-items:center;gap:12px}
+.status-pill{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green)}
 .sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2.4s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.clock{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
-.stats{display:flex;gap:32px;padding:0 0 22px;border-bottom:1px solid var(--sep);margin-bottom:24px}
-.stat-val{font-size:22px;font-weight:700;line-height:1}.stat-lbl{font-size:11px;color:var(--dim);margin-top:3px}
-.actions{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.actions-r{margin-left:auto}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--sep2);background:var(--bg2);color:var(--dim)}
-.btn:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.clock{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+
+/* TABS */
+.tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid var(--sep);padding-bottom:0}
+.tab{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--dim);transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:6px;margin-bottom:-1px}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);border-bottom-color:var(--green)}
+.tab .tab-count{font-size:10px;background:var(--bg3);border-radius:10px;padding:1px 5px;color:var(--dim2)}
+.tab.active .tab-count{background:rgba(74,222,128,.12);color:var(--green)}
+
+/* STATS BAR */
+.stats{display:flex;gap:0;margin-bottom:20px;background:var(--bg2);border:1px solid var(--sep);border-radius:8px;overflow:hidden}
+.stat{flex:1;padding:12px 16px;border-right:1px solid var(--sep)}
+.stat:last-child{border-right:none}
+.stat-val{font-size:20px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.stat-lbl{font-size:10px;color:var(--dim);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.toolbar-r{margin-left:auto;display:flex;align-items:center;gap:6px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--sep2);background:var(--bg2);color:var(--dim);white-space:nowrap}
+.btn:hover{color:var(--text);border-color:var(--sep3)}
 .btn.primary{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.2);color:var(--green)}
-.btn.primary:hover{background:rgba(74,222,128,.15)}
-.btn:disabled{opacity:.5;cursor:default;pointer-events:none}
+.btn.primary:hover{background:rgba(74,222,128,.14)}
+.btn:disabled{opacity:.45;cursor:default;pointer-events:none}
+.sort-btns{display:flex;gap:1px}
+.sort-btn{padding:5px 10px;font-size:11px;cursor:pointer;border:1px solid var(--sep2);background:var(--bg2);color:var(--dim);transition:all .15s;white-space:nowrap}
+.sort-btn:first-child{border-radius:5px 0 0 5px}
+.sort-btn:last-child{border-radius:0 5px 5px 0;border-left:none}
+.sort-btn.active{background:var(--bg3);color:var(--text);border-color:var(--sep3)}
 .search{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--sep2);border-radius:5px;padding:5px 10px}
-.search input{background:none;border:none;outline:none;color:var(--text);font-size:12px;width:160px}
+.search input{background:none;border:none;outline:none;color:var(--text);font-size:11px;width:140px}
 .search input::placeholder{color:var(--dim2)}
-.src-filters{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
-.sf{display:flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--sep2);background:var(--bg2);color:var(--dim);transition:all .15s;user-select:none}
-.sf:hover{color:var(--text)}
-.sf.on.all{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);color:var(--green)}
-.sf.on.reddit{background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.25);color:var(--orange)}
-.sf.on.x{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.18);color:var(--text)}
-.src-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--sep)}
-.section-head h3{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
-.heat-row{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;min-height:28px}
-.heat-tag{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none;opacity:.75}
+
+/* SOURCE FILTERS */
+.src-row{display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap}
+.sf{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--sep);background:transparent;color:var(--dim);transition:all .15s;user-select:none}
+.sf:hover{color:var(--text);border-color:var(--sep2)}
+.sf.on{background:var(--bg2);border-color:var(--sep2);color:var(--text)}
+.src-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* TOPIC HEAT MAP */
+.heat-section{margin-bottom:18px}
+.heat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);margin-bottom:8px}
+.heat-row{display:flex;gap:5px;flex-wrap:wrap;min-height:26px}
+.heat-tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none;opacity:.7}
 .heat-tag:hover,.heat-tag.active{opacity:1}
-.error-banner{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:16px;display:none;align-items:center;gap:8px}
-.error-banner.on{display:flex}
-.feed{display:flex;flex-direction:column;gap:8px}
-.news-card{background:var(--bg2);border:1px solid var(--sep);border-left-width:3px;border-radius:8px;padding:14px 16px;cursor:pointer;transition:border-color .15s,background .15s}
-.news-card:hover{border-color:var(--sep2);background:#1d1d1d}
+
+/* TOP 10 SECTION */
+.top10-section{margin-bottom:24px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);display:flex;align-items:center;gap:6px}
+.section-title .dot{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.top10-list{display:flex;flex-direction:column;gap:2px}
+.top10-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;transition:background .12s;border:1px solid transparent}
+.top10-item:hover{background:var(--bg2);border-color:var(--sep)}
+.top10-rank{font-size:13px;font-weight:800;color:var(--dim2);width:20px;flex-shrink:0;font-variant-numeric:tabular-nums;line-height:1.4}
+.top10-rank.r1{color:var(--gold)}
+.top10-rank.r2{color:var(--dim)}
+.top10-rank.r3{color:var(--orange)}
+.top10-title{font-size:12px;font-weight:500;line-height:1.4;flex:1}
+.top10-meta{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
+.top10-score{font-size:10px;color:var(--dim2)}
+.marco-score{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600}
+.marco-score.hi{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.marco-score.mid{background:rgba(251,191,36,.08);color:var(--yellow);border:1px solid rgba(251,191,36,.2)}
+.marco-score.lo{color:var(--dim2)}
+
+/* MAIN FEED */
+.feed-section .section-title{margin-bottom:10px}
+.feed{display:flex;flex-direction:column;gap:6px}
+.news-card{background:var(--bg2);border:1px solid var(--sep);border-left-width:3px;border-radius:7px;padding:12px 14px;cursor:pointer;transition:border-color .12s,background .12s;position:relative}
+.news-card:hover{border-color:var(--sep2);background:#1c1c1c}
 .news-card.hot{border-left-color:var(--red)}
 .news-card.rising{border-left-color:var(--yellow)}
 .news-card.notable{border-left-color:var(--blue)}
-.nc-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
-.src-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px}
+.card-head{display:flex;align-items:flex-start;gap:9px;margin-bottom:5px}
+.src-icon{width:18px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;flex-shrink:0;margin-top:1px}
 .src-icon.reddit{background:rgba(251,146,60,.15);color:var(--orange)}
 .src-icon.x{background:rgba(255,255,255,.07);color:var(--dim)}
-.nc-title{font-size:13px;font-weight:500;line-height:1.45;flex:1}
-.nc-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--dim);flex-wrap:wrap;margin-bottom:4px}
-.nc-preview{font-size:12px;color:var(--dim);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px}
-.nc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
-.tag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:500;background:var(--bg3);color:var(--dim2);border:1px solid var(--sep)}
-.tag.hot{background:rgba(248,113,113,.08);color:var(--red);border-color:rgba(248,113,113,.2)}
-.tag.trend{background:rgba(251,191,36,.08);color:var(--yellow);border-color:rgba(251,191,36,.2)}
-.tag.brk{background:rgba(96,165,250,.08);color:var(--blue);border-color:rgba(96,165,250,.2)}
-.feed-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:64px 20px;color:var(--dim);font-size:13px}
-.spin{animation:spin .8s linear infinite;display:inline-block}
+.src-icon.rss{background:rgba(74,222,128,.1);color:var(--green)}
+.card-title{font-size:13px;font-weight:500;line-height:1.4;flex:1}
+.card-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--dim);flex-wrap:wrap}
+.card-preview{font-size:11px;color:var(--dim);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px}
+.card-footer{display:flex;align-items:center;gap:6px;margin-top:7px;flex-wrap:wrap}
+.tag{display:inline-block;padding:2px 6px;border-radius:8px;font-size:10px;font-weight:500;background:var(--bg3);color:var(--dim2);border:1px solid var(--sep)}
+.tag.hot{background:rgba(248,113,113,.07);color:var(--red);border-color:rgba(248,113,113,.18)}
+.tag.trend{background:rgba(251,191,36,.07);color:var(--yellow);border-color:rgba(251,191,36,.18)}
+.tag.brk{background:rgba(96,165,250,.07);color:var(--blue);border-color:rgba(96,165,250,.18)}
+.card-marco-score{margin-left:auto}
+
+/* ERROR + STATES */
+.error-banner{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.18);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--red);margin-bottom:12px;display:none;align-items:center;gap:7px}
+.error-banner.on{display:flex}
+.feed-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:56px 20px;color:var(--dim);font-size:12px}
+.spin{animation:spin .75s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.feed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 20px;gap:10px;color:var(--dim)}
+.feed-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 20px;gap:8px;color:var(--dim);font-size:12px}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--sep);margin:20px 0}
+
+/* DRAWER */
 .drawer-overlay{position:fixed;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
 .drawer-overlay.on{opacity:1;pointer-events:all}
-.drawer{position:fixed;top:0;right:-540px;width:520px;max-width:95vw;height:100vh;background:var(--bg2);border-left:1px solid var(--sep2);z-index:101;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1)}
+.drawer{position:fixed;top:0;right:-560px;width:540px;max-width:96vw;height:100vh;background:var(--bg2);border-left:1px solid var(--sep2);z-index:101;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1)}
 .drawer.on{right:0}
-.drawer-head{display:flex;align-items:flex-start;gap:12px;padding:20px 20px 14px;border-bottom:1px solid var(--sep);flex-shrink:0}
-.drawer-title{font-size:14px;font-weight:600;line-height:1.4;margin-bottom:5px}
-.drawer-sub{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.drawer-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;padding:2px 4px;transition:color .15s;flex-shrink:0;margin-left:auto}
+.drawer-head{display:flex;align-items:flex-start;gap:12px;padding:18px 18px 14px;border-bottom:1px solid var(--sep);flex-shrink:0}
+.drawer-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:17px;padding:2px;transition:color .15s;flex-shrink:0;margin-left:auto;line-height:1}
 .drawer-close:hover{color:var(--text)}
-.drawer-body{flex:1;overflow-y:auto;padding:20px}
-.dr-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--sep)}
-.dr-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.dr-stitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);margin-bottom:10px}
-.dr-text{font-size:12px;color:var(--dim);line-height:1.8}
-.dr-frank{font-size:12px;color:var(--text);line-height:1.7;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.12);border-radius:6px;padding:12px 14px}
-.drawer-foot{padding:14px 20px;border-top:1px solid var(--sep);display:flex;align-items:center;gap:8px;flex-shrink:0}
-.btn-ext{text-decoration:none;display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:5px;font-size:12px;border:1px solid var(--sep2);background:var(--bg3);color:var(--dim);transition:all .15s;cursor:pointer}
-.btn-ext:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
-.btn-save{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);padding:7px 14px;border-radius:5px;font-size:12px;cursor:pointer}
-.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--sep2);border-radius:7px;padding:10px 16px;font-size:12px;color:var(--text);z-index:300;transform:translateY(16px);opacity:0;transition:all .2s;pointer-events:none}
+.drawer-title{font-size:14px;font-weight:600;line-height:1.4;margin-bottom:4px}
+.drawer-sub{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.drawer-body{flex:1;overflow-y:auto;padding:18px}
+.dr-s{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--sep)}
+.dr-s:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.dr-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);margin-bottom:8px}
+.dr-text{font-size:12px;color:var(--dim);line-height:1.75}
+.dr-frank{font-size:12px;color:var(--text);line-height:1.75;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.1);border-radius:6px;padding:12px 14px}
+.dr-frank.loading{color:var(--dim);font-style:italic}
+.dr-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px}
+.dr-meta-item{display:flex;flex-direction:column;gap:2px}
+.dr-meta-item span:first-child{font-size:10px;color:var(--dim2)}
+.drawer-foot{padding:12px 18px;border-top:1px solid var(--sep);display:flex;align-items:center;gap:7px;flex-shrink:0}
+.btn-ext{text-decoration:none;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:5px;font-size:11px;border:1px solid var(--sep2);background:var(--bg3);color:var(--dim);transition:all .15s}
+.btn-ext:hover{color:var(--text);border-color:var(--sep3)}
+.btn-drive{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.22);color:var(--green);padding:6px 12px;border-radius:5px;font-size:11px;cursor:pointer;transition:all .15s}
+.btn-drive:hover{background:rgba(74,222,128,.15)}
+.btn-drive:disabled{opacity:.5;cursor:default}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg2);border:1px solid var(--sep2);border-radius:7px;padding:9px 14px;font-size:12px;color:var(--text);z-index:300;transform:translateY(14px);opacity:0;transition:all .2s;pointer-events:none;max-width:280px}
 .toast.on{transform:translateY(0);opacity:1}
-.toast.ok{border-color:rgba(74,222,128,.3);color:var(--green)}</style>
+.toast.ok{border-color:rgba(74,222,128,.3);color:var(--green)}
+.toast.err{border-color:rgba(248,113,113,.3);color:var(--red)}</style>
 </head>
 <body>
 <div class="page">
+
 <div class="header">
   <div>
-    <h1>&#127758; Radar Pol&iacute;tico <span class="h1-badge">GLOBAL</span></h1>
-    <div class="header-sub">&#218;ltimas 24h &middot; X + Reddit &middot; <span id="last-update">&mdash;</span></div>
+    <h1 id="h-title">&#127758; Radar Global <span class="h-badge global" id="h-badge">GLOBAL</span></h1>
+    <div class="header-sub" id="h-sub">&#218;ltimas 24h &middot; X + Reddit &middot; <span id="last-update">&mdash;</span></div>
   </div>
   <div class="header-right">
     <div class="status-pill"><div class="sdot"></div>LIVE</div>
     <div class="clock" id="clock">--:-- BRT</div>
   </div>
 </div>
-<div class="stats">
-  <div><div class="stat-val" style="color:var(--red)" id="s-hot">&mdash;</div><div class="stat-lbl">Trending</div></div>
-  <div><div class="stat-val" style="color:var(--orange)" id="s-reddit">&mdash;</div><div class="stat-lbl">Reddit</div></div>
-  <div><div class="stat-val" style="color:var(--text)" id="s-x">&mdash;</div><div class="stat-lbl">X / News</div></div>
-  <div><div class="stat-val" style="color:var(--blue)" id="s-total">&mdash;</div><div class="stat-lbl">Total</div></div>
+
+<div class="tabs">
+  <div class="tab active" id="tab-global" onclick="switchTab('global')">&#127758; Global <span class="tab-count" id="tc-global">0</span></div>
+  <div class="tab" id="tab-brasil" onclick="switchTab('brasil')">&#127463;&#127479; Brasil <span class="tab-count" id="tc-brasil">0</span></div>
+  <div class="tab" id="tab-tech" onclick="switchTab('tech')">&#128187; Tech / AI <span class="tab-count" id="tc-tech">0</span></div>
+  <div class="tab" id="tab-crypto" onclick="switchTab('crypto')">&#9889; Cripto <span class="tab-count" id="tc-crypto">0</span></div>
 </div>
-<div class="section-head"><h3>T&oacute;picos em destaque</h3><span style="font-size:11px;color:var(--dim2)">clique para filtrar</span></div>
-<div class="heat-row" id="heat-row"></div>
-<div class="error-banner" id="error-banner">&#9888; <span id="error-msg">Parcialmente indispon&iacute;vel &mdash; mostrando dados dispon&iacute;veis</span></div>
-<div class="actions">
-  <button class="btn primary" id="btn-refresh" onclick="loadNews()">&#8635; Atualizar</button>
-  <div class="actions-r">
+
+<div class="stats">
+  <div class="stat"><div class="stat-val" style="color:var(--red)" id="s-hot">&#8212;</div><div class="stat-lbl">Trending</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--green)" id="s-marco">&#8212;</div><div class="stat-lbl">Relevante p/ vc</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--orange)" id="s-reddit">&#8212;</div><div class="stat-lbl">Reddit</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--text)" id="s-total">&#8212;</div><div class="stat-lbl">Total</div></div>
+</div>
+
+<div class="heat-section">
+  <div class="heat-label">T&oacute;picos &middot; clique para filtrar</div>
+  <div class="heat-row" id="heat-row"></div>
+</div>
+
+<div class="toolbar">
+  <button class="btn primary" id="btn-refresh" onclick="loadTab(true)">&#8635; Atualizar</button>
+  <div class="sort-btns">
+    <div class="sort-btn active" id="sort-smart" onclick="setSort('smart')">&#9733; Smart</div>
+    <div class="sort-btn" id="sort-hot" onclick="setSort('hot')">&#128293; Hot</div>
+    <div class="sort-btn" id="sort-new" onclick="setSort('new')">&#128337; Recente</div>
+  </div>
+  <div class="toolbar-r">
     <div class="search">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Filtrar not&iacute;cias..." oninput="filterNews(this.value)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Filtrar..." oninput="filterNews(this.value)" id="search-input">
     </div>
   </div>
 </div>
-<div class="src-filters">
-  <div class="sf on all" id="sf-all" onclick="setSrc('all')"><div class="src-dot" style="background:var(--green)"></div>Todos</div>
-  <div class="sf reddit" id="sf-reddit" onclick="setSrc('reddit')"><div class="src-dot" style="background:var(--orange)"></div>Reddit</div>
-  <div class="sf x" id="sf-x" onclick="setSrc('x')"><div class="src-dot" style="background:var(--dim)"></div>X / News</div>
+
+<div class="src-row" id="src-row"></div>
+<div class="error-banner" id="error-banner">&#9888; <span id="error-msg">Algumas fontes indispon&iacute;veis</span></div>
+
+<div class="top10-section" id="top10-section">
+  <div class="section-head">
+    <div class="section-title"><div class="dot"></div>TOP 10 &mdash; Score Marco</div>
+    <span style="font-size:10px;color:var(--dim2)">por relev&acirc;ncia pessoal</span>
+  </div>
+  <div class="top10-list" id="top10-list"></div>
 </div>
-<div id="feed-root"><div class="feed-loading"><span class="spin">&#9675;</span> Buscando not&iacute;cias pol&iacute;ticas...</div></div>
+
+<div class="divider"></div>
+
+<div class="feed-section">
+  <div class="section-head">
+    <div class="section-title">Todos os itens</div>
+    <span style="font-size:10px;color:var(--dim2)" id="feed-count"></span>
+  </div>
+  <div id="feed-root"><div class="feed-loading"><span class="spin">&#9675;</span> Buscando...</div></div>
 </div>
+
+</div>
+
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-head">
-    <div style="flex:1"><div class="drawer-title" id="dr-title">&mdash;</div><div class="drawer-sub" id="dr-sub">&mdash;</div></div>
+    <div style="flex:1">
+      <div class="drawer-title" id="dr-title">&mdash;</div>
+      <div class="drawer-sub" id="dr-sub">&mdash;</div>
+    </div>
     <button class="drawer-close" onclick="closeDrawer()">&#10005;</button>
   </div>
   <div class="drawer-body" id="dr-body"></div>
   <div class="drawer-foot">
     <a class="btn-ext" id="dr-link" href="#" target="_blank" rel="noopener">&#8599; Ver original</a>
-    <button class="btn-save" onclick="showToast('Feature em breve','ok')">+ Salvar no Drive</button>
+    <button class="btn-drive" id="btn-drive" onclick="saveToDrive()">+ Drive</button>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
-<script>
-var PROXY='https://notion-proxy.marcoaquilino.workers.dev';
-var allNews=[],activeFilter={src:'all',topic:null,query:''},lastLoad=null;
+<script>var PROXY='https://notion-proxy.marcoaquilino.workers.dev';
 
 function pad(n){return String(n).padStart(2,'0')}
-function getBRT(){return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}))}
-function updateClock(){var d=getBRT();document.getElementById('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+' BRT'}
-setInterval(updateClock,15000);updateClock();
-
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function fmtScore(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
 function formatAge(utc){
   var diff=Math.floor(Date.now()/1000-utc);
-  if(diff<3600)return Math.floor(diff/60)+'min atras';
-  if(diff<86400)return Math.floor(diff/3600)+'h atras';
-  return Math.floor(diff/86400)+'d atras';
+  if(diff<60)return 'agora';
+  if(diff<3600)return Math.floor(diff/60)+'min';
+  if(diff<86400)return Math.floor(diff/3600)+'h';
+  return Math.floor(diff/86400)+'d';
 }
+function parsePubDate(s){try{return new Date(s).getTime()/1000}catch(e){return 0}}
+function getBRT(){return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}))}
+function updateClock(){var d=getBRT();document.getElementById('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+' BRT'}
+setInterval(updateClock,30000);updateClock();
+// ─── DETECT HEAT / TOPIC ─────────────────────────────────────────────────────
 function detectHeat(t){
-  t=t.toLowerCase();
-  if(/breaking|crisis|coup|war\b|attack|invaded|bombed|impeach|emergency/.test(t))return 'hot';
-  if(/election|protest|sanctions|summit|deal|agreement|urgent|major/.test(t))return 'rising';
+  var tl=t.toLowerCase();
+  if(/breaking|crisis|coup|\bwar\b|attack|invaded|bombed|impeach|emergency|urgent/.test(tl))return 'hot';
+  if(/election|protest|sanctions|summit|deal|agreement|major|record|crash|surge|collapse/.test(tl))return 'rising';
   return 'notable';
 }
-var TOPIC_RE=[
-  ['EUA',/trump|biden|harris|america\b|usa\b|washington|congress|senate|white house|republican|democrat/i],
-  ['Brasil',/lula|brazil|brasil|bolsonaro|petrobras|stf/i],
-  ['Europa',/europe\b|nato\b|germany|france|\buk\b|britain|spain|macron|scholz|brussels|\beu\b/i],
+
+var TOPICS_GLOBAL=[
+  ['EUA',/trump|biden|harris|\busa\b|\bamerica\b|washington|congress|senate|pentagon|white house|republican|democrat/i],
+  ['Brasil',/lula|brazil|brasil|bolsonaro|petrobras|stf|camara|senado/i],
+  ['Europa',/europe\b|nato\b|germany|france|\buk\b|britain|spain|italy|macron|scholz|brussels|\beu\b/i],
   ['Russia/UA',/russia|ukraine|putin|zelensky|kiev|kyiv|kremlin|donbas|crimea/i],
-  ['China',/china|xi jinping|beijing|taiwan|hong kong|huawei/i],
+  ['China',/china|xi jinping|beijing|taiwan|hong kong|huawei|\bccp\b/i],
   ['Medio Oriente',/israel|gaza|\biran\b|palestine|hamas|hezbollah|netanyahu|beirut|tehran/i],
-  ['America Latina',/venezuela|argentina|chile|colombia|mexico\b|peru\b|maduro|milei|boric|petro/i],
-  ['ONU\/Diplomacia',/united nations|\bun\b|diplomat|summit|ceasefire|treaty|\bg7\b|\bg20\b|\bimf\b/i],
+  ['America Latina',/venezuela|argentina|chile|colombia|mexico\b|\bperu\b|maduro|milei|boric|petro/i],
+  ['ONU/Diplomacia',/united nations|\bun\b|diplomat|ceasefire|treaty|\bg7\b|\bg20\b|\bimf\b/i],
 ];
-function detectTopic(t){for(var i=0;i<TOPIC_RE.length;i++){if(TOPIC_RE[i][1].test(t))return TOPIC_RE[i][0]}return 'Outros'}
+var TOPICS_BR=[
+  ['Politica',/lula|governo|camara|senado|bolsonaro|eleicao|ministro|presidente|stf|congresso/i],
+  ['Economia',/inflacao|juros|selic|pib|real|dolar|economia|mercado|bolsa|ipca|deficit/i],
+  ['Seguranca',/crime|policia|violencia|trafic|assassin|preso|operacao|milicia|morte/i],
+  ['Saude',/sus|saude|hospital|doenca|vacina|covid|dengue|medico/i],
+  ['Tecnologia',/tecnologia|startup|\bia\b|inteligencia artificial|app|internet|5g|anatel/i],
+  ['Sociedade',/educacao|cultura|esporte|futebol|copa|olimpiada|arte|celebridade/i],
+];
+var TOPICS_TECH=[
+  ['AI/LLM',/openai|anthropic|gemini|claude|gpt|llm|large language|artificial intelligence|machine learning|\bai\b/i],
+  ['Startups',/startup|funding|series|venture|unicorn|ipo|acquisition|merger|valuation/i],
+  ['Big Tech',/google|microsoft|apple|meta|amazon|nvidia|tesla|elon musk|sam altman|zuckerberg/i],
+  ['Regulacao',/regulation|antitrust|gdpr|privacy|ban|law|congress|eu regulation|fcc/i],
+  ['Open Source',/open.?source|github|linux|hugging.?face|ollama|mistral|llama/i],
+  ['Produto',/launch|release|update|feature|product|app|tool|platform|api/i],
+];
+var TOPICS_CRYPTO=[
+  ['Bitcoin',/bitcoin|\bbtc\b/i],
+  ['Ethereum',/ethereum|\beth\b|defi|erc.20/i],
+  ['Altcoins',/solana|cardano|avalanche|polygon|xrp|ripple|dogecoin|\bsol\b|\bada\b/i],
+  ['Mercado',/price|rally|crash|dip|bull|bear|market|exchange|binance|coinbase|volume|liquidation/i],
+  ['Regulacao',/regulation|sec|cftc|ban|legal|law|etf|approval|government/i],
+  ['DeFi/NFT',/defi|nft|dao|staking|yield|protocol|blockchain|web3/i],
+];
+
+function getTopics(tab){
+  if(tab==='brasil')return TOPICS_BR;
+  if(tab==='tech')return TOPICS_TECH;
+  if(tab==='crypto')return TOPICS_CRYPTO;
+  return TOPICS_GLOBAL;
+}
+function detectTopic(text,tab){
+  var topics=getTopics(tab);
+  for(var i=0;i<topics.length;i++){if(topics[i][1].test(text))return topics[i][0]}
+  return 'Outros';
+}
 function detectTags(t,heat){
   var r=[],tl=t.toLowerCase();
   if(heat==='hot')r.push({l:'Breaking',c:'hot'});
   if(/election|eleicao|vote/.test(tl))r.push({l:'Eleicao',c:'brk'});
-  if(/war\b|guerra|attack|conflict/.test(tl))r.push({l:'Conflito',c:'hot'});
-  if(/economy|inflation|gdp|market|economia/.test(tl))r.push({l:'Economia',c:'trend'});
-  if(/sanction|tariff|trade|acordo/.test(tl))r.push({l:'Diplomacia',c:'brk'});
+  if(/\bwar\b|guerra|attack|conflict/.test(tl))r.push({l:'Conflito',c:'hot'});
+  if(/economy|inflation|gdp|market|economia|mercado/.test(tl))r.push({l:'Economia',c:'trend'});
+  if(/sanction|tariff|trade|acordo|diplomacia/.test(tl))r.push({l:'Diplomacia',c:'brk'});
+  if(/ai\b|artificial|openai|anthropic|llm/.test(tl))r.push({l:'AI',c:'brk'});
+  if(/bitcoin|crypto|btc|eth\b/.test(tl))r.push({l:'Cripto',c:'trend'});
   return r.slice(0,3);
 }
-var FRANK={
-  'EUA':'Centro do poder geopolitico global. Qualquer mudanca aqui afeta mercados, cripto e aliancas.',
-  'Brasil':'Impacto direto no contexto de negocios. Politica interna = cambio, regulacao e custo operacional.',
-  'Europa':'Forte influencia em regulacao de cripto e tech. Decisoes aqui criam ou fecham janelas de mercado.',
-  'Russia/UA':'Guerra ativa com conexao a commodities, energia e sancoes. Afeta emergentes e cripto.',
-  'China':'Principal rival do ocidente. Cada sinal de Pequim move manufatura, semicondutores e Taiwan.',
-  'Medio Oriente':'Impacto em petroleo e rotas maritimas. Instabilidade cria flight to safety em cripto.',
-  'America Latina':'Regiao relevante pelo contexto do Marco. Instabilidade cria risco e oportunidade simultaneos.',
-  'ONU/Diplomacia':'Movimento que precede decisoes maiores. Monitorar tom oficial vs o que vazou informalmente.',
-  'Outros':'Evento com potencial geopolitico. Monitorar desdobramentos nas proximas 48h.',
-};
-var TSTYLES={
-  'EUA':{bg:'rgba(248,113,113,.12)',c:'#f87171',b:'rgba(248,113,113,.25)'},
-  'Brasil':{bg:'rgba(74,222,128,.12)',c:'#4ade80',b:'rgba(74,222,128,.25)'},
-  'Europa':{bg:'rgba(96,165,250,.12)',c:'#60a5fa',b:'rgba(96,165,250,.25)'},
-  'Russia/UA':{bg:'rgba(251,146,60,.12)',c:'#fb923c',b:'rgba(251,146,60,.25)'},
-  'China':{bg:'rgba(252,211,77,.12)',c:'#fcd34d',b:'rgba(252,211,77,.25)'},
-  'Medio Oriente':{bg:'rgba(192,132,252,.12)',c:'#c084fc',b:'rgba(192,132,252,.25)'},
-  'America Latina':{bg:'rgba(251,191,36,.12)',c:'#fbbf24',b:'rgba(251,191,36,.25)'},
-  'ONU/Diplomacia':{bg:'rgba(255,255,255,.05)',c:'#888',b:'rgba(255,255,255,.1)'},
-  'Outros':{bg:'rgba(255,255,255,.04)',c:'#555',b:'rgba(255,255,255,.06)'},
-};
 
-async function fetchReddit(sub){
-  var r=await fetch(PROXY+'/reddit?sub='+sub+'&limit=15');
-  if(!r.ok)throw new Error('Reddit '+sub+' '+r.status);
+// ─── MARCO RELEVANCE SCORE ────────────────────────────────────────────────────
+// Score 0-100 baseado no perfil do Marco: entrepreneur, cripto, AI, negócios digitais, Brasil
+function marcoScore(item){
+  var s=0,t=(item.title+' '+(item.preview||'')).toLowerCase();
+  // AI/Tech: alta relevância
+  if(/openai|anthropic|claude|gpt|llm|ai\b|artificial intelligence|machine learning|nvidia|automation/.test(t))s+=40;
+  // Cripto
+  if(/bitcoin|btc|ethereum|eth\b|crypto|defi|web3|blockchain|solana|binance/.test(t))s+=35;
+  // Negócios/startup
+  if(/startup|saas|funding|revenue|monetiz|growth|mrr|arr|valuation|venture/.test(t))s+=25;
+  // Brasil - contexto direto
+  if(/brasil|brazil|lula|real\b|selic|brl|mercado livre|ifood|nubank/.test(t))s+=20;
+  // Geopolítica com impacto econômico
+  if(/tariff|sanction|trade war|oil price|supply chain/.test(t))s+=15;
+  // Hot = mais urgente
+  if(item.heat==='hot')s+=10;
+  if(item.heat==='rising')s+=5;
+  // Score Reddit alto = validação de mercado
+  if(item.score>10000)s+=10;else if(item.score>3000)s+=5;
+  return Math.min(100,s);
+}
+// ─── FETCH FUNCTIONS ─────────────────────────────────────────────────────────
+async function fetchReddit(sub,tab){
+  var r=await fetch(PROXY+'/reddit?sub='+sub+'&limit=20');
+  if(!r.ok)throw new Error('Reddit/'+sub+' '+r.status);
   var data=await r.json();
-  return(data.data&&data.data.children||[]).filter(function(p){return !p.data.stickied}).map(function(p){
-    var d=p.data,heat=detectHeat(d.title);
-    return{id:'r_'+d.id,src:'reddit',label:'r/'+d.subreddit,title:d.title,
-      preview:(d.selftext||'').slice(0,220),url:'https://reddit.com'+d.permalink,
-      score:d.score,comments_count:d.num_comments,age:formatAge(d.created_utc),
-      heat:heat,topic:detectTopic(d.title+' '+(d.selftext||'')),tags:detectTags(d.title,heat)};
+  return(data.data&&data.data.children||[]).filter(function(p){return !p.data.stickied&&p.data.score>10}).map(function(p){
+    var d=p.data,heat=detectHeat(d.title),text=d.title+' '+(d.selftext||'');
+    return{id:'r_'+d.id,src:'reddit',srcType:'reddit',label:'r/'+d.subreddit,
+      title:d.title,preview:(d.selftext||'').slice(0,280),url:'https://reddit.com'+d.permalink,
+      score:d.score,comments_count:d.num_comments,age:formatAge(d.created_utc),ageTs:d.created_utc,
+      heat:heat,topic:detectTopic(text,tab),tags:detectTags(d.title,heat),marcoScore:0};
   });
 }
-async function fetchBrave(query){
-  var r=await fetch(PROXY+'/brave?q='+encodeURIComponent(query)+'&count=12&freshness=pd');
+
+async function fetchBrave(query,tab){
+  var r=await fetch(PROXY+'/brave?q='+encodeURIComponent(query)+'&count=15&freshness=pd');
   if(!r.ok)throw new Error('Brave '+r.status);
   var data=await r.json();
   return((data.web&&data.web.results)||[]).map(function(w){
@@ -226,59 +380,230 @@ async function fetchBrave(query){
     var sm=w.url&&w.url.match(/reddit\.com\/r\/([^\/]+)/);
     var heat=detectHeat(w.title+' '+(w.description||''));
     var host='';try{host=new URL(w.url||'https://news.com').hostname.replace('www.','')}catch(e){}
-    return{id:'b_'+(w.url||'x').replace(/[^a-z0-9]/gi,'').slice(-8),
-      src:isR?'reddit':'x',label:isR?(sm?'r/'+sm[1]:'Reddit'):host,
+    var text=w.title+' '+(w.description||'');
+    return{id:'b_'+(w.url||'x').replace(/[^a-z0-9]/gi,'').slice(-10),
+      src:isR?'reddit':'x',srcType:isR?'reddit':'x',label:isR?(sm?'r/'+sm[1]:'Reddit'):host,
       title:w.title,preview:w.description||'',url:w.url||'#',
-      score:0,comments_count:0,age:'Hoje',
-      heat:heat,topic:detectTopic(w.title+' '+(w.description||'')),tags:detectTags(w.title,heat)};
+      score:0,comments_count:0,age:'Hoje',ageTs:Date.now()/1000-3600,
+      heat:heat,topic:detectTopic(text,tab),tags:detectTags(w.title,heat),marcoScore:0};
   });
 }
 
-async function loadNews(){
+async function fetchRSS(src,tab){
+  var r=await fetch(PROXY+'/rss?src='+src);
+  if(!r.ok)throw new Error('RSS/'+src+' '+r.status);
+  var data=await r.json();
+  return(data.items||[]).map(function(item){
+    var heat=detectHeat(item.title);
+    var text=item.title+' '+(item.description||'');
+    var ts=parsePubDate(item.pubDate);
+    return{id:'rss_'+src+'_'+btoa(item.link||item.title).slice(0,8).replace(/[^a-z0-9]/gi,''),
+      src:'rss',srcType:'rss',label:src.toUpperCase(),
+      title:item.title,preview:item.description||'',url:item.link||'#',
+      score:0,comments_count:0,age:ts?formatAge(ts):'Hoje',ageTs:ts||Date.now()/1000-7200,
+      heat:heat,topic:detectTopic(text,tab),tags:detectTags(item.title,heat),marcoScore:0};
+  });
+}
+
+// ─── TAB FETCH CONFIGS ────────────────────────────────────────────────────────
+var TAB_FETCHES={
+  global:[
+    function(){return fetchReddit('worldnews','global')},
+    function(){return fetchReddit('politics','global')},
+    function(){return fetchReddit('geopolitics','global')},
+    function(){return fetchBrave('world politics government election breaking news 2026','global')},
+    function(){return fetchBrave('geopolitics international diplomacy sanctions war 2026','global')},
+  ],
+  brasil:[
+    function(){return fetchReddit('brazil','brasil')},
+    function(){return fetchReddit('brasil','brasil')},
+    function(){return fetchReddit('investimentos','brasil')},
+    function(){return fetchRSS('g1','brasil')},
+    function(){return fetchRSS('uol','brasil')},
+    function(){return fetchBrave('brasil noticias politica economia hoje 2026','brasil')},
+  ],
+  tech:[
+    function(){return fetchReddit('technology','tech')},
+    function(){return fetchReddit('artificial','tech')},
+    function(){return fetchReddit('MachineLearning','tech')},
+    function(){return fetchReddit('LocalLLaMA','tech')},
+    function(){return fetchBrave('artificial intelligence openai anthropic google tech news 2026','tech')},
+    function(){return fetchBrave('AI startup funding tech regulation 2026','tech')},
+  ],
+  crypto:[
+    function(){return fetchReddit('CryptoCurrency','crypto')},
+    function(){return fetchReddit('Bitcoin','crypto')},
+    function(){return fetchReddit('ethereum','crypto')},
+    function(){return fetchBrave('bitcoin ethereum crypto market price regulation 2026','crypto')},
+    function(){return fetchBrave('DeFi blockchain web3 news 2026','crypto')},
+  ],
+};
+
+// ─── TOPIC COLORS ────────────────────────────────────────────────────────────
+var TOPIC_COLORS={
+  // Global
+  'EUA':         {bg:'rgba(248,113,113,.12)',c:'#f87171',b:'rgba(248,113,113,.25)'},
+  'Brasil':      {bg:'rgba(74,222,128,.12)',c:'#4ade80',b:'rgba(74,222,128,.25)'},
+  'Europa':      {bg:'rgba(96,165,250,.12)',c:'#60a5fa',b:'rgba(96,165,250,.25)'},
+  'Russia/UA':   {bg:'rgba(251,146,60,.12)',c:'#fb923c',b:'rgba(251,146,60,.25)'},
+  'China':       {bg:'rgba(252,211,77,.12)',c:'#fcd34d',b:'rgba(252,211,77,.25)'},
+  'Medio Oriente':{bg:'rgba(192,132,252,.12)',c:'#c084fc',b:'rgba(192,132,252,.25)'},
+  'America Latina':{bg:'rgba(251,191,36,.1)',c:'#fbbf24',b:'rgba(251,191,36,.22)'},
+  'ONU/Diplomacia':{bg:'rgba(255,255,255,.04)',c:'#888',b:'rgba(255,255,255,.1)'},
+  // Brasil
+  'Politica':    {bg:'rgba(248,113,113,.1)',c:'#f87171',b:'rgba(248,113,113,.22)'},
+  'Economia':    {bg:'rgba(74,222,128,.1)',c:'#4ade80',b:'rgba(74,222,128,.22)'},
+  'Seguranca':   {bg:'rgba(251,146,60,.1)',c:'#fb923c',b:'rgba(251,146,60,.22)'},
+  'Saude':       {bg:'rgba(96,165,250,.1)',c:'#60a5fa',b:'rgba(96,165,250,.22)'},
+  'Tecnologia':  {bg:'rgba(192,132,252,.1)',c:'#c084fc',b:'rgba(192,132,252,.22)'},
+  'Sociedade':   {bg:'rgba(251,191,36,.1)',c:'#fbbf24',b:'rgba(251,191,36,.22)'},
+  // Tech
+  'AI/LLM':      {bg:'rgba(96,165,250,.12)',c:'#60a5fa',b:'rgba(96,165,250,.25)'},
+  'Startups':    {bg:'rgba(74,222,128,.12)',c:'#4ade80',b:'rgba(74,222,128,.25)'},
+  'Big Tech':    {bg:'rgba(192,132,252,.12)',c:'#c084fc',b:'rgba(192,132,252,.25)'},
+  'Regulacao':   {bg:'rgba(248,113,113,.1)',c:'#f87171',b:'rgba(248,113,113,.22)'},
+  'Open Source': {bg:'rgba(251,146,60,.1)',c:'#fb923c',b:'rgba(251,146,60,.22)'},
+  'Produto':     {bg:'rgba(252,211,77,.1)',c:'#fcd34d',b:'rgba(252,211,77,.22)'},
+  // Crypto
+  'Bitcoin':     {bg:'rgba(252,211,77,.14)',c:'#fcd34d',b:'rgba(252,211,77,.28)'},
+  'Ethereum':    {bg:'rgba(96,165,250,.12)',c:'#60a5fa',b:'rgba(96,165,250,.25)'},
+  'Altcoins':    {bg:'rgba(192,132,252,.1)',c:'#c084fc',b:'rgba(192,132,252,.22)'},
+  'Mercado':     {bg:'rgba(74,222,128,.1)',c:'#4ade80',b:'rgba(74,222,128,.22)'},
+  'DeFi/NFT':    {bg:'rgba(251,146,60,.1)',c:'#fb923c',b:'rgba(251,146,60,.22)'},
+  // Fallback
+  'Outros':      {bg:'rgba(255,255,255,.04)',c:'#555',b:'rgba(255,255,255,.06)'},
+};
+function topicColor(t){return TOPIC_COLORS[t]||TOPIC_COLORS['Outros']}
+
+// FRANK'S TAKE CACHE (localStorage + in-memory)
+function getFrankTake(id){
+  try{var k='frank_'+id;var v=localStorage.getItem(k);if(v){var p=JSON.parse(v);if(Date.now()-p.ts<86400000)return p.take}}catch(e){}
+  return null;
+}
+function setFrankTake(id,take){
+  try{localStorage.setItem('frank_'+id,JSON.stringify({take:take,ts:Date.now()}))}catch(e){}
+}
+// ─── LOAD + PROCESS ──────────────────────────────────────────────────────────
+async function loadTab(force){
+  var tab=activeTab;
+  if(tabs[tab].loaded&&!force)return;
+
   var btn=document.getElementById('btn-refresh');
   btn.disabled=true;btn.textContent='Buscando...';
   document.getElementById('feed-root').innerHTML='<div class="feed-loading"><span class="spin">&#9675;</span> Buscando...</div>';
   document.getElementById('error-banner').classList.remove('on');
+  document.getElementById('top10-list').innerHTML='';
   activeFilter.topic=null;
+  document.querySelector('#search-input').value='';
+  activeFilter.query='';
 
-  var res=await Promise.allSettled([
-    fetchReddit('worldnews'),fetchReddit('politics'),fetchReddit('geopolitics'),
-    fetchBrave('world politics government election 2026 breaking news'),
-    fetchBrave('geopolitics international war diplomacy sanctions 2026'),
-  ]);
-
+  var fetches=TAB_FETCHES[tab];
+  var res=await Promise.allSettled(fetches.map(function(f){return f()}));
   var items=[],err=false;
   for(var i=0;i<res.length;i++){
     if(res[i].status==='fulfilled')items=items.concat(res[i].value);
-    else{err=true;console.warn('fetch err',res[i].reason&&res[i].reason.message)}
+    else{err=true;console.warn('fetch:',res[i].reason&&res[i].reason.message)}
   }
   if(err)document.getElementById('error-banner').classList.add('on');
 
+  // Dedup by URL
   var seen={};
   items=items.filter(function(x){if(seen[x.url])return false;seen[x.url]=1;return true});
-  var ho={hot:0,rising:1,notable:2};
-  items.sort(function(a,b){var d=ho[a.heat]-ho[b.heat];return d||b.score-a.score});
 
-  allNews=items;lastLoad=new Date();
-  updateStats();buildHeatMap();renderFeed();
+  // Compute marco score
+  items.forEach(function(x){x.marcoScore=marcoScore(x)});
+
+  tabs[tab].items=items;
+  tabs[tab].loaded=true;
+  lastLoad[tab]=Date.now();
+
+  // Build src labels for filter
+  var srcMap={};
+  items.forEach(function(x){srcMap[x.srcType]=(srcMap[x.srcType]||0)+1});
+  tabs[tab].srcLabels=srcMap;
+  tabs[tab].sources=Object.keys(srcMap);
+
+  document.getElementById('tc-'+tab).textContent=items.length;
+  updateStats();
+  buildSrcFilters();
+  buildHeatMap();
+  renderAll();
+
   btn.disabled=false;btn.textContent='&#8635; Atualizar';
-  document.getElementById('last-update').textContent='Atualizado agora';
+  document.getElementById('last-update').textContent='Agora';
 }
 
+// ─── SORT + FILTER ───────────────────────────────────────────────────────────
+function getFiltered(){
+  var items=tabs[activeTab].items.slice();
+  if(activeFilter.src!=='all')items=items.filter(function(n){return n.srcType===activeFilter.src});
+  if(activeFilter.topic)items=items.filter(function(n){return n.topic===activeFilter.topic});
+  if(activeFilter.query){
+    var q=activeFilter.query.toLowerCase();
+    items=items.filter(function(n){return n.title.toLowerCase().indexOf(q)>-1||n.preview.toLowerCase().indexOf(q)>-1});
+  }
+  return items;
+}
+
+function getSorted(items){
+  var sorted=items.slice();
+  if(activeSort==='smart'){
+    sorted.sort(function(a,b){
+      var heatO={hot:0,rising:1,notable:2};
+      var heatDiff=heatO[a.heat]-heatO[b.heat];
+      if(heatDiff!==0)return heatDiff;
+      return (b.marcoScore+b.score/500)-(a.marcoScore+a.score/500);
+    });
+  }else if(activeSort==='hot'){
+    sorted.sort(function(a,b){
+      var heatO={hot:0,rising:1,notable:2};
+      return (heatO[a.heat]-heatO[b.heat])||b.score-a.score;
+    });
+  }else{
+    sorted.sort(function(a,b){return b.ageTs-a.ageTs});
+  }
+  return sorted;
+}
+
+// ─── STATS ───────────────────────────────────────────────────────────────────
 function updateStats(){
-  document.getElementById('s-hot').textContent=allNews.filter(function(n){return n.heat==='hot'}).length;
-  document.getElementById('s-reddit').textContent=allNews.filter(function(n){return n.src==='reddit'}).length;
-  document.getElementById('s-x').textContent=allNews.filter(function(n){return n.src==='x'}).length;
-  document.getElementById('s-total').textContent=allNews.length;
+  var items=tabs[activeTab].items;
+  document.getElementById('s-hot').textContent=items.filter(function(n){return n.heat==='hot'}).length;
+  document.getElementById('s-marco').textContent=items.filter(function(n){return n.marcoScore>=40}).length;
+  document.getElementById('s-reddit').textContent=items.filter(function(n){return n.srcType==='reddit'}).length;
+  document.getElementById('s-total').textContent=items.length;
 }
 
+// ─── SRC FILTERS ─────────────────────────────────────────────────────────────
+var SRC_LABELS={reddit:'Reddit',x:'X / News',rss:'RSS / Jornais'};
+var SRC_COLORS={reddit:'#fb923c',x:'#888',rss:'#4ade80'};
+
+function buildSrcFilters(){
+  var row=document.getElementById('src-row');row.innerHTML='';
+  var allEl=document.createElement('div');
+  allEl.className='sf on';allEl.id='sf-all';
+  allEl.innerHTML='<div class="src-dot" style="background:var(--green)"></div>Todos';
+  allEl.onclick=function(){setSrc('all')};
+  row.appendChild(allEl);
+  var srcMap=tabs[activeTab].srcLabels;
+  Object.keys(srcMap).forEach(function(s){
+    var el=document.createElement('div');
+    el.className='sf';el.id='sf-'+s;
+    var dot='<div class="src-dot" style="background:'+(SRC_COLORS[s]||'#888')+'"></div>';
+    el.innerHTML=dot+(SRC_LABELS[s]||s)+' <span style="color:var(--dim2)">('+srcMap[s]+')</span>';
+    (function(src){el.onclick=function(){setSrc(src)}})(s);
+    row.appendChild(el);
+  });
+}
+
+// ─── HEAT MAP ────────────────────────────────────────────────────────────────
 function buildHeatMap(){
-  var counts={};
-  allNews.forEach(function(n){counts[n.topic]=(counts[n.topic]||0)+1});
+  var items=getFiltered();
+  var counts={};items.forEach(function(n){counts[n.topic]=(counts[n.topic]||0)+1});
   var sorted=Object.keys(counts).map(function(k){return[k,counts[k]]}).sort(function(a,b){return b[1]-a[1]});
   var row=document.getElementById('heat-row');row.innerHTML='';
   sorted.forEach(function(pair){
-    var t=pair[0],c=pair[1],s=TSTYLES[t]||TSTYLES['Outros'];
+    var t=pair[0],c=pair[1],s=topicColor(t);
     var el=document.createElement('div');
     el.className='heat-tag'+(activeFilter.topic===t?' active':'');
     el.style.background=s.bg;el.style.color=s.c;el.style.borderColor=s.b;
@@ -288,109 +613,222 @@ function buildHeatMap(){
   });
 }
 
+// ─── TOP 10 ───────────────────────────────────────────────────────────────────
+function renderTop10(){
+  var items=tabs[activeTab].items.slice();
+  items.sort(function(a,b){return b.marcoScore-a.marcoScore});
+  var top=items.slice(0,10);
+  var list=document.getElementById('top10-list');list.innerHTML='';
+  top.forEach(function(item,i){
+    var rank=i+1;
+    var rankClass=rank===1?'r1':rank===2?'r2':rank===3?'r3':'';
+    var ms=item.marcoScore;
+    var msClass=ms>=50?'hi':ms>=25?'mid':'lo';
+    var msLabel=ms>=50?'&#9733; '+ms:ms>=25?ms:'';
+    var el=document.createElement('div');el.className='top10-item';
+    el.innerHTML=
+      '<div class="top10-rank '+rankClass+'">'+(rank<=3?['&#9312;','&#9313;','&#9314;'][rank-1]:rank)+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+      '<div class="top10-title">'+esc(item.title)+'</div>'+
+      '<div class="top10-meta">'+
+      '<span class="top10-score" style="color:'+(item.srcType==='reddit'?'var(--orange)':'var(--dim2)')+'">'+esc(item.label)+'</span>'+
+      (item.score>0?'<span class="top10-score">&#8593;'+fmtScore(item.score)+'</span>':'')+
+      '<span class="top10-score">'+item.age+'</span>'+
+      (ms>0?'<span class="marco-score '+msClass+'">'+msLabel+'</span>':'')+
+      '</div></div>';
+    (function(id){el.onclick=function(){openDrawer(id)}})(item.id);
+    list.appendChild(el);
+  });
+}
+
+// ─── FEED ─────────────────────────────────────────────────────────────────────
 function renderFeed(){
-  var items=allNews.slice();
-  if(activeFilter.src!=='all')items=items.filter(function(n){return n.src===activeFilter.src});
-  if(activeFilter.topic)items=items.filter(function(n){return n.topic===activeFilter.topic});
-  if(activeFilter.query){
-    var q=activeFilter.query.toLowerCase();
-    items=items.filter(function(n){return n.title.toLowerCase().indexOf(q)>-1||n.preview.toLowerCase().indexOf(q)>-1});
-  }
+  var items=getSorted(getFiltered());
   var root=document.getElementById('feed-root');
-  if(!items.length){
-    root.innerHTML='<div class="feed-empty"><p>Nenhum resultado</p><small>Tente outro filtro ou Atualizar</small></div>';
-    return;
-  }
+  document.getElementById('feed-count').textContent=items.length+' itens';
+  if(!items.length){root.innerHTML='<div class="feed-empty"><p>Nenhum resultado</p><small>Tente outro filtro ou Atualizar</small></div>';return}
   var feed=document.createElement('div');feed.className='feed';
   items.forEach(function(item){
-    var card=document.createElement('div');
-    card.className='news-card '+item.heat;
-    var scoreHtml=item.score>0?'<span style="color:'+(item.score>10000?'var(--green)':item.score>3000?'var(--yellow)':'var(--dim)')+'">&#8593; '+fmtScore(item.score)+'</span>':'';
-    var cmtHtml=item.comments_count>0?'<span>'+item.comments_count+' cmts</span>':'';
-    var tagsHtml=item.tags.map(function(t){return '<span class="tag '+t.c+'">'+t.l+'</span>'}).join('');
+    var ms=item.marcoScore;
+    var msClass=ms>=50?'hi':ms>=25?'mid':'lo';
+    var scoreHtml=item.score>0?'<span style="color:'+(item.score>10000?'var(--green)':item.score>3000?'var(--yellow)':'var(--dim2)')+'">&#8593;'+fmtScore(item.score)+'</span>':'';
+    var tagsHtml=item.tags.map(function(t){return'<span class="tag '+t.c+'">'+esc(t.l)+'</span>'}).join('');
+    var card=document.createElement('div');card.className='news-card '+item.heat;
     card.innerHTML=
-      '<div class="nc-head">'+
-      '<div class="src-icon '+item.src+'">'+(item.src==='reddit'?'R':'X')+'</div>'+
-      '<div class="nc-title">'+esc(item.title)+'</div>'+
+      '<div class="card-head">'+
+      '<div class="src-icon '+item.srcType+'">'+(item.srcType==='reddit'?'R':item.srcType==='rss'?'RSS':'X')+'</div>'+
+      '<div class="card-title">'+esc(item.title)+'</div>'+
       '</div>'+
-      '<div class="nc-meta">'+
+      '<div class="card-meta">'+
       '<span style="color:var(--dim2)">'+esc(item.label)+'</span>'+
-      scoreHtml+cmtHtml+
-      '<span style="color:var(--dim2);margin-left:auto">'+item.age+'</span>'+
+      scoreHtml+
+      '<span style="color:var(--dim2)">'+item.age+'</span>'+
+      (ms>=25?'<span class="marco-score '+msClass+' card-marco-score">&#9733; '+ms+'</span>':'')+
       '</div>'+
-      (item.preview?'<div class="nc-preview">'+esc(item.preview)+'</div>':'')+
-      (tagsHtml?'<div class="nc-tags">'+tagsHtml+'</div>':'');
+      (item.preview?'<div class="card-preview">'+esc(item.preview)+'</div>':'')+
+      (tagsHtml?'<div class="card-footer">'+tagsHtml+'</div>':'');
     (function(id){card.onclick=function(){openDrawer(id)}})(item.id);
     feed.appendChild(card);
   });
   root.innerHTML='';root.appendChild(feed);
 }
 
-function filterNews(q){activeFilter.query=q;renderFeed()}
-function setSrc(s){
-  activeFilter.src=s;
-  ['all','reddit','x'].forEach(function(id){
-    document.getElementById('sf-'+id).classList.toggle('on',id===s);
-  });
-  renderFeed();
-}
-function setTopic(t){
-  activeFilter.topic=activeFilter.topic===t?null:t;
-  buildHeatMap();renderFeed();
+function renderAll(){buildHeatMap();renderTop10();renderFeed()}
+
+// ─── DRAWER ───────────────────────────────────────────────────────────────────
+function findItem(id){
+  var items=tabs[activeTab].items;
+  for(var i=0;i<items.length;i++){if(items[i].id===id)return items[i]}
+  return null;
 }
 
 function openDrawer(id){
-  var item=null;
-  for(var i=0;i<allNews.length;i++){if(allNews[i].id===id){item=allNews[i];break}}
-  if(!item)return;
+  var item=findItem(id);if(!item)return;
+  currentDrawerItem=item;
   document.getElementById('dr-title').textContent=item.title;
+  var ms=item.marcoScore;
+  var msStr=ms>=50?'&#9733; '+ms+' Marco':ms>=25?ms+' Marco':'';
   document.getElementById('dr-sub').innerHTML=
-    '<span style="color:'+(item.src==='reddit'?'var(--orange)':'var(--dim)')+'">'+esc(item.label)+'</span>'+
-    (item.score>0?'<span>&#8593; '+fmtScore(item.score)+'</span>':'')+
-    '<span style="color:var(--dim2)">'+item.age+'</span>';
+    '<span style="color:'+(item.srcType==='reddit'?'var(--orange)':item.srcType==='rss'?'var(--green)':'var(--dim)')+'">'+esc(item.label)+'</span>'+
+    (item.score>0?'<span>&#8593;'+fmtScore(item.score)+'</span>':'')+
+    '<span style="color:var(--dim2)">'+item.age+'</span>'+
+    (ms>=25?'<span class="marco-score '+(ms>=50?'hi':'mid')+'">'+msStr+'</span>':'');
   document.getElementById('dr-link').href=item.url;
-  var frank=FRANK[item.topic]||FRANK['Outros'];
+
+  // Render body
+  var cached=getFrankTake(id);
   document.getElementById('dr-body').innerHTML=
-    '<div class="dr-section">'+
-    '<div class="dr-stitle">Conteudo</div>'+
+    '<div class="dr-s">'+
+    '<div class="dr-label">Conteudo</div>'+
     '<div class="dr-text">'+esc(item.preview||'Ver original para conteudo completo.')+'</div>'+
     '</div>'+
-    '<div class="dr-section">'+
-    '<div class="dr-stitle">Frank\'s take</div>'+
-    '<div class="dr-frank">'+esc(frank)+'</div>'+
+    '<div class="dr-s">'+
+    '<div class="dr-label">Frank\'s Take</div>'+
+    '<div class="dr-frank'+(cached?'':' loading')+'" id="dr-frank">'+(cached?esc(cached):'Analisando...')+'</div>'+
     '</div>'+
-    '<div class="dr-section">'+
-    '<div class="dr-stitle">Metadados</div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">'+
-    '<div><span style="color:var(--dim2)">Fonte</span><br>'+esc(item.label)+'</div>'+
-    '<div><span style="color:var(--dim2)">Topico</span><br>'+esc(item.topic)+'</div>'+
-    '<div><span style="color:var(--dim2)">Relevancia</span><br>'+(item.heat==='hot'?'Trending':item.heat==='rising'?'Rising':'Notable')+'</div>'+
-    '<div><span style="color:var(--dim2)">Publicado</span><br>'+item.age+'</div>'+
+    '<div class="dr-s">'+
+    '<div class="dr-label">Contexto</div>'+
+    '<div class="dr-meta-grid">'+
+    '<div class="dr-meta-item"><span>Topico</span><span>'+esc(item.topic)+'</span></div>'+
+    '<div class="dr-meta-item"><span>Fonte</span><span>'+esc(item.label)+'</span></div>'+
+    '<div class="dr-meta-item"><span>Relevancia</span><span>'+(item.heat==='hot'?'Trending':item.heat==='rising'?'Rising':'Notable')+'</span></div>'+
+    '<div class="dr-meta-item"><span>Score Marco</span><span>'+item.marcoScore+'/100</span></div>'+
     '</div></div>';
+
   document.getElementById('drawer-overlay').classList.add('on');
   document.getElementById('drawer').classList.add('on');
+
+  if(!cached){
+    loadFrankTake(item);
+  }
 }
+
+async function loadFrankTake(item){
+  try{
+    var r=await fetch(PROXY+'/frank-take',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({title:item.title,preview:item.preview||''})
+    });
+    var data=await r.json();
+    var take=data.take||'';
+    if(take){
+      setFrankTake(item.id,take);
+      var el=document.getElementById('dr-frank');
+      if(el){el.className='dr-frank';el.textContent=take}
+    }
+  }catch(e){
+    var el=document.getElementById('dr-frank');
+    if(el){el.className='dr-frank';el.textContent='Analise indisponivel no momento.'}
+  }
+}
+
+async function saveToDrive(){
+  var item=currentDrawerItem;if(!item)return;
+  var btn=document.getElementById('btn-drive');
+  btn.disabled=true;btn.textContent='Salvando...';
+  try{
+    var r=await fetch(PROXY+'/brave?q='+encodeURIComponent(item.title)+'&count=1');
+    // Drive save via message to Frank (opens Telegram)
+    var msg='Salvar no Drive: '+item.title+'\n'+item.url;
+    window.open('https://t.me/ImFrankBot?text='+encodeURIComponent(msg),'_blank');
+    showToast('Abriu Telegram — manda pro Frank salvar no Drive','ok');
+    btn.textContent='+ Drive';btn.disabled=false;
+  }catch(e){
+    btn.textContent='+ Drive';btn.disabled=false;
+    showToast('Erro: '+e.message,'err');
+  }
+}
+
 function closeDrawer(){
   document.getElementById('drawer-overlay').classList.remove('on');
   document.getElementById('drawer').classList.remove('on');
+  currentDrawerItem=null;
 }
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer()});
 
+// ─── TAB SWITCH ───────────────────────────────────────────────────────────────
+var TAB_META={
+  global:{title:'&#127758; Radar Global',badge:'GLOBAL',badgeClass:'global',sub:'&#218;ltimas 24h &middot; X + Reddit'},
+  brasil:{title:'&#127463;&#127479; Radar Brasil',badge:'BR',badgeClass:'br',sub:'&#218;ltimas 24h &middot; G1 + Reddit + UOL'},
+  tech:  {title:'&#128187; Radar Tech / AI',badge:'TECH',badgeClass:'tech',sub:'&#218;ltimas 24h &middot; Reddit + Brave Search'},
+  crypto:{title:'&#9889; Radar Cripto',badge:'CRIPTO',badgeClass:'crypto',sub:'&#218;ltimas 24h &middot; Reddit + Brave Search'},
+};
+
+function switchTab(t){
+  if(t===activeTab&&tabs[t].loaded)return;
+  activeTab=t;
+  activeFilter={src:'all',topic:null,query:''};
+  activeSort='smart';
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('tab-'+t).classList.add('active');
+  document.querySelectorAll('.sort-btn').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('sort-smart').classList.add('active');
+  var meta=TAB_META[t];
+  document.getElementById('h-title').innerHTML=meta.title+' <span class="h-badge '+meta.badgeClass+'" id="h-badge">'+meta.badge+'</span>';
+  document.getElementById('h-sub').innerHTML=meta.sub+' &middot; <span id="last-update">'+(lastLoad[t]?'Agora':'&mdash;')+'</span>';
+  loadTab();
+}
+
+// ─── FILTER CONTROLS ─────────────────────────────────────────────────────────
+function setSrc(s){
+  activeFilter.src=s;
+  document.querySelectorAll('.sf').forEach(function(el){el.classList.remove('on')});
+  var el=document.getElementById('sf-'+s);if(el)el.classList.add('on');
+  renderAll();
+}
+function setTopic(t){
+  activeFilter.topic=activeFilter.topic===t?null:t;
+  renderAll();
+}
+function setSort(s){
+  activeSort=s;
+  document.querySelectorAll('.sort-btn').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('sort-'+s).classList.add('active');
+  renderAll();
+}
+function filterNews(q){activeFilter.query=q;renderAll()}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
 function showToast(msg,cls){
   var t=document.getElementById('toast');
   t.textContent=msg;t.className='toast on'+(cls?' '+cls:'');
-  setTimeout(function(){t.className='toast'},3000);
+  clearTimeout(t._t);t._t=setTimeout(function(){t.className='toast'},3500);
 }
 
+// ─── AUTO REFRESH ─────────────────────────────────────────────────────────────
 setInterval(function(){
-  if(lastLoad){
-    var mins=Math.floor((Date.now()-lastLoad)/60000);
-    document.getElementById('last-update').textContent='Atualizado ha '+mins+'min';
-    if(mins>=15)loadNews();
+  var ts=lastLoad[activeTab];
+  if(ts){
+    var mins=Math.round((Date.now()-ts)/60000);
+    var el=document.getElementById('last-update');
+    if(el)el.textContent='Ha '+mins+'min';
+    if(mins>=20)loadTab(true);
   }
 },60000);
 
-loadNews();
+// ─── INIT ────────────────────────────────────────────────────────────────────
+loadTab();
 </script>
 </body>
 </html>
