@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Radar de Noticias v3 — Marco OS</title>
+<title>Radar de Noticias — Marco OS</title>
 <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#111;--bg2:#1a1a1a;--bg3:#222;--bg4:#252525;
@@ -832,10 +832,7 @@ async function saveToDrive(){
     }
   }catch(e){
     // Fallback: abre Telegram
-    var msg='drive-research: salvar
-Titulo: '+item.title+'
-URL: '+item.url+'
-Frank: '+getFrankTake(item.id);
+    var msg='drive-research: salvar\nTitulo: '+item.title+'\nURL: '+item.url+'\nFrank: '+getFrankTake(item.id);
     window.open('https://t.me/ImFrankBot?text='+encodeURIComponent(msg),'_blank');
     showToast('Abrindo Telegram como fallback','ok');
     btn.textContent='+ Drive';btn.disabled=false;
@@ -957,7 +954,7 @@ function showBriefModal(text){
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'+
     '<div><div style="font-size:14px;font-weight:700;color:#e2e2e2">Brief Executivo</div>'+
     '<div style="font-size:11px;color:#888;margin-top:2px">'+date+'</div></div>'+
-    '<button onclick="this.closest('#brief-modal').remove()" style="background:none;border:none;color:#888;cursor:pointer;font-size:16px;padding:4px">x</button>'+
+    '<button onclick="document.getElementById(\'brief-modal\').remove()" style="background:none;border:none;color:#888;cursor:pointer;font-size:16px;padding:4px">x</button>'+
     '</div>'+
     '<div style="font-size:13px;color:#e2e2e2;line-height:1.8;white-space:pre-wrap">'+escHtml(text)+'</div>'+
     '<div style="margin-top:16px;display:flex;gap:8px">'+
@@ -1014,34 +1011,72 @@ function openWeights(){
   var existing=document.getElementById('weights-modal');
   if(existing){existing.remove();return}
 
+  var labels={ai:'AI / LLM',crypto:'Cripto',startup:'Startup / SaaS',brasil:'Brasil',geopolitics:'Geopolitica',hot:'Breaking (hot)',rising:'Rising',score_hi:'Reddit >10k',score_mid:'Reddit >3k'};
+
   var overlay=document.createElement('div');
   overlay.id='weights-modal';
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px';
   overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};
 
-  var labels={ai:'AI / LLM',crypto:'Cripto',startup:'Startup / SaaS',brasil:'Brasil',geopolitics:'Geopolitica',hot:'Breaking (hot)',rising:'Rising',score_hi:'Reddit >10k',score_mid:'Reddit >3k'};
-
-  var rows=Object.keys(DEFAULT_WEIGHTS).map(function(k){
-    var v=scoreWeights[k];
-    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
-      '<div style="width:140px;font-size:12px;color:#888">'+labels[k]+'</div>'+
-      '<input type="range" id="w_'+k+'" min="0" max="60" value="'+v+'" '+
-      'style="flex:1;accent-color:#4ade80" oninput="document.getElementById('wv_'+k+'').textContent=this.value">'+
-      '<div id="wv_'+k+'" style="width:24px;font-size:12px;color:#4ade80;text-align:right">'+v+'</div>'+
-      '</div>';
-  }).join('');
-
   var box=document.createElement('div');
   box.style.cssText='background:#1a1a1a;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:24px;max-width:480px;width:100%;position:relative';
-  box.innerHTML=
-    '<div style="font-size:14px;font-weight:700;margin-bottom:4px">Pesos do Score Marco</div>'+
-    '<div style="font-size:11px;color:#888;margin-bottom:16px">Ajusta o que importa mais pro seu contexto agora</div>'+
-    rows+
-    '<div style="display:flex;gap:8px;margin-top:16px">'+
-    '<button onclick="applyWeights()" style="flex:1;padding:8px;border-radius:5px;border:1px solid rgba(74,222,128,.25);background:rgba(74,222,128,.08);color:#4ade80;font-size:12px;cursor:pointer">Aplicar</button>'+
-    '<button onclick="resetWeights()" style="padding:8px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#222;color:#888;font-size:12px;cursor:pointer">Reset</button>'+
-    '<button onclick="document.getElementById('weights-modal').remove()" style="padding:8px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#222;color:#888;font-size:12px;cursor:pointer">Fechar</button>'+
-    '</div>';
+
+  var title=document.createElement('div');
+  title.style.cssText='font-size:14px;font-weight:700;margin-bottom:4px';
+  title.textContent='Pesos do Score Marco';
+  box.appendChild(title);
+
+  var sub=document.createElement('div');
+  sub.style.cssText='font-size:11px;color:#888;margin-bottom:16px';
+  sub.textContent='Ajusta o que importa mais pro seu contexto agora';
+  box.appendChild(sub);
+
+  Object.keys(DEFAULT_WEIGHTS).forEach(function(k){
+    var v=scoreWeights[k];
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px';
+
+    var lbl=document.createElement('div');
+    lbl.style.cssText='width:140px;font-size:12px;color:#888';
+    lbl.textContent=labels[k]||k;
+    row.appendChild(lbl);
+
+    var inp=document.createElement('input');
+    inp.type='range';inp.id='w_'+k;inp.min='0';inp.max='60';inp.value=v;
+    inp.style.cssText='flex:1;accent-color:#4ade80';
+    (function(key){inp.oninput=function(){var el=document.getElementById('wv_'+key);if(el)el.textContent=this.value}})(k);
+    row.appendChild(inp);
+
+    var val=document.createElement('div');
+    val.id='wv_'+k;val.style.cssText='width:24px;font-size:12px;color:#4ade80;text-align:right';
+    val.textContent=v;
+    row.appendChild(val);
+
+    box.appendChild(row);
+  });
+
+  var footer=document.createElement('div');
+  footer.style.cssText='display:flex;gap:8px;margin-top:16px';
+
+  var btnApply=document.createElement('button');
+  btnApply.style.cssText='flex:1;padding:8px;border-radius:5px;border:1px solid rgba(74,222,128,.25);background:rgba(74,222,128,.08);color:#4ade80;font-size:12px;cursor:pointer';
+  btnApply.textContent='Aplicar';
+  btnApply.onclick=applyWeights;
+  footer.appendChild(btnApply);
+
+  var btnReset=document.createElement('button');
+  btnReset.style.cssText='padding:8px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#222;color:#888;font-size:12px;cursor:pointer';
+  btnReset.textContent='Reset';
+  btnReset.onclick=resetWeights;
+  footer.appendChild(btnReset);
+
+  var btnClose=document.createElement('button');
+  btnClose.style.cssText='padding:8px 14px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#222;color:#888;font-size:12px;cursor:pointer';
+  btnClose.textContent='Fechar';
+  btnClose.onclick=function(){overlay.remove()};
+  footer.appendChild(btnClose);
+
+  box.appendChild(footer);
   overlay.appendChild(box);
   document.body.appendChild(overlay);
 }
