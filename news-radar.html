@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Radar de Noticias &mdash; Marco OS</title>
+<title>Radar de Noticias — Marco OS</title>
 <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#111;--bg2:#1a1a1a;--bg3:#222;--bg4:#252525;
@@ -168,94 +168,80 @@ a{color:inherit;text-decoration:none}
 </head>
 <body>
 <div class="page">
-
 <div class="header">
   <div>
-    <h1 id="h-title">&#127758; Radar Global <span class="h-badge global" id="h-badge">GLOBAL</span></h1>
-    <div class="header-sub" id="h-sub">&#218;ltimas 24h &middot; X + Reddit &middot; <span id="last-update">&mdash;</span></div>
+    <h1 id="h-title">Radar Global <span class="h-badge global" id="h-badge">GLOBAL</span></h1>
+    <div class="header-sub" id="h-sub">Ultimas 24h · X + Reddit · <span id="last-update">--</span></div>
   </div>
   <div class="header-right">
     <div class="status-pill"><div class="sdot"></div>LIVE</div>
     <div class="clock" id="clock">--:-- BRT</div>
   </div>
 </div>
-
 <div class="tabs">
-  <div class="tab active" id="tab-global" onclick="switchTab('global')">&#127758; Global <span class="tab-count" id="tc-global">0</span></div>
-  <div class="tab" id="tab-brasil" onclick="switchTab('brasil')">&#127463;&#127479; Brasil <span class="tab-count" id="tc-brasil">0</span></div>
-  <div class="tab" id="tab-tech" onclick="switchTab('tech')">&#128187; Tech / AI <span class="tab-count" id="tc-tech">0</span></div>
-  <div class="tab" id="tab-crypto" onclick="switchTab('crypto')">&#9889; Cripto <span class="tab-count" id="tc-crypto">0</span></div>
+  <div class="tab active" id="tab-global" onclick="switchTab('global')">Global <span class="tab-count" id="tc-global">0</span></div>
+  <div class="tab" id="tab-brasil" onclick="switchTab('brasil')">Brasil <span class="tab-count" id="tc-brasil">0</span></div>
+  <div class="tab" id="tab-tech" onclick="switchTab('tech')">Tech / AI <span class="tab-count" id="tc-tech">0</span></div>
+  <div class="tab" id="tab-crypto" onclick="switchTab('crypto')">Cripto <span class="tab-count" id="tc-crypto">0</span></div>
 </div>
-
 <div class="stats">
-  <div class="stat"><div class="stat-val" style="color:var(--red)" id="s-hot">&#8212;</div><div class="stat-lbl">Trending</div></div>
-  <div class="stat"><div class="stat-val" style="color:var(--green)" id="s-marco">&#8212;</div><div class="stat-lbl">Relevante p/ vc</div></div>
-  <div class="stat"><div class="stat-val" style="color:var(--orange)" id="s-reddit">&#8212;</div><div class="stat-lbl">Reddit</div></div>
-  <div class="stat"><div class="stat-val" style="color:var(--text)" id="s-total">&#8212;</div><div class="stat-lbl">Total</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--red)" id="s-hot">--</div><div class="stat-lbl">Trending</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--green)" id="s-marco">--</div><div class="stat-lbl">Relevante p/ vc</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--orange)" id="s-reddit">--</div><div class="stat-lbl">Reddit</div></div>
+  <div class="stat"><div class="stat-val" style="color:var(--text)" id="s-total">--</div><div class="stat-lbl">Total</div></div>
 </div>
-
 <div class="heat-section">
-  <div class="heat-label">T&oacute;picos &middot; clique para filtrar</div>
+  <div class="heat-label">Topicos · clique para filtrar</div>
   <div class="heat-row" id="heat-row"></div>
 </div>
-
 <div class="toolbar">
-  <button class="btn primary" id="btn-refresh" onclick="loadTab(true)">&#8635; Atualizar</button>
+  <button class="btn primary" id="btn-refresh" onclick="loadTab(true)">Atualizar</button>
   <div class="sort-btns">
-    <div class="sort-btn active" id="sort-smart" onclick="setSort('smart')">&#9733; Smart</div>
-    <div class="sort-btn" id="sort-hot" onclick="setSort('hot')">&#128293; Hot</div>
-    <div class="sort-btn" id="sort-new" onclick="setSort('new')">&#128337; Recente</div>
+    <div class="sort-btn active" id="sort-smart" onclick="setSort('smart')">Smart</div>
+    <div class="sort-btn" id="sort-hot" onclick="setSort('hot')">Hot</div>
+    <div class="sort-btn" id="sort-new" onclick="setSort('new')">Recente</div>
   </div>
   <div class="toolbar-r">
     <div class="search">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" placeholder="Filtrar..." oninput="filterNews(this.value)" id="search-input">
     </div>
   </div>
 </div>
-
 <div class="src-row" id="src-row"></div>
-<div class="error-banner" id="error-banner">&#9888; <span id="error-msg">Algumas fontes indispon&iacute;veis</span></div>
-
-<div class="top10-section" id="top10-section">
+<div class="error-banner" id="error-banner">! <span id="error-msg">Algumas fontes indisponiveis</span></div>
+<div class="top10-section">
   <div class="section-head">
-    <div class="section-title"><div class="dot"></div>TOP 10 &mdash; Score Marco</div>
-    <span style="font-size:10px;color:var(--dim2)">por relev&acirc;ncia pessoal</span>
+    <div class="section-title"><div class="dot"></div>TOP 10 — Score Marco</div>
+    <span style="font-size:10px;color:var(--dim2)">por relevancia pessoal</span>
   </div>
   <div class="top10-list" id="top10-list"></div>
 </div>
-
 <div class="divider"></div>
-
 <div class="feed-section">
   <div class="section-head">
     <div class="section-title">Todos os itens</div>
     <span style="font-size:10px;color:var(--dim2)" id="feed-count"></span>
   </div>
-  <div id="feed-root"><div class="feed-loading"><span class="spin">&#9675;</span> Buscando...</div></div>
+  <div id="feed-root"><div class="feed-loading"><span class="spin">·</span> Buscando...</div></div>
 </div>
-
 </div>
-
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <div class="drawer" id="drawer">
   <div class="drawer-head">
     <div style="flex:1">
-      <div class="drawer-title" id="dr-title">&mdash;</div>
-      <div class="drawer-sub" id="dr-sub">&mdash;</div>
+      <div class="drawer-title" id="dr-title">--</div>
+      <div class="drawer-sub" id="dr-sub">--</div>
     </div>
-    <button class="drawer-close" onclick="closeDrawer()">&#10005;</button>
+    <button class="drawer-close" onclick="closeDrawer()">x</button>
   </div>
   <div class="drawer-body" id="dr-body"></div>
   <div class="drawer-foot">
-    <a class="btn-ext" id="dr-link" href="#" target="_blank" rel="noopener">&#8599; Ver original</a>
+    <a class="btn-ext" id="dr-link" href="#" target="_blank" rel="noopener">-> Ver original</a>
     <button class="btn-drive" id="btn-drive" onclick="saveToDrive()">+ Drive</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 <script>var PROXY='https://notion-proxy.marcoaquilino.workers.dev';
-
 function pad(n){return String(n).padStart(2,'0')}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function fmtScore(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n)}
@@ -490,7 +476,7 @@ async function loadTab(force){
 
   var btn=document.getElementById('btn-refresh');
   btn.disabled=true;btn.textContent='Buscando...';
-  document.getElementById('feed-root').innerHTML='<div class="feed-loading"><span class="spin">&#9675;</span> Buscando...</div>';
+  document.getElementById('feed-root').innerHTML='<div class="feed-loading"><span class="spin">·</span> Buscando...</div>';
   document.getElementById('error-banner').classList.remove('on');
   document.getElementById('top10-list').innerHTML='';
   activeFilter.topic=null;
@@ -529,7 +515,7 @@ async function loadTab(force){
   buildHeatMap();
   renderAll();
 
-  btn.disabled=false;btn.textContent='&#8635; Atualizar';
+  btn.disabled=false;btn.textContent='Atualizar';
   document.getElementById('last-update').textContent='Agora';
 }
 
@@ -627,7 +613,7 @@ function renderTop10(){
     var msLabel=ms>=50?'&#9733; '+ms:ms>=25?ms:'';
     var el=document.createElement('div');el.className='top10-item';
     el.innerHTML=
-      '<div class="top10-rank '+rankClass+'">'+(rank<=3?['&#9312;','&#9313;','&#9314;'][rank-1]:rank)+'</div>'+
+      '<div class="top10-rank '+rankClass+'">'+(rank<=3?['1.','2.','3.'][rank-1]:rank)+'</div>'+
       '<div style="flex:1;min-width:0">'+
       '<div class="top10-title">'+esc(item.title)+'</div>'+
       '<div class="top10-meta">'+
@@ -769,10 +755,10 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer(
 
 // ─── TAB SWITCH ───────────────────────────────────────────────────────────────
 var TAB_META={
-  global:{title:'&#127758; Radar Global',badge:'GLOBAL',badgeClass:'global',sub:'&#218;ltimas 24h &middot; X + Reddit'},
-  brasil:{title:'&#127463;&#127479; Radar Brasil',badge:'BR',badgeClass:'br',sub:'&#218;ltimas 24h &middot; G1 + Reddit + UOL'},
-  tech:  {title:'&#128187; Radar Tech / AI',badge:'TECH',badgeClass:'tech',sub:'&#218;ltimas 24h &middot; Reddit + Brave Search'},
-  crypto:{title:'&#9889; Radar Cripto',badge:'CRIPTO',badgeClass:'crypto',sub:'&#218;ltimas 24h &middot; Reddit + Brave Search'},
+  global:{title:'Radar Global',badge:'GLOBAL',badgeClass:'global',sub:'Ultimas 24h · X + Reddit'},
+  brasil:{title:'Radar Brasil',badge:'BR',badgeClass:'br',sub:'Ultimas 24h · G1 + Reddit + UOL'},
+  tech:  {title:'Radar Tech / AI',badge:'TECH',badgeClass:'tech',sub:'Ultimas 24h · Reddit + Brave'},
+  crypto:{title:'Radar Cripto',badge:'CRIPTO',badgeClass:'crypto',sub:'Ultimas 24h · Reddit + Brave'},
 };
 
 function switchTab(t){
@@ -785,7 +771,7 @@ function switchTab(t){
   document.querySelectorAll('.sort-btn').forEach(function(el){el.classList.remove('active')});
   document.getElementById('sort-smart').classList.add('active');
   var meta=TAB_META[t];
-  document.getElementById('h-title').innerHTML=meta.title+' <span class="h-badge '+meta.badgeClass+'" id="h-badge">'+meta.badge+'</span>';
+  document.getElementById('h-title').innerHTML=meta.title+' <span class="h-badge '+meta.badgeClass+'" id="h-badge">'+meta.badge+'</span>'+meta.badgeClass+'" id="h-badge">'+meta.badge+'</span>';
   document.getElementById('h-sub').innerHTML=meta.sub+' &middot; <span id="last-update">'+(lastLoad[t]?'Agora':'&mdash;')+'</span>';
   loadTab();
 }
