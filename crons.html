@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRONS — Frank OS</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#111;--bg2:#1a1a1a;--bg3:#222;--sep:rgba(255,255,255,.06);--sep2:rgba(255,255,255,.1);--text:#e2e2e2;--dim:#888;--dim2:#555;--green:#4ade80;--blue:#60a5fa;--yellow:#fbbf24;--orange:#fb923c;--purple:#c084fc;--red:#f87171;--gold:#fcd34d}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px}
+.page{max-width:900px;margin:0 auto;padding:32px 24px 64px}
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.header h1{font-size:22px;font-weight:600;letter-spacing:-.4px}
+.header-sub{font-size:12px;color:var(--dim);margin-top:3px;display:flex;align-items:center;gap:12px}
+.header-sub a{color:var(--dim);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .15s}
+.header-sub a:hover{color:var(--text)}
+.header-sub .sep{color:var(--dim2)}
+.header-right{display:flex;align-items:center;gap:14px;padding-top:4px}
+.status-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green)}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.clock{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.stats{display:flex;gap:36px;padding:0 0 24px;border-bottom:1px solid var(--sep);margin-bottom:24px}
+.stat-val{font-size:22px;font-weight:700;line-height:1}
+.stat-lbl{font-size:11px;color:var(--dim);margin-top:3px}
+.actions{display:flex;align-items:center;gap:8px;margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--sep2);background:var(--bg2);color:var(--dim)}
+.btn:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.btn.primary{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.25);color:var(--green)}
+.btn.primary:hover{background:rgba(74,222,128,.18)}
+.btn.active{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:var(--text)}
+/* VIEW TOGGLE */
+.view-toggle{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--sep2);border-radius:5px;padding:2px}
+.vt-btn{padding:4px 10px;border-radius:3px;cursor:pointer;font-size:11px;color:var(--dim);transition:all .15s;user-select:none;display:flex;align-items:center;gap:5px}
+.vt-btn:hover{color:var(--text)}
+.vt-btn.on{background:var(--bg3);color:var(--text)}
+/* KANBAN VIEW */
+.table-view{display:none}
+.table-view.on{display:block}
+.list-view.off{display:none}
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kb-col{background:var(--bg2);border:1px solid var(--sep);border-radius:8px;overflow:hidden}
+.kb-col-head{padding:10px 14px;border-bottom:1px solid var(--sep);display:flex;align-items:center;justify-content:space-between}
+.kb-col-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:7px}
+.kb-col-cnt{font-size:10px;color:var(--dim2);background:var(--bg3);padding:1px 7px;border-radius:10px}
+.kb-cards{padding:8px;display:flex;flex-direction:column;gap:6px}
+.kb-card{background:var(--bg3);border:1px solid var(--sep2);border-radius:6px;padding:9px 11px;transition:border-color .15s}
+.kb-card:hover{border-color:rgba(255,255,255,.18)}
+.kb-card-time{font-size:10px;color:var(--dim2);font-variant-numeric:tabular-nums;margin-bottom:4px}
+.kb-card-name{font-size:12px;font-weight:500;line-height:1.3;margin-bottom:6px}
+.kb-card-foot{display:flex;align-items:center;justify-content:space-between}
+.kb-card-freq{font-size:10px;color:var(--dim2)}
+/* MINI CHARTS */
+.mini-charts{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid var(--sep)}
+.mini-chart-box{background:var(--bg2);border:1px solid var(--sep);border-radius:7px;padding:12px 14px}
+.mini-chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mini-chart-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.mini-chart-val{font-size:11px;color:var(--dim2)}
+.mini-chart-w{height:60px;position:relative}
+.donut-wrap{display:flex;align-items:center;gap:14px}
+.donut-w{height:60px;width:60px;flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:5px}
+.donut-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)}
+.donut-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.actions-r{margin-left:auto;display:flex;align-items:center;gap:6px}
+.search{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--sep2);border-radius:5px;padding:5px 10px}
+.search input{background:none;border:none;outline:none;color:var(--text);font-size:12px;width:140px}
+.search input::placeholder{color:var(--dim2)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--sep);margin-bottom:28px}
+.tab{padding:8px 16px;font-size:12px;font-weight:500;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--text);border-bottom-color:var(--green)}
+.tl-section{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--sep)}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:10px}
+.tl-wrap{position:relative;height:30px}
+.tl-track{position:absolute;top:13px;left:0;right:0;height:1px;background:var(--sep2)}
+.tl-now{position:absolute;top:7px;width:2px;height:18px;background:var(--green);opacity:.7;border-radius:1px}
+.tl-dot{position:absolute;width:7px;height:7px;border-radius:50%;top:9px;transform:translateX(-50%);cursor:default;transition:transform .15s}
+.tl-dot:hover{transform:translateX(-50%) scale(1.7);z-index:5}
+.tl-labels{display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--dim2)}
+.next-info{margin-top:8px;font-size:11px;color:var(--dim)}
+.next-info b{color:var(--text);font-weight:500}
+.next-info .cd{color:var(--green)}
+.group-header{padding:20px 0 8px;display:flex;align-items:center;justify-content:space-between}
+.group-header h3{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);display:flex;align-items:center;gap:7px}
+.group-cnt{font-size:10px;font-weight:400;color:var(--dim2)}
+.notion-link{font-size:11px;color:var(--dim2);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .15s}
+.notion-link:hover{color:var(--dim)}
+.cron-list{display:flex;flex-direction:column}
+.cron-row{display:grid;grid-template-columns:52px 1fr 80px 80px 64px 28px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--sep);border-radius:4px;transition:background .1s}
+.cron-row:last-child{border-bottom:none}
+.cron-row:hover{background:rgba(255,255,255,.025)}
+.cr-time{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;font-weight:500}
+.cr-name{font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.cr-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cr-cat{font-size:11px;color:var(--dim2)}
+.cr-status{text-align:center}
+.cr-dur{font-size:11px;color:var(--dim);text-align:right}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
+.badge.ok{background:rgba(74,222,128,.1);color:var(--green)}
+.badge.err{background:rgba(248,113,113,.1);color:var(--red)}
+.badge.idle{background:rgba(255,255,255,.05);color:var(--dim2)}
+.ic-btn{background:none;border:none;color:var(--dim2);cursor:pointer;font-size:13px;padding:2px 4px;border-radius:3px;transition:color .15s}
+.ic-btn:hover{color:var(--text)}
+.panel{display:none}
+.panel.on{display:block}
+.links-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px}
+.link-card{background:var(--bg2);border:1px solid var(--sep2);border-radius:7px;padding:14px 16px;text-decoration:none;color:var(--text);transition:border-color .15s,background .15s;display:flex;flex-direction:column;gap:4px}
+.link-card:hover{border-color:rgba(255,255,255,.2);background:var(--bg3)}
+.link-card .lc-icon{font-size:16px}
+.link-card .lc-title{font-size:13px;font-weight:500}
+.link-card .lc-sub{font-size:11px;color:var(--dim)}
+.log-header{display:grid;grid-template-columns:52px 1fr 80px 80px 64px 28px;padding:6px 6px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--dim2);border-bottom:1px solid var(--sep)}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.chart-box{background:var(--bg2);border-radius:7px;padding:16px;border:1px solid var(--sep)}
+.chart-box h4{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:12px}
+.chart-w{height:100px;position:relative}
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tool-card{background:var(--bg2);border:1px solid var(--sep);border-radius:7px;padding:14px 16px}
+.tool-card h4{font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.tool-card p{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:8px}
+.tool-card code{font-size:10px;background:var(--bg3);border:1px solid var(--sep2);border-radius:3px;padding:1px 5px;color:var(--text);font-family:ui-monospace,monospace}
+.cmd{background:var(--bg3);border:1px solid var(--sep);border-radius:5px;padding:8px 10px;font-size:11px;font-family:ui-monospace,monospace;color:var(--dim);line-height:1.8}
+.cmd .g{color:var(--green)}
+.files-row{display:grid;grid-template-columns:200px 1fr 100px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--sep);border-radius:4px;transition:background .1s}
+.files-row:last-child{border-bottom:none}
+.files-row:hover{background:rgba(255,255,255,.02)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:2px}
+
+/* ── DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer-overlay.on{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:-520px;width:500px;max-width:95vw;height:100vh;background:var(--bg2);border-left:1px solid var(--sep2);z-index:101;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.drawer.on{right:0}
+.drawer-head{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 20px 14px;border-bottom:1px solid var(--sep);flex-shrink:0}
+.drawer-title{font-size:15px;font-weight:600;line-height:1.2;margin-bottom:3px}
+.drawer-sub{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.drawer-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;padding:0 4px;line-height:1;transition:color .15s;flex-shrink:0;margin-left:12px}
+.drawer-close:hover{color:var(--text)}
+.drawer-body{flex:1;overflow-y:auto;padding:0}
+.drawer-section{padding:16px 20px;border-bottom:1px solid var(--sep)}
+.drawer-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);margin-bottom:10px}
+.drawer-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.drawer-field{display:flex;flex-direction:column;gap:3px}
+.drawer-field.full{grid-column:1/-1}
+.drawer-field label{font-size:10px;color:var(--dim2);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.drawer-field input,.drawer-field select,.drawer-field textarea{background:var(--bg3);border:1px solid var(--sep2);border-radius:4px;padding:6px 8px;font-size:12px;color:var(--text);outline:none;transition:border-color .15s;font-family:inherit}
+.drawer-field input:focus,.drawer-field select:focus,.drawer-field textarea:focus{border-color:rgba(74,222,128,.4)}
+.drawer-field select option{background:var(--bg3)}
+.drawer-field textarea{resize:vertical;min-height:180px;font-family:ui-monospace,monospace;font-size:11px;line-height:1.6}
+.drawer-field code{font-size:11px;color:var(--dim);background:var(--bg3);border:1px solid var(--sep);border-radius:3px;padding:3px 7px;font-family:ui-monospace,monospace}
+.drawer-field .val{font-size:12px;color:var(--text);padding:2px 0}
+.drawer-logs{display:flex;flex-direction:column;gap:4px}
+.drawer-log-row{display:grid;grid-template-columns:75px 1fr 60px 70px;align-items:center;padding:6px 8px;border-radius:4px;font-size:11px;background:var(--bg3);gap:6px}
+.drawer-log-row .dl-time{color:var(--dim2);font-variant-numeric:tabular-nums}
+.drawer-log-row .dl-out{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drawer-log-row .dl-dur{color:var(--dim2);text-align:right}
+.drawer-empty{font-size:11px;color:var(--dim2);text-align:center;padding:16px 0}
+.drawer-foot{padding:14px 20px;border-top:1px solid var(--sep);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.drawer-foot .btn-save{background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);color:var(--green);padding:7px 16px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.drawer-foot .btn-save:hover{background:rgba(74,222,128,.25)}
+.drawer-foot .btn-save:disabled{opacity:.4;cursor:default}
+.drawer-foot .btn-notion{background:var(--bg3);border:1px solid var(--sep2);color:var(--dim);padding:7px 12px;border-radius:5px;font-size:12px;cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.drawer-foot .btn-notion:hover{color:var(--text);border-color:rgba(255,255,255,.2)}
+.drawer-foot .save-status{font-size:11px;color:var(--dim);margin-left:auto}
+.drawer-foot .save-status.ok{color:var(--green)}
+.drawer-foot .save-status.err{color:var(--red)}
+.drawer-loading{display:flex;align-items:center;justify-content:center;height:120px;color:var(--dim);font-size:12px;gap:8px}
+.spin{animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cron-row{cursor:pointer}
+
+/* ── PLACEHOLDER gráficos ── */
+.chart-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px;gap:6px;background:rgba(255,255,255,.02);border-radius:4px;border:1px dashed var(--sep2)}
+.chart-placeholder svg{opacity:.25}
+.chart-placeholder span{font-size:10px;color:var(--dim2)}
+.chart-placeholder a{font-size:10px;color:var(--blue);text-decoration:none}
+.chart-placeholder a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="header">
+  <div>
+    <h1>CRONS</h1>
+    <div class="header-sub">
+      Frank OS v4
+      <span class="sep">·</span>
+      <a href="https://notion.so/30eb72d5042d81aa94f8f5c7ef21d030" target="_blank">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Notion Crons
+      </a>
+      <a href="https://notion.so/30eb72d5042d81abb817d8bedf906713" target="_blank">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Execuções
+      </a>
+      <a href="https://notion.so/30eb72d5042d812abcc4c1f3232c0b1e" target="_blank">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Alertas
+      </a>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill"><div class="sdot"></div>ONLINE</div>
+    <div class="clock" id="clock">--:-- BRT</div>
+  </div>
+</div>
+<div class="stats">
+  <div><div class="stat-val" style="color:var(--green)">22</div><div class="stat-lbl">Crons ativos</div></div>
+  <div><div class="stat-val" id="s-ran">—</div><div class="stat-lbl">Rodaram hoje</div></div>
+  <div><div class="stat-val" style="color:var(--dim)">94.2%</div><div class="stat-lbl">Uptime 7 dias</div></div>
+  <div><div class="stat-val" style="color:var(--green)">0</div><div class="stat-lbl">Alertas</div></div>
+  <div style="margin-left:auto;text-align:right"><div class="stat-val" style="font-size:13px;color:var(--dim);font-weight:400" id="next-stat">—</div><div class="stat-lbl">Próximo</div></div>
+</div>
+<div class="actions">
+  <button class="btn primary">▶ Forçar run</button>
+  <button class="btn" onclick="switchTab('tools')">⚙ Ferramentas</button>
+  <div class="actions-r">
+    <div class="search">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="srch" placeholder="Buscar cron..." oninput="filterCrons(this.value)">
+    </div>
+    <div class="view-toggle">
+      <div class="vt-btn on" id="vt-list" onclick="setView('list')" title="Visão lista">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Lista
+      </div>
+      <div class="vt-btn" id="vt-table" onclick="setView('table')" title="Visão kanban">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="11" rx="1"/><rect x="17" y="3" width="5" height="15" rx="1"/></svg>
+        Kanban
+      </div>
+    </div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab on" onclick="switchTab('crons')">Crons <span style="font-size:10px;color:var(--dim2);margin-left:3px">22</span></div>
+  <div class="tab" onclick="switchTab('logs')">Execuções</div>
+  <div class="tab" onclick="switchTab('perf')">Performance</div>
+  <div class="tab" onclick="switchTab('tools')">Ferramentas</div>
+</div>
+<div id="p-crons" class="panel on">
+  <div class="tl-section">
+    <div class="section-title">Timeline — hoje</div>
+    <div class="tl-wrap" id="tl-wrap"><div class="tl-track"></div><div class="tl-now" id="tl-now"></div></div>
+    <div class="tl-labels" id="tl-labels"></div>
+    <div class="next-info">Próximo: <b id="nc-name">—</b><span class="cd" id="nc-cd"></span></div>
+  </div>
+  <div id="cron-list-root" class="list-view"></div>
+  <div class="table-view" id="table-view">
+    <div class="kanban" id="kanban-root"></div>
+  </div>
+
+  <!-- Mini gráficos no rodapé — placeholder até cron_log() ativo -->
+  <div class="mini-charts">
+    <div class="mini-chart-box">
+      <div class="mini-chart-head">
+        <div class="mini-chart-title">Execuções por hora — hoje</div>
+        <div class="mini-chart-val" id="mc-ran">— runs</div>
+      </div>
+      <div class="chart-placeholder">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+        <span>Aguardando dados reais</span>
+        <a href="#" onclick="switchTab('tools');return false">→ integrar cron_log()</a>
+      </div>
+    </div>
+    <div class="mini-chart-box">
+      <div class="mini-chart-head">
+        <div class="mini-chart-title">Por categoria</div>
+      </div>
+      <div class="chart-placeholder">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5.5 5.5"/></svg>
+        <span>Aguardando dados reais</span>
+        <a href="#" onclick="switchTab('tools');return false">→ integrar cron_log()</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="p-logs" class="panel">
+  <div class="log-header"><div>Hora</div><div>Cron</div><div>Categoria</div><div>Status</div><div>Duração</div><div></div></div>
+  <div class="cron-list" id="log-list"></div>
+</div>
+<div id="p-perf" class="panel">
+  <div class="chart-row">
+    <div class="chart-box">
+      <h4>Execuções por hora — hoje</h4>
+      <div class="chart-placeholder" style="height:100px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
+        <span>Aguardando dados reais do cron_log()</span>
+        <span style="color:var(--dim2);font-size:10px">Integre notion_cron_monitor.cron_log() nos scripts</span>
+      </div>
+    </div>
+    <div class="chart-box">
+      <h4>Taxa de erro — 7 dias</h4>
+      <div class="chart-placeholder" style="height:100px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,17 8,12 13,16 22,5"/><polyline points="17,5 22,5 22,10"/></svg>
+        <span>Aguardando dados reais do cron_log()</span>
+        <span style="color:var(--dim2);font-size:10px">Integre notion_cron_monitor.cron_log() nos scripts</span>
+      </div>
+    </div>
+  </div>
+  <div class="section-title" style="margin-bottom:12px">Top crons por duração</div>
+  <div class="cron-list" id="perf-list"></div>
+</div>
+<div id="p-tools" class="panel">
+  <div class="section-title" style="margin-bottom:14px">Links rápidos</div>
+  <div class="links-grid">
+    <a class="link-card" href="https://notion.so/30eb72d5042d81aa94f8f5c7ef21d030" target="_blank"><div class="lc-icon">🤖</div><div class="lc-title">Notion — Crons</div><div class="lc-sub">22 crons registrados · status</div></a>
+    <a class="link-card" href="https://notion.so/30eb72d5042d81abb817d8bedf906713" target="_blank"><div class="lc-icon">📋</div><div class="lc-title">Notion — Execuções</div><div class="lc-sub">Log de cada run · histórico</div></a>
+    <a class="link-card" href="https://notion.so/30eb72d5042d812abcc4c1f3232c0b1e" target="_blank"><div class="lc-icon">🚨</div><div class="lc-title">Notion — Alertas</div><div class="lc-sub">Falhas consecutivas · incidentes</div></a>
+    <a class="link-card" href="https://marcoraza.github.io/marco_os" target="_blank"><div class="lc-icon">🖥</div><div class="lc-title">Marco OS</div><div class="lc-sub">Dashboard principal</div></a>
+    <a class="link-card" href="https://clawdia-gamma.vercel.app" target="_blank"><div class="lc-icon">🚀</div><div class="lc-title">ClawdIA Preview</div><div class="lc-sub">clawdia-gamma.vercel.app</div></a>
+    <a class="link-card" href="https://clawhub.com" target="_blank"><div class="lc-icon">🔧</div><div class="lc-title">ClawHub</div><div class="lc-sub">Skills · marketplace OpenClaw</div></a>
+  </div>
+  <div class="section-title" style="margin-bottom:14px">Comandos úteis</div>
+  <div class="tools-grid">
+    <div class="tool-card"><h4>📝 Registrar execução</h4><p>Loga um run manualmente no Notion.</p><div class="cmd"><span class="g">python3</span> notion_cron_monitor.py<br>--log "Brief Matinal" --status ok</div></div>
+    <div class="tool-card"><h4>⚡ Rodar cron agora</h4><p>Executa sem esperar o agendamento.</p><div class="cmd"><span class="g">BRAVE_API_KEY=...</span> python3<br>executions/brief_builder.py</div></div>
+    <div class="tool-card"><h4>🔍 Status dos jobs</h4><p>Lista crons + último status do gateway.</p><div class="cmd"><span class="g">openclaw</span> cron list<br># ou: cat cron/jobs.json</div></div>
+    <div class="tool-card"><h4>🌙 Radar Noturno manual</h4><p>Roda coleta + entregável fora do horário.</p><div class="cmd"><span class="g">python3</span> radar_noturno.py<br>--collect --round 1 &amp;&amp; --deliver</div></div>
+    <div class="tool-card"><h4>📡 Radar Crypto manual</h4><p>Gera e envia o Radar imediatamente.</p><div class="cmd"><span class="g">BRAVE_API_KEY=...</span> python3<br>executions/radar_cryptoai.py</div></div>
+    <div class="tool-card"><h4>🗄 Setup Notion (1x)</h4><p>Cria databases + popula 22 crons. Já executado em 21/02.</p><div class="cmd"><span class="g">python3</span> notion_cron_monitor.py<br>--setup</div></div>
+  </div>
+  <div class="section-title" style="margin-top:28px;margin-bottom:12px">Arquivos do sistema</div>
+  <div>
+    <div class="files-row"><div style="font-size:11px;font-family:monospace;color:var(--dim)">cron/jobs.json</div><div style="font-size:12px;color:var(--dim)">22 jobs · config master do Gateway OpenClaw</div><div style="font-size:11px;color:var(--dim2);text-align:right">Config</div></div>
+    <div class="files-row"><div style="font-size:11px;font-family:monospace;color:var(--dim)">brief_builder.py</div><div style="font-size:12px;color:var(--dim)">executions/ · Brief Matinal 08:00 BRT</div><div style="font-size:11px;color:var(--dim2);text-align:right">Python</div></div>
+    <div class="files-row"><div style="font-size:11px;font-family:monospace;color:var(--dim)">radar_cryptoai.py</div><div style="font-size:12px;color:var(--dim)">executions/ · Radar Crypto &amp; AI 07:30</div><div style="font-size:11px;color:var(--dim2);text-align:right">Python</div></div>
+    <div class="files-row"><div style="font-size:11px;font-family:monospace;color:var(--dim)">radar_noturno.py</div><div style="font-size:12px;color:var(--dim)">executions/ · Coleta 01/03/05h + Entregável 07h</div><div style="font-size:11px;color:var(--dim2);text-align:right">Python</div></div>
+    <div class="files-row"><div style="font-size:11px;font-family:monospace;color:var(--dim)">channel_scanner.py</div><div style="font-size:12px;color:var(--dim)">executions/ · YouTube Scanner 19h</div><div style="font-size:11px;color:var(--dim2);text-align:right">Python</div></div>
+    <div class="files-row"><div style="font-size:11px;font-family:monospace;color:var(--dim)">notion_cron_monitor.py</div><div style="font-size:12px;color:var(--dim)">executions/ · log de execuções → Notion</div><div style="font-size:11px;color:var(--dim2);text-align:right">Python</div></div>
+    <div class="files-row"><div style="font-size:11px;font-family:monospace;color:var(--dim)">.mission_control.json</div><div style="font-size:12px;color:var(--dim)">workspace/ · IDs dos databases Notion</div><div style="font-size:11px;color:var(--dim2);text-align:right">Config</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ── DRAWER OVERLAY ── -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-title" id="dr-title">—</div>
+      <div class="drawer-sub">
+        <span id="dr-cat" style="display:flex;align-items:center;gap:4px">—</span>
+        <span style="color:var(--dim2)">·</span>
+        <span id="dr-freq">—</span>
+        <span style="color:var(--dim2)">·</span>
+        <span id="dr-expr" style="font-family:ui-monospace,monospace;font-size:10px;color:var(--dim2)">—</span>
+      </div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <div class="drawer-body" id="drawer-body">
+    <div class="drawer-loading" id="dr-loading">
+      <span class="spin">◌</span> Carregando do Notion…
+    </div>
+    <div id="dr-content" style="display:none">
+
+      <!-- Status + campos editáveis -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">Configuração</div>
+        <div class="drawer-fields">
+          <div class="drawer-field">
+            <label>Horário BRT</label>
+            <input type="text" id="dr-horario" placeholder="08:00">
+          </div>
+          <div class="drawer-field">
+            <label>Status</label>
+            <select id="dr-status">
+              <option value="🟢 Ativo">🟢 Ativo</option>
+              <option value="⚠️ Degradado">⚠️ Degradado</option>
+              <option value="🔴 Erro">🔴 Erro</option>
+              <option value="⏸️ Pausado">⏸️ Pausado</option>
+            </select>
+          </div>
+          <div class="drawer-field full">
+            <label>Script / Comando</label>
+            <input type="text" id="dr-script" placeholder="python3 executions/...">
+          </div>
+          <div class="drawer-field full">
+            <label>Cron Expression</label>
+            <input type="text" id="dr-cronexpr" placeholder="0 11 * * *">
+          </div>
+        </div>
+      </div>
+
+      <!-- Último run -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">Último run</div>
+        <div class="drawer-fields">
+          <div class="drawer-field">
+            <label>Data/hora</label>
+            <div class="val" id="dr-lastrun">—</div>
+          </div>
+          <div class="drawer-field">
+            <label>Status</label>
+            <div class="val" id="dr-laststatus">—</div>
+          </div>
+          <div class="drawer-field full">
+            <label>Output preview</label>
+            <div class="val" id="dr-output" style="color:var(--dim);font-size:11px;line-height:1.5;white-space:pre-wrap">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Histórico de execuções -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">Execuções recentes <span id="dr-logs-source" style="font-size:9px;color:var(--dim2);margin-left:4px;font-weight:400"></span></div>
+        <div class="drawer-logs" id="dr-logs">
+          <div class="drawer-empty" id="dr-logs-empty">Aguardando cron_log() integrado nos scripts</div>
+        </div>
+      </div>
+
+      <!-- Conteúdo .md editável -->
+      <div class="drawer-section">
+        <div class="drawer-section-title">Documentação / Setup
+          <span style="font-weight:400;font-size:9px;color:var(--dim2);margin-left:6px">editável · salva no Notion</span>
+        </div>
+        <div class="drawer-field full">
+          <textarea id="dr-content-md" placeholder="## Setup&#10;&#10;Descreva o cron aqui em Markdown...&#10;&#10;## Variáveis de ambiente&#10;&#10;- BRAVE_API_KEY&#10;- ...&#10;&#10;## Notas&#10;"></textarea>
+        </div>
+      </div>
+
+    </div><!-- /dr-content -->
+  </div><!-- /drawer-body -->
+
+  <div class="drawer-foot">
+    <button class="btn-save" id="dr-save" onclick="saveDrawer()" disabled>Salvar no Notion</button>
+    <a class="btn-notion" id="dr-notion-link" href="#" target="_blank">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Abrir no Notion
+    </a>
+    <div class="save-status" id="dr-save-status"></div>
+  </div>
+</div>
+
+<script>
+const CRONS=[
+  {n:"Radar Noturno Coleta 1",  h:1, m:0,  cat:"Radar Noturno",color:"#60a5fa",freq:"diário",   dur:"12s"},
+  {n:"Radar Noturno Coleta 2",  h:3, m:0,  cat:"Radar Noturno",color:"#60a5fa",freq:"diário",   dur:"14s"},
+  {n:"Radar Noturno Coleta 3",  h:5, m:0,  cat:"Radar Noturno",color:"#60a5fa",freq:"diário",   dur:"11s"},
+  {n:"Radar Noturno Entregável",h:7, m:0,  cat:"Radar Noturno",color:"#60a5fa",freq:"diário",   dur:"2m 34s"},
+  {n:"Radar Crypto & AI",       h:7, m:30, cat:"Radar",        color:"#fbbf24",freq:"diário",   dur:"45s"},
+  {n:"RADAR Diário YT+X",       h:10,m:30, cat:"Radar",        color:"#fbbf24",freq:"diário",   dur:"4m 08s"},
+  {n:"Twitter Radar",           h:21,m:0,  cat:"Radar",        color:"#fbbf24",freq:"diário",   dur:"1m 20s"},
+  {n:"Brief Matinal",           h:8, m:0,  cat:"Operação",     color:"#fb923c",freq:"diário",   dur:"3m 12s"},
+  {n:"NotionOps",               h:22,m:30, cat:"Operação",     color:"#fb923c",freq:"diário",   dur:"2m 45s"},
+  {n:"Checklist + Highlights",  h:23,m:0,  cat:"Operação",     color:"#fb923c",freq:"diário",   dur:"55s"},
+  {n:"Heartbeat 10h",           h:10,m:0,  cat:"Monitoramento",color:"#4ade80",freq:"diário",   dur:"5s"},
+  {n:"Heartbeat 14h",           h:14,m:0,  cat:"Monitoramento",color:"#4ade80",freq:"diário",   dur:"5s"},
+  {n:"Heartbeat 18h",           h:18,m:0,  cat:"Monitoramento",color:"#4ade80",freq:"diário",   dur:"5s"},
+  {n:"Revisão de Crons",        h:20,m:45, cat:"Monitoramento",color:"#4ade80",freq:"diário",   dur:"8s"},
+  {n:"AI Self-Improvement",     h:8, m:30, cat:"Pipeline",     color:"#c084fc",freq:"diário",   dur:"1m 55s"},
+  {n:"Recording Pipeline 14h",  h:14,m:0,  cat:"Pipeline",     color:"#c084fc",freq:"diário",   dur:"30s"},
+  {n:"YouTube Scanner",         h:19,m:0,  cat:"Pipeline",     color:"#c084fc",freq:"diário",   dur:"3m 22s"},
+  {n:"Recording Pipeline 20:30",h:20,m:30, cat:"Pipeline",     color:"#c084fc",freq:"diário",   dur:"30s"},
+  {n:"Consolidação Mid-Week",   h:9, m:0,  cat:"Semanal",      color:"#fcd34d",freq:"Qua",      dur:"5m 10s"},
+  {n:"Agenda Semanal",          h:18,m:0,  cat:"Semanal",      color:"#fcd34d",freq:"Sex",      dur:"2m 00s"},
+  {n:"Digest Semanal",          h:9, m:0,  cat:"Semanal",      color:"#fcd34d",freq:"Dom",      dur:"8m 30s"},
+  {n:"NFTs Digest",             h:9, m:0,  cat:"Semanal",      color:"#fcd34d",freq:"Seg/Qua/Sex",dur:"3m 00s"},
+];
+const GROUPS=[
+  {label:"Radar Noturno",key:"Radar Noturno"},
+  {label:"Radar",        key:"Radar"},
+  {label:"Operação",     key:"Operação"},
+  {label:"Monitoramento",key:"Monitoramento"},
+  {label:"Pipeline",     key:"Pipeline"},
+  {label:"Semanal",      key:"Semanal"},
+];
+function pad(n){return String(n).padStart(2,'0')}
+function getBRT(){return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}))}
+
+// Clock
+function updateClock(){const d=getBRT();document.getElementById('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+' BRT';}
+setInterval(updateClock,10000);updateClock();
+
+// Stats
+const now=getBRT();
+const nowMin=now.getHours()*60+now.getMinutes();
+const ran=CRONS.filter(c=>c.h*60+c.m<=nowMin).length;
+document.getElementById('s-ran').textContent=ran;
+
+// Timeline
+function buildTimeline(){
+  const wrap=document.getElementById('tl-wrap');
+  const lbls=document.getElementById('tl-labels');
+  document.getElementById('tl-now').style.left=(nowMin/(24*60)*100)+'%';
+  CRONS.filter(c=>c.freq==='diário').forEach(c=>{
+    const pct=(c.h*60+c.m)/(24*60)*100;
+    const d=document.createElement('div');
+    d.className='tl-dot';
+    d.style.left=pct+'%';
+    d.style.background=c.color;
+    d.style.opacity=c.h*60+c.m<=nowMin?'1':'.4';
+    d.title=c.n+' — '+pad(c.h)+':'+pad(c.m);
+    wrap.appendChild(d);
+  });
+  [0,4,8,12,16,20,23].forEach(h=>{const s=document.createElement('span');s.textContent=pad(h)+'h';lbls.appendChild(s);});
+}
+buildTimeline();
+
+// Next cron
+function updateNext(){
+  const d=getBRT();
+  const cur=d.getHours()*60+d.getMinutes();
+  const daily=CRONS.filter(c=>c.freq==='diário').sort((a,b)=>a.h*60+a.m-(b.h*60+b.m));
+  const next=daily.find(c=>c.h*60+c.m>cur)||daily[0];
+  const diff=((next.h*60+next.m)-cur+1440)%1440;
+  const hh=Math.floor(diff/60),mm=diff%60;
+  document.getElementById('nc-name').textContent=next.n;
+  document.getElementById('nc-cd').textContent=' — em '+(hh>0?hh+'h ':'')+mm+'min';
+  document.getElementById('next-stat').textContent=pad(next.h)+':'+pad(next.m)+' · '+next.n.split(' ').slice(0,2).join(' ');
+}
+updateNext();setInterval(updateNext,30000);
+
+// Cron list
+function buildCronList(){
+  const root=document.getElementById('cron-list-root');
+  GROUPS.forEach(g=>{
+    const items=CRONS.filter(c=>c.cat===g.key).sort((a,b)=>a.h*60+a.m-(b.h*60+b.m));
+    if(!items.length)return;
+    const color=items[0].color;
+    const gh=document.createElement('div');
+    gh.className='group-header';
+    gh.innerHTML='<h3><span style="width:6px;height:6px;border-radius:50%;background:'+color+';display:inline-block"></span>'+g.label+' <span class="group-cnt">'+items.length+' crons</span></h3>';
+    root.appendChild(gh);
+    const list=document.createElement('div');
+    list.className='cron-list';
+    items.forEach(c=>{
+      const past=c.h*60+c.m<=nowMin;
+      const row=document.createElement('div');
+      row.className='cron-row';
+      row.dataset.name=c.n.toLowerCase();
+      row.innerHTML=
+        '<div class="cr-time">'+pad(c.h)+':'+pad(c.m)+'</div>'+
+        '<div class="cr-name"><div class="cr-dot" style="background:'+color+';opacity:'+(past?1:.4)+'"></div>'+c.n+'</div>'+
+        '<div class="cr-cat">'+c.freq+'</div>'+
+        '<div class="cr-status">'+(past?'<span class="badge ok">✓ ok</span>':'<span class="badge idle">—</span>')+'</div>'+
+        '<div class="cr-dur">'+(past?c.dur:'')+'</div>'+
+        '<div><button class="ic-btn" title="Detalhes" onclick="event.stopPropagation();openDrawer(\''+c.n.replace(/'/g,"\\'")+'\')" style="color:var(--dim)">→</button></div>';
+      row.onclick=()=>openDrawer(c.n);
+      list.appendChild(row);
+    });
+    root.appendChild(list);
+  });
+}
+buildCronList();
+
+// Filter
+function filterCrons(q){
+  document.querySelectorAll('.cron-row[data-name]').forEach(r=>{
+    r.style.display=r.dataset.name.includes(q.toLowerCase())?'':'none';
+  });
+}
+
+// Logs
+const LOGS=[
+  {t:'07:00',n:'Radar Noturno Entregável',cat:'Radar Noturno',st:'ok',dur:'2m 34s'},
+  {t:'07:30',n:'Radar Crypto & AI',       cat:'Radar',        st:'ok',dur:'45s'},
+  {t:'08:00',n:'Brief Matinal',           cat:'Operação',     st:'ok',dur:'3m 12s'},
+  {t:'08:30',n:'AI Self-Improvement',     cat:'Pipeline',     st:'ok',dur:'1m 55s'},
+  {t:'10:00',n:'Heartbeat 10h',           cat:'Monitoramento',st:'ok',dur:'5s'},
+  {t:'10:30',n:'RADAR Diário YT+X',       cat:'Radar',        st:'ok',dur:'4m 08s'},
+  {t:'14:00',n:'Heartbeat 14h',           cat:'Monitoramento',st:'ok',dur:'5s'},
+];
+function buildLogs(){
+  const el=document.getElementById('log-list');
+  if(el.children.length)return;
+  LOGS.forEach(l=>{
+    const row=document.createElement('div');
+    row.className='cron-row';
+    row.innerHTML='<div class="cr-time">'+l.t+'</div><div class="cr-name" style="font-weight:400">'+l.n+'</div><div class="cr-cat">'+l.cat+'</div><div class="cr-status"><span class="badge ok">✓ ok</span></div><div class="cr-dur">'+l.dur+'</div><div></div>';
+    el.appendChild(row);
+  });
+}
+
+// Perf
+function buildPerf(){
+  if(document.getElementById('perf-list').children.length)return;
+  const hours=Array.from({length:24},(_,i)=>pad(i));
+  const execData=hours.map((_,i)=>CRONS.filter(x=>x.h===i).length);
+  new Chart(document.getElementById('c-exec'),{
+    type:'bar',
+    data:{labels:hours,datasets:[{data:execData,backgroundColor:'rgba(74,222,128,.2)',borderColor:'rgba(74,222,128,.5)',borderWidth:1,borderRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},color:'#555',maxTicksLimit:8},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{font:{size:9},color:'#555'},grid:{color:'rgba(255,255,255,.03)'}}}}
+  });
+  new Chart(document.getElementById('c-err'),{
+    type:'line',
+    data:{labels:['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],datasets:[{data:[2.1,0.8,1.4,0.0,0.5,0.0,0.3],borderColor:'rgba(251,146,60,.7)',backgroundColor:'rgba(251,146,60,.08)',tension:.4,pointRadius:3,pointBackgroundColor:'#fb923c'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},color:'#555'},grid:{color:'rgba(255,255,255,.03)'}},y:{ticks:{font:{size:9},color:'#555',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.03)'}}}}
+  });
+  const sorted=[...CRONS].sort((a,b)=>{
+    const ts=s=>{const m=s.match(/(\d+)m\s*(\d+)?s?/);return m?parseInt(m[1])*60+(parseInt(m[2])||0):parseInt(s)||0};
+    return ts(b.dur)-ts(a.dur);
+  }).slice(0,8);
+  const el=document.getElementById('perf-list');
+  sorted.forEach((c,i)=>{
+    const row=document.createElement('div');
+    row.className='cron-row';
+    row.innerHTML='<div class="cr-time">#'+(i+1)+'</div><div class="cr-name"><div class="cr-dot" style="background:'+c.color+'"></div>'+c.n+'</div><div class="cr-cat">'+c.cat+'</div><div class="cr-status"><span class="badge ok">ok</span></div><div class="cr-dur">'+c.dur+'</div><div></div>';
+    el.appendChild(row);
+  });
+}
+
+// View toggle
+function setView(v){
+  const listView=document.getElementById('cron-list-root');
+  const tableView=document.getElementById('table-view');
+  document.getElementById('vt-list').classList.toggle('on', v==='list');
+  document.getElementById('vt-table').classList.toggle('on', v==='table');
+  if(v==='list'){
+    listView.classList.remove('off');
+    tableView.classList.remove('on');
+  } else {
+    listView.classList.add('off');
+    tableView.classList.add('on');
+    buildKanban();
+  }
+}
+
+// Kanban — 3 colunas: Rodando agora / Pendente hoje / Semanal
+function buildKanban(){
+  const root=document.getElementById('kanban-root');
+  if(root.children.length)return;
+
+  const cols=[
+    {id:'done',  label:'✓ Rodaram hoje', filter:c=>c.freq==='diário'&&c.h*60+c.m<=nowMin,  color:'var(--green)'},
+    {id:'pend',  label:'⏳ Pendente',     filter:c=>c.freq==='diário'&&c.h*60+c.m>nowMin,   color:'var(--yellow)'},
+    {id:'weekly',label:'📅 Semanal',      filter:c=>c.freq!=='diário',                       color:'var(--gold)'},
+  ];
+
+  cols.forEach(col=>{
+    const items=CRONS.filter(col.filter).sort((a,b)=>a.h*60+a.m-(b.h*60+b.m));
+    const el=document.createElement('div');
+    el.className='kb-col';
+    el.innerHTML=
+      '<div class="kb-col-head">'+
+        '<div class="kb-col-title"><span style="width:6px;height:6px;border-radius:50%;background:'+col.color+';display:inline-block"></span>'+col.label+'</div>'+
+        '<span class="kb-col-cnt">'+items.length+'</span>'+
+      '</div>'+
+      '<div class="kb-cards" id="kbc-'+col.id+'"></div>';
+    root.appendChild(el);
+
+    const cards=el.querySelector('#kbc-'+col.id);
+    items.forEach(c=>{
+      const card=document.createElement('div');
+      card.className='kb-card';
+      const statusBadge=col.id==='done'
+        ?'<span class="badge ok" style="font-size:9px;padding:1px 6px">✓ ok</span>'
+        :(col.id==='weekly'?'<span class="badge idle" style="font-size:9px;padding:1px 6px">'+c.freq+'</span>':'');
+      card.innerHTML=
+        '<div class="kb-card-time">'+pad(c.h)+':'+pad(c.m)+(col.id==='done'?' · '+c.dur:'')+'</div>'+
+        '<div class="kb-card-name"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:'+c.color+';margin-right:6px;vertical-align:middle"></span>'+c.n+'</div>'+
+        '<div class="kb-card-foot"><span class="kb-card-freq">'+c.cat+'</span>'+statusBadge+'</div>';
+      cards.appendChild(card);
+    });
+  });
+}
+
+// Tabs
+function switchTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('p-'+name).classList.add('on');
+  const idx={crons:0,logs:1,perf:2,tools:3}[name]??0;
+  document.querySelectorAll('.tab')[idx].classList.add('on');
+  if(name==='logs')buildLogs();
+  if(name==='perf')buildPerf();
+}
+
+// ── DRAWER ──────────────────────────────────────────────────────────────────
+const API = 'http://127.0.0.1:8743/cron-api';
+let drawerCron = null; // nome do cron aberto
+
+function openDrawer(cronName) {
+  drawerCron = cronName;
+  document.getElementById('drawer-overlay').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+  document.getElementById('dr-title').textContent = cronName;
+  document.getElementById('dr-save').disabled = true;
+  document.getElementById('dr-save-status').textContent = '';
+  document.getElementById('dr-save-status').className = 'save-status';
+
+  // Preenche header com dados locais imediatamente
+  const local = CRONS.find(c=>c.n===cronName);
+  if (local) {
+    document.getElementById('dr-cat').innerHTML =
+      '<span style="width:6px;height:6px;border-radius:50%;background:'+local.color+';display:inline-block"></span> '+local.cat;
+    document.getElementById('dr-freq').textContent = local.freq;
+  }
+
+  // Mostra loading, esconde conteúdo
+  document.getElementById('dr-loading').style.display='flex';
+  document.getElementById('dr-content').style.display='none';
+
+  // Tenta carregar do Notion via API server
+  fetchCronNotion(cronName);
+}
+
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+  drawerCron = null;
+}
+
+// Fecha com ESC
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeDrawer(); });
+
+async function fetchCronNotion(cronName) {
+  try {
+    const r = await fetch(`${API}/fetch?name=${encodeURIComponent(cronName)}`, {signal: AbortSignal.timeout(8000)});
+    const data = await r.json();
+
+    if (data.error) {
+      showDrawerOffline(cronName);
+      return;
+    }
+
+    populateDrawer(data);
+    // Carrega logs
+    fetchCronLogs(cronName);
+  } catch(e) {
+    showDrawerOffline(cronName);
+  }
+}
+
+function showDrawerOffline(cronName) {
+  // Server não disponível — preenche com dados locais + link direto Notion
+  document.getElementById('dr-loading').style.display='none';
+  document.getElementById('dr-content').style.display='block';
+
+  const local = CRONS.find(c=>c.n===cronName);
+  if (local) {
+    document.getElementById('dr-horario').value = pad(local.h)+':'+pad(local.m);
+    document.getElementById('dr-script').value = '';
+    document.getElementById('dr-cronexpr').value = '';
+  }
+  document.getElementById('dr-expr').textContent = '—';
+  document.getElementById('dr-content-md').value = '';
+  document.getElementById('dr-lastrun').textContent = '—';
+  document.getElementById('dr-laststatus').textContent = '—';
+  document.getElementById('dr-output').textContent = '—';
+  document.getElementById('dr-logs-source').textContent = '(offline)';
+  document.getElementById('dr-notion-link').href = 'https://notion.so/30eb72d5042d81aa94f8f5c7ef21d030';
+
+  // Habilita save (vai tentar quando server online)
+  document.getElementById('dr-save').disabled = false;
+  document.getElementById('dr-save-status').textContent = 'cron-api offline — salvará quando disponível';
+}
+
+function populateDrawer(data) {
+  document.getElementById('dr-loading').style.display='none';
+  document.getElementById('dr-content').style.display='block';
+
+  // Header
+  document.getElementById('dr-expr').textContent = data.cron_expr || '—';
+  document.getElementById('dr-freq').textContent = data.frequencia || '—';
+
+  // Campos editáveis
+  document.getElementById('dr-horario').value = data.horario || '';
+  document.getElementById('dr-script').value = data.script || '';
+  document.getElementById('dr-cronexpr').value = data.cron_expr || '';
+  document.getElementById('dr-status').value = data.status || '🟢 Ativo';
+
+  // Último run
+  const lastRun = data.ultimo_run ? new Date(data.ultimo_run).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'}) : '—';
+  document.getElementById('dr-lastrun').textContent = lastRun;
+  document.getElementById('dr-laststatus').innerHTML = data.ultimo_status
+    ? `<span class="badge ${data.ultimo_status==='ok'?'ok':'err'}" style="font-size:10px">${data.ultimo_status==='ok'?'✓':''} ${data.ultimo_status}</span>`
+    : '—';
+  document.getElementById('dr-output').textContent = data.output_preview || '—';
+
+  // Conteúdo markdown
+  document.getElementById('dr-content-md').value = data.content_md || '';
+
+  // Link Notion
+  document.getElementById('dr-notion-link').href = data.notion_url || 'https://notion.so/30eb72d5042d81aa94f8f5c7ef21d030';
+
+  // Habilita save
+  document.getElementById('dr-save').disabled = false;
+}
+
+async function fetchCronLogs(cronName) {
+  try {
+    const r = await fetch(`${API}/logs?name=${encodeURIComponent(cronName)}`, {signal: AbortSignal.timeout(8000)});
+    const data = await r.json();
+    const logs = data.logs || [];
+
+    const container = document.getElementById('dr-logs');
+    const empty = document.getElementById('dr-logs-empty');
+
+    if (!logs.length) {
+      empty.textContent = 'Nenhum log ainda — integre cron_log() nos scripts';
+      return;
+    }
+
+    empty.style.display = 'none';
+    document.getElementById('dr-logs-source').textContent = '(Notion live)';
+
+    logs.forEach(l => {
+      const row = document.createElement('div');
+      row.className = 'drawer-log-row';
+      const dt = l.data ? new Date(l.data).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',second:'2-digit'}) : '—';
+      const dur = l.duracao_ms > 0 ? (l.duracao_ms > 60000 ? Math.round(l.duracao_ms/60000)+'m' : Math.round(l.duracao_ms/1000)+'s') : '—';
+      row.innerHTML =
+        `<span class="dl-time">${dt}</span>`+
+        `<span class="dl-out">${l.output || l.erro || '—'}</span>`+
+        `<span class="cr-status"><span class="badge ${l.status==='ok'?'ok':'err'}" style="font-size:9px">${l.status}</span></span>`+
+        `<span class="dl-dur">${dur}</span>`;
+      container.insertBefore(row, empty);
+    });
+  } catch(e) {
+    document.getElementById('dr-logs-source').textContent = '(offline)';
+  }
+}
+
+async function saveDrawer() {
+  if (!drawerCron) return;
+
+  const btn = document.getElementById('dr-save');
+  const status = document.getElementById('dr-save-status');
+  btn.disabled = true;
+  btn.textContent = 'Salvando…';
+  status.textContent = '';
+  status.className = 'save-status';
+
+  const fields = {
+    status:      document.getElementById('dr-status').value,
+    horario:     document.getElementById('dr-horario').value,
+    script:      document.getElementById('dr-script').value,
+    cron_expr:   document.getElementById('dr-cronexpr').value,
+    content_md:  document.getElementById('dr-content-md').value,
+  };
+
+  try {
+    const r = await fetch(`${API}/update`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({name: drawerCron, fields}),
+      signal: AbortSignal.timeout(15000),
+    });
+    const data = await r.json();
+
+    if (data.ok) {
+      btn.textContent = 'Salvar no Notion';
+      btn.disabled = false;
+      status.textContent = '✓ Salvo';
+      status.className = 'save-status ok';
+      setTimeout(()=>{ status.textContent=''; status.className='save-status'; }, 3000);
+    } else {
+      throw new Error(data.error || 'Falha');
+    }
+  } catch(e) {
+    btn.textContent = 'Salvar no Notion';
+    btn.disabled = false;
+    status.textContent = '✗ '+e.message;
+    status.className = 'save-status err';
+  }
+}
+</script>
+</body>
+</html>
