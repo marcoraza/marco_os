@@ -1,7 +1,7 @@
 {
   "_meta": {
     "generated_by": "frank-sync",
-    "updated_at": "2026-02-22T00:30:01.784215+00:00",
+    "updated_at": "2026-02-22T01:00:01.986417+00:00",
     "source": "active-tasks.md"
   },
   "agents": [
@@ -15,8 +15,8 @@
       "model": "anthropic/claude-sonnet-4-5",
       "tokens": 0,
       "owner": "Frank",
-      "createdAt": "2026-02-22T00:30:01.784215+00:00",
-      "updatedAt": "2026-02-22T00:30:01.784215+00:00"
+      "createdAt": "2026-02-22T01:00:01.986417+00:00",
+      "updatedAt": "2026-02-22T01:00:01.986417+00:00"
     }
   ]
 }
