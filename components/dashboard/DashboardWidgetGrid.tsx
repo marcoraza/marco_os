@@ -248,14 +248,12 @@ function SaudeWidget() {
   );
 }
 
-// Main grid component
+// Main grid component — only Reuniões + Projetos (Finance/Health have their own sections)
 export function DashboardWidgetGrid() {
   return (
-    <div className="grid grid-cols-2 gap-3 px-4 mb-3">
+    <div className="grid grid-cols-2 gap-2">
       <ReunioesWidget />
       <ProjetosWidget />
-      <FinancasWidget />
-      <SaudeWidget />
     </div>
   );
 }

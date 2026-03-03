@@ -104,12 +104,12 @@ export function ActivityHeatmapWidget() {
   const isLoading = saude.isLoading && projetos.isLoading;
 
   return (
-    <div className="bg-surface border border-border-panel rounded-sm p-3 flex flex-col gap-2">
+    <div className="bg-surface border border-border-panel rounded-sm p-2 flex flex-col gap-1">
       <div className="flex items-center justify-between">
-        <SectionLabel icon="local_fire_department">ATIVIDADE 90 DIAS</SectionLabel>
+        <span className="text-[7px] font-bold uppercase tracking-widest text-text-secondary">ATIVIDADE</span>
         {streak > 0 && (
-          <span className="text-[8px] font-mono text-brand-mint">
-            {streak}d streak
+          <span className="text-[7px] font-mono text-brand-mint">
+            {streak}d
           </span>
         )}
       </div>

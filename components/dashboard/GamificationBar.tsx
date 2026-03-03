@@ -52,13 +52,13 @@ export default function GamificationBar({
 }: GamificationBarProps) {
   return (
     <div className="shrink-0 border-t border-border-panel bg-header-bg">
-      <div className="p-4 md:p-5 flex flex-col gap-4">
+      <div className="p-3 md:p-4 flex flex-col gap-2">
 
         {/* Row 1: XP + Streak + Focus toggle */}
-        <div className="flex flex-col md:flex-row gap-3">
+        <div className="flex flex-col md:flex-row gap-2">
 
           {/* XP & Level */}
-          <Card className="flex-[2] p-4">
+          <Card className="flex-[2] p-3">
             <div className="flex items-center gap-4">
               <div className="relative shrink-0">
                 <svg className="size-14 -rotate-90" viewBox="0 0 36 36">
@@ -100,7 +100,7 @@ export default function GamificationBar({
           </Card>
 
           {/* Streak */}
-          <Card className="flex-1 p-4 group cursor-pointer" onClick={onToggleMissionView}>
+          <Card className="flex-1 p-3 group cursor-pointer" onClick={onToggleMissionView}>
             <div className="flex items-center gap-3">
               <div className="size-10 rounded-full bg-brand-flame/10 flex items-center justify-center shrink-0 border border-brand-flame/20 group-hover:scale-110 transition-transform">
                 <Icon name="local_fire_department" className="text-brand-flame animate-pulse" />
@@ -166,8 +166,8 @@ export default function GamificationBar({
             <Icon name="monitoring" size="xs" className="text-brand-mint" />
             <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Produtividade</span>
           </div>
-          <div className="flex flex-col md:flex-row gap-3">
-            <Card className="flex-1 p-4">
+          <div className="flex flex-col md:flex-row gap-2">
+            <Card className="flex-1 p-3">
               <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary block mb-2">Tarefas por Status</span>
               <div style={{ width: '100%', height: 120 }}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -185,7 +185,7 @@ export default function GamificationBar({
               </div>
             </Card>
 
-            <Card className="flex-1 p-4">
+            <Card className="flex-1 p-3">
               <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary block mb-2">Atividade Semanal</span>
               <div style={{ width: '100%', height: 120 }}>
                 <ResponsiveContainer width="100%" height="100%">

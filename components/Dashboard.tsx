@@ -183,13 +183,13 @@ const Dashboard: React.FC<DashboardProps> = ({
         />
 
         {/* Sprint B — below Kanban, compact */}
-        <div className="px-4 py-3 flex flex-col gap-3">
-          <MorningBriefCard />
-          <div className="grid grid-cols-2 gap-3">
+        <div className="px-4 py-2 flex flex-col gap-2">
+          <DashboardWidgetGrid />
+          <div className="grid grid-cols-2 gap-2">
             <HealthScoreWidget />
             <ActivityHeatmapWidget />
           </div>
-          <DashboardWidgetGrid />
+          <MorningBriefCard />
         </div>
 
         {focusMode && focusTask && (

@@ -24,30 +24,26 @@ export function HealthScoreWidget() {
   }));
 
   return (
-    <div className="bg-surface border border-border-panel rounded-sm p-3 flex flex-col gap-2">
+    <div
+      className="bg-surface border border-border-panel rounded-sm p-2 flex flex-col gap-1 cursor-pointer"
+      onClick={() => setExpanded(v => !v)}
+      role="button"
+      aria-expanded={expanded}
+      tabIndex={0}
+    >
       <div className="flex items-center justify-between">
-        <SectionLabel icon="monitor_heart">SCORE GERAL</SectionLabel>
-        <button
-          onClick={() => setExpanded(v => !v)}
-          aria-expanded={expanded}
-          className={cn(
-            'text-text-secondary focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none',
-            'min-h-[44px] px-1'
-          )}
-          aria-label={expanded ? 'Recolher dimensões' : 'Expandir dimensões'}
-        >
-          <Icon name={expanded ? 'expand_less' : 'expand_more'} size="sm" />
-        </button>
+        <span className="text-[7px] font-bold uppercase tracking-widest text-text-secondary">SCORE</span>
+        <Icon name={expanded ? 'expand_less' : 'expand_more'} size="xs" className="text-text-secondary" />
       </div>
 
       {isLoading ? (
-        <div className="bg-border-panel animate-pulse rounded-sm h-10 w-24" />
+        <div className="bg-border-panel animate-pulse rounded-sm h-6 w-16" />
       ) : (
         <div className="flex items-baseline gap-1">
-          <span className={cn('text-[28px] font-black font-mono leading-none', color)}>
+          <span className={cn('text-[20px] font-black font-mono leading-none', color)}>
             {animatedScore}
           </span>
-          <span className="text-[10px] text-text-secondary font-mono">/100</span>
+          <span className="text-[8px] text-text-secondary font-mono">/100</span>
         </div>
       )}
 
