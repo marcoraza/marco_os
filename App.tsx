@@ -185,7 +185,7 @@ const App: React.FC = () => {
 
   useHotkeys([
     { key: 'k', mod: true, handler: () => setIsPaletteOpen(true), description: 'Command Palette' },
-    { key: 'n', mod: true, handler: () => setQuickCaptureOpen(true), description: 'Quick Capture' },
+    { key: 'n', mod: true, shift: true, handler: () => setQuickCaptureOpen(true), description: 'Quick Capture' },
     { key: 'g', mod: true, shift: true, handler: () => ghostMode.toggle(), description: 'Ghost Mode' },
     { key: 'd', mod: true, shift: true, handler: () => setIsDeepWorkOpen(o => !o), description: 'Deep Work' },
     { key: '?', shift: true, handler: () => setIsShortcutsOpen(o => !o), description: 'Toggle shortcuts' },

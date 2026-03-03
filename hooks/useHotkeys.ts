@@ -12,7 +12,7 @@ interface HotkeyDef {
 
 export const SHORTCUTS: { key: string; mod?: boolean; shift?: boolean; label: string; description: string }[] = [
   { key: 'k', mod: true, label: '⌘K', description: 'Command Palette' },
-  { key: 'n', mod: true, label: '⌘N', description: 'Nova Tarefa' },
+  { key: 'n', mod: true, shift: true, label: '⌘⇧N', description: 'Captura Rápida' },
   { key: 'g', mod: true, shift: true, label: '⌘⇧G', description: 'Ghost Mode' },
   { key: 'd', mod: true, shift: true, label: '⌘⇧D', description: 'Deep Work' },
   { key: '?', shift: true, label: '?', description: 'Atalhos' },

@@ -1,8 +1,11 @@
+import React, { Suspense, lazy } from 'react';
 import type { Task } from '../../lib/appTypes';
 import type { StoredEvent } from '../../data/models';
 import { Icon, Badge, Card } from '../ui';
 import { cn } from '../../utils/cn';
 import AgendaWidget from '../AgendaWidget';
+
+const PredictiveWidgets = lazy(() => import('./PredictiveWidgets').then(m => ({ default: m.PredictiveWidgets })));
 
 interface DashboardRightSidebarProps {
   criticalMission: Task | undefined;
@@ -137,6 +140,10 @@ export default function DashboardRightSidebar({
           ))}
         </div>
       </div>
+      {/* INSIGHTS */}
+      <Suspense fallback={null}>
+        <PredictiveWidgets />
+      </Suspense>
     </aside>
   );
 }

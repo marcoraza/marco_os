@@ -189,10 +189,6 @@ const Dashboard: React.FC<DashboardProps> = ({
             <HealthScoreWidget />
             <ActivityHeatmapWidget />
           </div>
-          {/* Sprint E — Predictive Widgets (INSIGHTS) */}
-          <Suspense fallback={null}>
-            <PredictiveWidgets />
-          </Suspense>
           <MorningBriefCard />
         </div>
 
