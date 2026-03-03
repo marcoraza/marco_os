@@ -1,7 +1,7 @@
 // components/dashboard/ActivityHeatmapWidget.tsx
-import React, { useMemo } from 'react';
-import { SectionLabel } from '@/components/ui/SectionLabel';
+import React, { useState, useMemo } from 'react';
 import { HeatmapGrid } from '@/components/ui/HeatmapGrid';
+import { Icon } from '@/components/ui/Icon';
 import { useNotionData } from '@/contexts/NotionDataContext';
 import { getDayKey } from '@/utils/dateUtils';
 
@@ -31,20 +31,15 @@ function buildHeatmapData(
     counts[key] = (counts[key] ?? 0) + 1;
   };
 
-  // Saude entries
   for (const item of saudeItems) {
     addActivity((item['Data'] ?? item['data']) as string | undefined);
   }
-
-  // Completed projects (treat as task completions)
   for (const item of projetosItems) {
     const status = (item['Status'] ?? item['status']) as string | undefined;
     if (status === 'Concluído' || status === 'Concluido') {
       addActivity((item['Deadline'] ?? item['deadline'] ?? item['Data Início'] ?? item['data_inicio']) as string | undefined);
     }
   }
-
-  // Content published
   for (const item of contentItems) {
     const status = (item['Status'] ?? item['status']) as string | undefined;
     if (status === 'Publicado' || status === 'Published') {
@@ -52,7 +47,6 @@ function buildHeatmapData(
     }
   }
 
-  // Map counts to 0-4 intensity
   const result: Record<string, 0 | 1 | 2 | 3 | 4> = {};
   for (const [key, count] of Object.entries(counts)) {
     result[key] = Math.min(4, count) as 0 | 1 | 2 | 3 | 4;
@@ -64,7 +58,6 @@ function calculateStreak(data: Record<string, 0 | 1 | 2 | 3 | 4>): number {
   let streak = 0;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const cursor = new Date(today);
   while (true) {
     const key = getDayKey(cursor);
@@ -79,20 +72,12 @@ function calculateStreak(data: Record<string, 0 | 1 | 2 | 3 | 4>): number {
 }
 
 export function ActivityHeatmapWidget() {
+  const [expanded, setExpanded] = useState(false);
   const { saude, projetos, content } = useNotionData();
 
-  const saudeItems = useMemo(
-    () => extractItems<Record<string, unknown>>(saude.items),
-    [saude.items]
-  );
-  const projetosItems = useMemo(
-    () => extractItems<Record<string, unknown>>(projetos.items),
-    [projetos.items]
-  );
-  const contentItems = useMemo(
-    () => extractItems<Record<string, unknown>>(content.items),
-    [content.items]
-  );
+  const saudeItems = useMemo(() => extractItems<Record<string, unknown>>(saude.items), [saude.items]);
+  const projetosItems = useMemo(() => extractItems<Record<string, unknown>>(projetos.items), [projetos.items]);
+  const contentItems = useMemo(() => extractItems<Record<string, unknown>>(content.items), [content.items]);
 
   const heatmapData = useMemo(
     () => buildHeatmapData(saudeItems, projetosItems, contentItems),
@@ -100,23 +85,34 @@ export function ActivityHeatmapWidget() {
   );
 
   const streak = useMemo(() => calculateStreak(heatmapData), [heatmapData]);
-
   const isLoading = saude.isLoading && projetos.isLoading;
+  const totalActivities = Object.values(heatmapData).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="bg-surface border border-border-panel rounded-sm p-2 flex flex-col gap-1">
+    <div
+      className="bg-surface border border-border-panel rounded-sm p-2 flex flex-col cursor-pointer"
+      onClick={() => setExpanded(v => !v)}
+      role="button"
+      aria-expanded={expanded}
+      tabIndex={0}
+    >
+      {/* Collapsed: single row — label + streak + total + arrow */}
       <div className="flex items-center justify-between">
-        <span className="text-[7px] font-bold uppercase tracking-widest text-text-secondary">ATIVIDADE</span>
-        {streak > 0 && (
-          <span className="text-[7px] font-mono text-brand-mint">
-            {streak}d
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          <span className="text-[7px] font-bold uppercase tracking-widest text-text-secondary">ATIVIDADE</span>
+          {streak > 0 && (
+            <span className="text-[7px] font-mono text-brand-mint">{streak}d streak</span>
+          )}
+          {!isLoading && (
+            <span className="text-[7px] font-mono text-text-secondary">{totalActivities} ações</span>
+          )}
+        </div>
+        <Icon name={expanded ? 'expand_less' : 'expand_more'} size="xs" className="text-text-secondary" />
       </div>
-      {isLoading ? (
-        <div className="bg-border-panel animate-pulse rounded-sm h-20 w-full" />
-      ) : (
-        <div className="overflow-hidden">
+
+      {/* Expanded: full heatmap */}
+      {expanded && !isLoading && (
+        <div className="mt-2 overflow-hidden">
           <HeatmapGrid
             data={heatmapData}
             weeks={13}

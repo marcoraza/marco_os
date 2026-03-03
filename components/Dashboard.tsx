@@ -10,7 +10,6 @@ import {
   KANBAN_COLUMNS,
   MissionControlBar,
   MorningBriefCard,
-  DashboardWidgetGrid,
   HealthScoreWidget,
   ActivityHeatmapWidget,
 } from './dashboard/index';
@@ -184,7 +183,6 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Sprint B — below Kanban, compact */}
         <div className="px-4 py-2 flex flex-col gap-2">
-          <DashboardWidgetGrid />
           <div className="grid grid-cols-2 gap-2">
             <HealthScoreWidget />
             <ActivityHeatmapWidget />
