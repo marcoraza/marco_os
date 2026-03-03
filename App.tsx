@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHotkeys, useGoKeys } from './hooks/useHotkeys';
+import { useFlowState } from './hooks/useFlowState';
+import { useGhostMode } from './hooks/useGhostMode';
 import type { StoredAgent, StoredContact, StoredEvent, StoredNote } from './data/models';
 import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, loadContacts, putAgent, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
 import { defaultAgents } from './data/agentsSeed';
@@ -10,6 +12,10 @@ import type { View, Theme, Project, Task } from './lib/appTypes';
 
 // Re-export types for backwards compatibility
 export type { View, Project, Task } from './lib/appTypes';
+
+// Lazy-loaded focus mode components
+const GhostMode = lazy(() => import('./components/focus/GhostMode').then(m => ({ default: m.GhostMode })));
+const DeepWorkPanel = lazy(() => import('./components/focus/DeepWorkPanel').then(m => ({ default: m.DeepWorkPanel })));
 
 // Lazy-loaded pages (code-split)
 const Finance = lazy(() => import('./components/Finance'));
@@ -117,7 +123,12 @@ const App: React.FC = () => {
   const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isDeepWorkOpen, setIsDeepWorkOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // ─── Focus modes ─────────────────────────────────────────────────────────────
+  const ghostMode = useGhostMode();
+  const flowState = useFlowState();
 
   // OpenClaw connection
   const { connectionState, isLive } = useConnectionState();
@@ -170,8 +181,17 @@ const App: React.FC = () => {
 
   useHotkeys([
     { key: 'k', mod: true, handler: () => setIsPaletteOpen(true), description: 'Command Palette' },
+    { key: 'g', mod: true, shift: true, handler: () => ghostMode.toggle(), description: 'Ghost Mode' },
+    { key: 'd', mod: true, shift: true, handler: () => setIsDeepWorkOpen(o => !o), description: 'Deep Work' },
     { key: '?', shift: true, handler: () => setIsShortcutsOpen(o => !o), description: 'Toggle shortcuts' },
-    { key: 'Escape', handler: () => { setIsShortcutsOpen(false); setIsPaletteOpen(false); setIsMissionModalOpen(false); setIsAddAgentOpen(false); }, description: 'Close overlay' },
+    { key: 'Escape', handler: () => {
+      if (ghostMode.isActive) { ghostMode.exit(); return; }
+      if (isDeepWorkOpen) { setIsDeepWorkOpen(false); return; }
+      setIsShortcutsOpen(false);
+      setIsPaletteOpen(false);
+      setIsMissionModalOpen(false);
+      setIsAddAgentOpen(false);
+    }, description: 'Close overlay' },
   ]);
 
   useGoKeys(navigate);
@@ -496,6 +516,22 @@ const App: React.FC = () => {
       )}
 
       <ShortcutsDialog isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
+
+      {/* Focus Modes — rendered above all content */}
+      <Suspense fallback={null}>
+        <GhostMode
+          isOpen={ghostMode.isActive}
+          onClose={ghostMode.exit}
+          taskTitle={ghostMode.taskTitle}
+          flowState={flowState}
+        />
+        <DeepWorkPanel
+          isOpen={isDeepWorkOpen}
+          onClose={() => setIsDeepWorkOpen(false)}
+          flowState={flowState}
+          tasks={tasks}
+        />
+      </Suspense>
 
       <ToastContainer />
     </div>
