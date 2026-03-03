@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Icon, Card, SectionLabel } from './ui';
+import React, { useState, useEffect, Suspense } from 'react';
+import { Icon, Card, SectionLabel, TabNav } from './ui';
+
+const NotionProjectsView = React.lazy(() => import('./planner/NotionProjectsView').then(m => ({ default: m.NotionProjectsView })));
 import type { Project, Task } from '../lib/appTypes';
 import type { StoredPlan, StoredPlanStep } from '../data/models';
 import { loadPlans, putPlan, deletePlan } from '../data/repository';
@@ -155,8 +157,37 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
 
   const stepsProgress = steps.length > 0 ? Math.round((steps.filter(s => s.done).length / steps.length) * 100) : 0;
 
+  // ─── Tab state ───────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<'projetos' | 'planejador'>('projetos');
+  const plannerTabs = [
+    { id: 'projetos', label: 'Projetos' },
+    { id: 'planejador', label: 'Planejador' },
+  ];
+
   return (
-    <div className="space-y-6 p-1">
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* ─── Tab Navigation ─────────────────────────────────────────────── */}
+      <div className="shrink-0">
+        <TabNav
+          tabs={plannerTabs}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as any)}
+        />
+      </div>
+
+      {/* ─── Projetos Tab ───────────────────────────────────────────────── */}
+      {activeTab === 'projetos' && (
+        <div className="flex-1 overflow-y-auto">
+          <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full m-4" />}>
+            <NotionProjectsView />
+          </Suspense>
+        </div>
+      )}
+
+      {/* ─── Planejador Tab (existing content) ──────────────────────────── */}
+      {activeTab === 'planejador' && (
+      <div className="flex-1 overflow-y-auto p-1">
+      <div className="space-y-6 p-1">
       {/* ─── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
@@ -479,6 +510,9 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
             </button>
           </div>
         </div>
+      )}
+      </div>
+      </div>
       )}
     </div>
   );

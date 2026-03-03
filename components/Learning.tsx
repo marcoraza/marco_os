@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
-import { Icon, Badge, SectionLabel, TabNav, EmptyState } from './ui';
+import React, { useState, Suspense } from 'react';
+import { Icon, Badge, SectionLabel, TabNav, EmptyState, SyncBadge } from './ui';
+import { useNotionData } from '../contexts/NotionDataContext';
+
+const LearningExploration = React.lazy(() => import('./learning/LearningExploration').then(m => ({ default: m.LearningExploration })));
+const CreatorsRoster = React.lazy(() => import('./learning/CreatorsRoster').then(m => ({ default: m.CreatorsRoster })));
+const SkillsWidget = React.lazy(() => import('./learning/SkillsWidget').then(m => ({ default: m.SkillsWidget })));
 
 const knowledgeCards = [
   { id: 1, category: 'IA', categoryVariant: 'purple' as const, date: '22 Out', status: 'PENDENTE', statusVariant: 'orange' as const,
@@ -17,26 +22,32 @@ const knowledgeCards = [
 ];
 
 const Learning: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'curriculum' | 'knowledge' | 'resources'>('curriculum');
+  const [activeTab, setActiveTab] = useState<'curriculum' | 'knowledge' | 'resources' | 'exploration' | 'creators'>('curriculum');
   const [showPendingOnly, setShowPendingOnly] = useState(false);
   const [knowledgeSearch, setKnowledgeSearch] = useState('');
+  const { research } = useNotionData();
 
   const tabs = [
     { id: 'curriculum', label: 'Currículo' },
     { id: 'knowledge', label: 'Conhecimento' }, // Shortened label for mobile fit
+    { id: 'exploration', label: 'Exploração' },
+    { id: 'creators', label: 'Criadores' },
     { id: 'resources', label: 'Recursos' }
   ];
 
   return (
     <div className="flex flex-col h-full bg-bg-base font-sans text-text-primary overflow-hidden">
       {/* Navigation Tabs (Replaces Header) */}
-      <div className="bg-bg-base shrink-0">
+      <div className="relative bg-bg-base shrink-0">
         <TabNav 
             tabs={tabs} 
             activeTab={activeTab} 
             onTabChange={(id) => setActiveTab(id as any)} 
             accentColor="purple" 
         />
+        <div className="absolute top-0 right-4 h-full flex items-center pointer-events-none">
+          <SyncBadge lastSync={research.lastSync} isLoading={research.loading} />
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -184,6 +195,10 @@ const Learning: React.FC = () => {
                     </div>
                     </div>
                 </div>
+                {/* SkillsWidget — Sprint A addition */}
+                <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-12 w-full mt-6" />}>
+                  <SkillsWidget />
+                </Suspense>
             </div>
           )}
 
@@ -273,6 +288,18 @@ const Learning: React.FC = () => {
                     )}
                 </div>
              </div>
+          )}
+
+          {activeTab === 'exploration' && (
+            <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full" />}>
+              <LearningExploration />
+            </Suspense>
+          )}
+
+          {activeTab === 'creators' && (
+            <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full" />}>
+              <CreatorsRoster />
+            </Suspense>
           )}
 
           {activeTab === 'resources' && (

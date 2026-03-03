@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   BarChart, Bar, ResponsiveContainer
 } from 'recharts';
 import { Icon, SectionLabel, StatusDot, TabNav, Badge } from './ui';
+
+const ActivitiesView = React.lazy(() => import('./health/ActivitiesView').then(m => ({ default: m.ActivitiesView })));
 
 const trendData14Days = [
   { day: 'D1', energy: 6, sleep: 7, focus: 5, recovery: 6, mood: 7 },
@@ -56,7 +58,7 @@ const HealthTooltip = ({ active, payload, label }: any) => {
 };
 
 const Health: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'daily' | 'trends'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'trends' | 'activities'>('daily');
   
   // Daily Log State — persisted to localStorage per date
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -93,7 +95,8 @@ const Health: React.FC = () => {
 
   const tabs = [
     { id: 'daily', label: 'Registro Diário' },
-    { id: 'trends', label: 'Tendências & Insights' }
+    { id: 'trends', label: 'Tendências & Insights' },
+    { id: 'activities', label: 'Atividades' },
   ];
 
   return (
@@ -455,6 +458,13 @@ const Health: React.FC = () => {
               </div>
             </footer>
           </div>
+        )}
+
+        {/* --- ACTIVITIES VIEW --- */}
+        {activeTab === 'activities' && (
+          <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full m-4" />}>
+            <ActivitiesView />
+          </Suspense>
         )}
 
       </div>

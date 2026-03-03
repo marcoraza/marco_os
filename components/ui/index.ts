@@ -19,3 +19,4 @@ export { TimelineItem } from './TimelineItem';
 export { FullscreenOverlay } from './FullscreenOverlay';
 export { Sparkline } from './Sparkline';
 export { HeatmapGrid } from './HeatmapGrid';
+export { SyncBadge } from './SyncBadge';

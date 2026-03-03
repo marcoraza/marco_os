@@ -1,7 +1,9 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, Suspense } from 'react';
 import type { StoredNote } from '../data/models';
-import { Icon, Card, SectionLabel } from './ui';
+import { Icon, Card, SectionLabel, TabNav } from './ui';
 import { cn } from '../utils/cn';
+
+const BrainDumpView = React.lazy(() => import('./notes/BrainDumpView').then(m => ({ default: m.BrainDumpView })));
 
 interface NotesPanelProps {
   notes: StoredNote[];
@@ -120,6 +122,12 @@ const TOOLBAR_ITEMS: { action: FormatAction; icon: string; label: string }[] = [
 
 // ─── Component ───────────────────────────────────────────────────────────────
 const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectId }) => {
+  const [activeTab, setActiveTab] = useState<'editor' | 'braindump'>('editor');
+  const notesTabs = [
+    { id: 'editor', label: 'Editor' },
+    { id: 'braindump', label: 'Brain Dump' },
+  ];
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [showListMobile, setShowListMobile] = useState(true);
@@ -151,7 +159,28 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-4 gap-4">
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Tab Navigation */}
+      <div className="shrink-0">
+        <TabNav
+          tabs={notesTabs}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as any)}
+        />
+      </div>
+
+      {/* Brain Dump Tab */}
+      {activeTab === 'braindump' && (
+        <div className="flex-1 overflow-y-auto">
+          <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full m-4" />}>
+            <BrainDumpView />
+          </Suspense>
+        </div>
+      )}
+
+      {/* Editor Tab (existing content) */}
+      {activeTab === 'editor' && (
+      <div className="flex flex-col flex-1 overflow-hidden p-4 gap-4">
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
@@ -313,6 +342,8 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
           )}
         </div>
       </div>
+      </div>
+      )} {/* end editor tab */}
     </div>
   );
 };

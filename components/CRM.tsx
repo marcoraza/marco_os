@@ -1,5 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Icon, Badge, Card, SectionLabel, StatusDot, EmptyState, showToast } from './ui';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { Icon, Badge, Card, SectionLabel, StatusDot, EmptyState, showToast, TabNav, AlertBanner, SourceBadge } from './ui';
+import { useNotionData } from '../contexts/NotionDataContext';
+
+const ReunioesView = React.lazy(() => import('./crm/ReunioesView').then(m => ({ default: m.ReunioesView })));
 import type { StoredContact } from '../data/models';
 import { loadContacts, putContact, deleteContact as deleteContactDb, bootstrapContactsIfEmpty } from '../data/repository';
 
@@ -77,6 +80,15 @@ const EMPTY_FORM = {
 };
 
 const CRM: React.FC = () => {
+  // ─── Notion data + tab state ─────────────────────────────────────────────
+  const { reunioes } = useNotionData();
+  const [activeTab, setActiveTab] = useState<'contatos' | 'reunioes'>('contatos');
+  const crmTabs = [
+    { id: 'contatos', label: 'Contatos' },
+    { id: 'reunioes', label: 'Reuniões' },
+  ];
+  const pendingFollowUps = reunioes.items.filter((r: any) => r.status === 'Pendente' || r.status === 'pendente' || r.status === 'PENDENTE').length;
+
   const [contacts, setContacts] = useState<StoredContact[]>([]);
   const [selectedContact, setSelectedContact] = useState<StoredContact | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -224,6 +236,33 @@ const CRM: React.FC = () => {
 
   return (
     <div className="relative h-full flex flex-col">
+      {/* ─── AlertBanner: pending follow-ups ───────────────────────────── */}
+      {pendingFollowUps > 0 && (
+        <div className="shrink-0 px-4 md:px-6 pt-4">
+          <AlertBanner count={pendingFollowUps} label="reuniões com follow-up pendente" color="orange" />
+        </div>
+      )}
+
+      {/* ─── Tab Navigation ────────────────────────────────────────────── */}
+      <div className="shrink-0">
+        <TabNav
+          tabs={crmTabs}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as any)}
+        />
+      </div>
+
+      {/* ─── Reuniões Tab ──────────────────────────────────────────────── */}
+      {activeTab === 'reunioes' && (
+        <div className="flex-1 overflow-y-auto">
+          <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full m-4" />}>
+            <ReunioesView />
+          </Suspense>
+        </div>
+      )}
+
+      {/* ─── Contatos Tab (existing content) ───────────────────────────── */}
+      {activeTab === 'contatos' && (
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 flex-1 w-full overflow-y-auto">
         {/* Header Stats */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-border-panel">
@@ -327,7 +366,8 @@ const CRM: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-1">
+                    <SourceBadge source="local" />
                     <p className="text-[9px] text-text-secondary uppercase font-black mb-1 tracking-[0.1em]">ÚLTIMO CONTATO</p>
                     {contact.lastContact.includes('45') || contact.lastContact.includes('60') ? (
                       <div className="flex items-center gap-1 text-accent-red bg-accent-red/10 px-2 py-1 rounded-sm">
@@ -407,6 +447,7 @@ const CRM: React.FC = () => {
           </div>
         </div>
       </div>
+      )} {/* end contatos tab */}
 
       {/* Detail Overlay - Fixed on mobile, Absolute on desktop */}
       {selectedContact && (
