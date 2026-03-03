@@ -58,7 +58,7 @@ export default function GamificationBar({
         <div className="flex flex-col md:flex-row gap-2">
 
           {/* XP & Level */}
-          <Card className="flex-[2] p-3">
+          <Card className="flex-1 p-3">
             <div className="flex items-center gap-4">
               <div className="relative shrink-0">
                 <svg className="size-14 -rotate-90" viewBox="0 0 36 36">
@@ -169,7 +169,7 @@ export default function GamificationBar({
           <div className="flex flex-col md:flex-row gap-2">
             <Card className="flex-1 p-3">
               <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary block mb-2">Tarefas por Status</span>
-              <div style={{ width: '100%', height: 120 }}>
+              <div style={{ width: '100%', height: 90 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={statusChartData} barCategoryGap="20%">
                     <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
@@ -187,7 +187,7 @@ export default function GamificationBar({
 
             <Card className="flex-1 p-3">
               <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary block mb-2">Atividade Semanal</span>
-              <div style={{ width: '100%', height: 120 }}>
+              <div style={{ width: '100%', height: 90 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={weeklyActivityData}>
                     <defs>

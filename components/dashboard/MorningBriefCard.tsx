@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { Icon } from '@/components/ui/Icon';
 import { useNotionData } from '@/contexts/NotionDataContext';
-import { useFinanceData } from '@/hooks/useFinanceData';
+
 import { cn } from '@/utils/cn';
 
 // Safe extractor for raw JSON format: {_meta, items}
@@ -26,7 +26,6 @@ function formatTime(): string {
 export function MorningBriefCard() {
   const [expanded, setExpanded] = useState(false);
   const { reunioes, projetos } = useNotionData();
-  const finance = useFinanceData();
 
   const reunioesItems = useMemo(
     () => extractItems<Record<string, unknown>>(reunioes.items),
@@ -57,15 +56,11 @@ export function MorningBriefCard() {
     if (projetosAtivos.length > 0) {
       parts.push(`${projetosAtivos.length} projeto(s) ativo(s)`);
     }
-    if (!finance.isLoading) {
-      const sign = finance.saldo >= 0 ? '+' : '-';
-      parts.push(`saldo ${sign}R$ ${Math.abs(finance.saldo).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`);
-    }
     return parts.length > 0 ? parts.join(' · ') : 'Sem eventos para hoje';
-  }, [reunioesHoje, projetosAtivos, finance]);
+  }, [reunioesHoje, projetosAtivos]);
 
   return (
-    <div className="bg-surface border border-brand-mint/20 rounded-sm mx-4 mb-3">
+    <div className="bg-surface border border-brand-mint/20 rounded-sm">
       {/* Header */}
       <button
         className={cn(
@@ -149,37 +144,7 @@ export function MorningBriefCard() {
             </div>
           )}
 
-          {/* Financial summary */}
-          {!finance.isLoading && (
-            <div>
-              <span className="text-[8px] font-bold uppercase tracking-widest text-text-secondary block mb-1">
-                Finanças
-              </span>
-              <ul className="flex flex-col gap-1">
-                <li className="flex items-center gap-2 text-xs">
-                  <Icon name="fiber_manual_record" size="xs" className="text-brand-mint" />
-                  <span className="text-text-secondary">Entradas:</span>
-                  <span className="font-mono text-brand-mint">
-                    R$ {finance.totalEntradas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </li>
-                <li className="flex items-center gap-2 text-xs">
-                  <Icon name="fiber_manual_record" size="xs" className="text-accent-red" />
-                  <span className="text-text-secondary">Saídas:</span>
-                  <span className="font-mono text-accent-red">
-                    R$ {finance.totalSaidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </li>
-                <li className="flex items-center gap-2 text-xs">
-                  <Icon name="fiber_manual_record" size="xs" className={finance.saldo >= 0 ? 'text-brand-mint' : 'text-accent-red'} />
-                  <span className="text-text-secondary">Saldo:</span>
-                  <span className={cn('font-mono font-bold', finance.saldo >= 0 ? 'text-brand-mint' : 'text-accent-red')}>
-                    {finance.saldo >= 0 ? '+' : '-'}R$ {Math.abs(finance.saldo).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </li>
-              </ul>
-            </div>
-          )}
+
         </div>
       )}
     </div>
