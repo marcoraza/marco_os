@@ -1,20 +1,17 @@
 // components/planner/NotionProjectsView.tsx
-// Tab "Projetos" — Notion projects + checklists per project
+// Tab "Projetos" — Kanban visual com 3 colunas: Ativo / Pausado / Concluído
 
 import React, { useState } from 'react';
 import { cn } from '@/utils/cn';
 import { useNotionData } from '@/contexts/NotionDataContext';
 import { formatRelative } from '@/utils/dateUtils';
 import { FilterPills } from '@/components/ui/FilterPills';
-import { NotionCard } from '@/components/ui/NotionCard';
-import { PipelineBadge } from '@/components/ui/PipelineBadge';
-import { SourceBadge } from '@/components/ui/SourceBadge';
 import { Icon } from '@/components/ui/Icon';
 import { EmptyState } from '@/components/ui/EmptyState';
 
 // ─── Raw JSON field shapes ────────────────────────────────────────────────────
 
-interface RawProjetoItem {
+export interface RawProjetoItem {
   _id: string;
   _url: string;
   Name: string;
@@ -25,24 +22,6 @@ interface RawProjetoItem {
   Tipo: string | null;
 }
 
-interface RawChecklistItem {
-  _id: string;
-  _url: string;
-  Name: string;
-  Status: string | null;
-  Projeto: string | null;
-  Prazo: string | null;
-  Prioridade: string | null;
-}
-
-interface RawContentItem {
-  _id: string;
-  _url: string;
-  Name: string;
-  Projeto: string | null;
-  Tipo?: string | null;
-}
-
 function extractItems<T>(raw: unknown): T[] {
   if (Array.isArray(raw)) return raw as T[];
   const obj = raw as Record<string, unknown> | null;
@@ -50,54 +29,224 @@ function extractItems<T>(raw: unknown): T[] {
   return [];
 }
 
+// ─── Kanban column config ─────────────────────────────────────────────────────
+
+type ColumnId = 'Ativo' | 'Pausado' | 'Concluído';
+
+interface ColumnConfig {
+  id: ColumnId;
+  label: string;
+  headerClass: string;
+  cardOpacity?: string;
+}
+
+const COLUMNS: ColumnConfig[] = [
+  { id: 'Ativo',     label: 'Ativo',     headerClass: 'text-brand-mint' },
+  { id: 'Pausado',   label: 'Pausado',   headerClass: 'text-accent-orange' },
+  { id: 'Concluído', label: 'Concluído', headerClass: 'text-text-secondary', cardOpacity: 'opacity-60' },
+];
+
+function resolveColumn(status: string | null): ColumnId {
+  if (status === 'Pausado')   return 'Pausado';
+  if (status === 'Concluído') return 'Concluído';
+  return 'Ativo'; // "Ativo", null, or any other value
+}
+
 const FILTER_OPTIONS = ['Todos', 'Conteúdo'];
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Project Card ─────────────────────────────────────────────────────────────
+
+interface ProjectCardProps {
+  projeto: RawProjetoItem;
+  opacity?: string;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
+}
+
+function ProjectCard({ projeto, opacity, onDragStart }: ProjectCardProps) {
+  return (
+    <div
+      draggable
+      onDragStart={(e) => onDragStart(e, projeto._id)}
+      className={cn(
+        'bg-bg-base border border-border-panel rounded-sm p-3',
+        'cursor-grab active:cursor-grabbing',
+        'hover:border-text-secondary/40 transition-colors',
+        opacity
+      )}
+    >
+      {/* linha 1: nome */}
+      <p className="text-xs font-bold text-text-primary truncate">{projeto.Name}</p>
+
+      {/* linha 2: badges */}
+      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+        {projeto.Tipo && (
+          <span className="text-[8px] font-bold uppercase tracking-widest text-text-secondary border border-border-panel px-1.5 py-0.5 rounded-sm">
+            {projeto.Tipo}
+          </span>
+        )}
+        {projeto.Prioridade && (
+          <span className="text-[8px] font-bold uppercase tracking-widest text-accent-orange border border-accent-orange/30 px-1.5 py-0.5 rounded-sm">
+            {projeto.Prioridade}
+          </span>
+        )}
+        {projeto.Deadline && (
+          <span className="text-[8px] font-mono text-text-secondary">
+            {formatRelative(projeto.Deadline)}
+          </span>
+        )}
+      </div>
+
+      {/* linha 3: progresso (só se Progresso > 0) */}
+      {projeto.Progresso != null && projeto.Progresso > 0 && (
+        <div className="mt-2">
+          <div className="h-0.5 bg-border-panel rounded-full overflow-hidden">
+            <div
+              className="h-full bg-brand-mint rounded-full transition-all"
+              style={{ width: `${projeto.Progresso}%` }}
+            />
+          </div>
+          <span className="text-[8px] font-mono text-text-secondary mt-0.5 block">
+            {projeto.Progresso}% concluído
+          </span>
+        </div>
+      )}
+
+      {/* link para Notion */}
+      {projeto._url && (
+        <a
+          href={projeto._url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Icon name="open_in_new" size="xs" /> Notion
+        </a>
+      )}
+    </div>
+  );
+}
+
+// ─── Kanban Column ────────────────────────────────────────────────────────────
+
+interface KanbanColumnProps {
+  config: ColumnConfig;
+  cards: RawProjetoItem[];
+  isDragOver: boolean;
+  cardOpacity?: string;
+  onDragOver: () => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent<HTMLDivElement>, columnId: ColumnId) => void;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
+}
+
+function KanbanColumn({
+  config,
+  cards,
+  isDragOver,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragStart,
+}: KanbanColumnProps) {
+  return (
+    <div
+      onDragOver={(e) => { e.preventDefault(); onDragOver(); }}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => onDrop(e, config.id)}
+      className={cn(
+        'flex-1 min-w-0 flex flex-col gap-2 p-3 rounded-sm border transition-colors',
+        isDragOver
+          ? 'border-brand-mint/50 bg-brand-mint/5'
+          : 'border-border-panel bg-surface'
+      )}
+    >
+      {/* Header da coluna */}
+      <div className="flex items-center justify-between mb-1">
+        <span className={cn('text-[9px] font-black uppercase tracking-widest', config.headerClass)}>
+          {config.label}
+        </span>
+        <span className="text-[9px] font-mono text-text-secondary bg-border-panel px-1.5 py-0.5 rounded-sm">
+          {cards.length}
+        </span>
+      </div>
+
+      {/* Cards */}
+      <div className="flex flex-col gap-2">
+        {cards.map((projeto) => (
+          <React.Fragment key={projeto._id}>
+            <ProjectCard
+              projeto={projeto}
+              opacity={config.cardOpacity}
+              onDragStart={onDragStart}
+            />
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Empty state da coluna */}
+      {cards.length === 0 && (
+        <div className="border border-dashed border-border-panel rounded-sm p-4 text-center">
+          <span className="text-[9px] text-text-secondary">Arraste projetos aqui</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function NotionProjectsView({ className }: { className?: string }) {
-  const { projetos, checklist, content } = useNotionData();
+  const { projetos } = useNotionData();
   const [filter, setFilter] = useState('Todos');
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [localStatus, setLocalStatus] = useState<Record<string, string>>({});
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
   const rawProjetos = extractItems<RawProjetoItem>(projetos.items);
-  const rawChecklists = extractItems<RawChecklistItem>(checklist.items);
-  const rawContent = extractItems<RawContentItem>(content.items);
 
-  // Content filter: show only projects that have a related content item
-  const contentProjectNames = new Set(
-    rawContent.map((c) => c.Projeto).filter(Boolean) as string[]
-  );
-
+  // Apply filter
   const filteredProjetos =
     filter === 'Conteúdo'
-      ? rawProjetos.filter(
-          (p) =>
-            p.Tipo === 'Conteúdo' ||
-            (p.Name && contentProjectNames.has(p.Name))
-        )
+      ? rawProjetos.filter((p) => p.Tipo === 'Conteúdo' && p.Name && p.Name.trim() !== '')
       : rawProjetos.filter((p) => p.Name && p.Name.trim() !== '');
 
-  const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
+  // Drag handlers
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
+    setDraggedId(id);
+    e.dataTransfer.effectAllowed = 'move';
   };
 
-  const getChecklistsForProject = (projectName: string): RawChecklistItem[] =>
-    rawChecklists.filter((c) => c.Projeto === projectName);
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetColumn: ColumnId) => {
+    e.preventDefault();
+    if (!draggedId) return;
+    setLocalStatus((prev) => ({ ...prev, [draggedId]: targetColumn }));
+    setDraggedId(null);
+    setDragOverColumn(null);
+  };
+
+  // Split projects into columns
+  const columnCards: Record<ColumnId, RawProjetoItem[]> = {
+    Ativo: [],
+    Pausado: [],
+    'Concluído': [],
+  };
+
+  for (const projeto of filteredProjetos) {
+    const effectiveStatus = localStatus[projeto._id] ?? projeto.Status;
+    const col = resolveColumn(effectiveStatus as string | null);
+    columnCards[col].push(projeto);
+  }
+
+  const totalProjetos = filteredProjetos.length;
+  const ativos = columnCards['Ativo'].length;
 
   const isLoading = projetos.isLoading && rawProjetos.length === 0;
   const error = projetos.error;
 
   if (error) {
     return (
-      <div className={cn('p-3', className)}>
+      <div className={cn('p-4', className)}>
         <p className="text-accent-red text-xs font-mono">{error}</p>
       </div>
     );
@@ -105,18 +254,27 @@ export function NotionProjectsView({ className }: { className?: string }) {
 
   if (isLoading) {
     return (
-      <div className={cn('p-3', className)}>
-        <span className="animate-pulse text-text-secondary text-xs font-mono">
-          Carregando...
-        </span>
+      <div className={cn('p-4', className)}>
+        <span className="animate-pulse text-text-secondary text-xs font-mono">Carregando...</span>
       </div>
     );
   }
 
-  if (filteredProjetos.length === 0) {
-    return (
-      <div className={cn('flex flex-col gap-3', className)}>
+  return (
+    <div className={cn('flex flex-col gap-4 p-4 h-full', className)}>
+      {/* Header */}
+      <div className="flex items-center justify-between shrink-0">
+        <div>
+          <h3 className="text-sm font-bold text-text-primary">Projetos</h3>
+          <p className="text-[10px] text-text-secondary">
+            {totalProjetos} projetos · {ativos} ativos
+          </p>
+        </div>
         <FilterPills options={FILTER_OPTIONS} value={filter} onChange={setFilter} />
+      </div>
+
+      {/* Empty state global */}
+      {filteredProjetos.length === 0 && (
         <EmptyState
           icon="folder_open"
           title="Nenhum projeto encontrado"
@@ -126,99 +284,26 @@ export function NotionProjectsView({ className }: { className?: string }) {
               : 'Projetos aparecerão aqui após sincronização com o Notion.'
           }
         />
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className={cn('flex flex-col gap-3', className)}>
-      <FilterPills options={FILTER_OPTIONS} value={filter} onChange={setFilter} />
-
-      <div className="flex flex-col gap-2">
-        {filteredProjetos.map((projeto) => {
-          const checklists = getChecklistsForProject(projeto.Name);
-          const isExpanded = expandedIds.has(projeto._id);
-
-          return (
-            <div key={projeto._id}>
-              <NotionCard
-                title={projeto.Name}
-                source="notion"
-                href={projeto._url ?? undefined}
-                actions={
-                  checklists.length > 0 ? (
-                    <button
-                      onClick={() => toggleExpand(projeto._id)}
-                      aria-expanded={isExpanded}
-                      aria-label="Expandir checklists"
-                      className={cn(
-                        'text-text-secondary hover:text-text-primary transition-colors rounded-sm',
-                        'focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none',
-                        'min-h-[44px] flex items-center px-1'
-                      )}
-                    >
-                      <Icon
-                        name={isExpanded ? 'expand_less' : 'expand_more'}
-                        size="sm"
-                      />
-                    </button>
-                  ) : undefined
-                }
-                meta={
-                  <>
-                    <PipelineBadge status={projeto.Status ?? 'Pendente'} />
-                    {projeto.Prioridade && (
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-accent-orange border border-accent-orange/30 px-2 py-0.5 rounded-sm">
-                        {projeto.Prioridade}
-                      </span>
-                    )}
-                    {projeto.Deadline && (
-                      <span className="text-[8px] font-mono text-text-secondary">
-                        {formatRelative(projeto.Deadline)}
-                      </span>
-                    )}
-                    <SourceBadge source="notion" />
-                  </>
-                }
-              >
-                {isExpanded && checklists.length > 0 && (
-                  <div className="mt-2 flex flex-col gap-1 border-t border-border-panel pt-2">
-                    {checklists.map((item) => (
-                      <div
-                        key={item._id}
-                        className="flex items-center gap-2 text-xs text-text-secondary"
-                      >
-                        <div
-                          className={cn(
-                            'w-3 h-3 rounded-sm border flex-shrink-0 flex items-center justify-center',
-                            item.Status === 'Concluído'
-                              ? 'border-brand-mint bg-brand-mint/10'
-                              : 'border-border-panel'
-                          )}
-                        >
-                          {item.Status === 'Concluído' && (
-                            <Icon name="check" size="xs" className="text-brand-mint" />
-                          )}
-                        </div>
-                        <span
-                          className={cn(
-                            'text-xs',
-                            item.Status === 'Concluído'
-                              ? 'text-text-secondary line-through'
-                              : 'text-text-primary'
-                          )}
-                        >
-                          {item.Name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </NotionCard>
-            </div>
-          );
-        })}
-      </div>
+      {/* Kanban board */}
+      {filteredProjetos.length > 0 && (
+        <div className="flex gap-3 flex-1 overflow-x-auto">
+          {COLUMNS.map((col) => (
+            <React.Fragment key={col.id}>
+              <KanbanColumn
+                config={col}
+                cards={columnCards[col.id]}
+                isDragOver={dragOverColumn === col.id}
+                onDragOver={() => setDragOverColumn(col.id)}
+                onDragLeave={() => setDragOverColumn(null)}
+                onDrop={handleDrop}
+                onDragStart={handleDragStart}
+              />
+            </React.Fragment>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
