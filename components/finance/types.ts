@@ -1,4 +1,4 @@
-export type FinanceTab = 'overview' | 'transactions' | 'debts' | 'cashflow' | 'investments' | 'crypto';
+export type FinanceTab = 'overview' | 'patrimonio' | 'transactions' | 'debts' | 'cashflow' | 'investments' | 'crypto';
 export type CurrencyDisplay = 'USD' | 'BRL';
 
 export interface Transaction {

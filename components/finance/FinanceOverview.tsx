@@ -4,7 +4,6 @@ import { Icon, Card, SectionLabel } from '../ui';
 import { MetricDelta } from '../ui/MetricDelta';
 import { detailedTransactions, pieData, PIE_COLORS, cashflowData } from './data';
 import { formatBRL } from './utils';
-import NetWorthCard from './NetWorthCard';
 import BudgetRing from './BudgetRing';
 
 const pieTotal = pieData.reduce((acc, d) => acc + d.value, 0);
@@ -12,9 +11,6 @@ const pieTotal = pieData.reduce((acc, d) => acc + d.value, 0);
 export default function FinanceOverview() {
   return (
     <div className="flex flex-col gap-4 animate-in fade-in duration-300 h-full overflow-hidden">
-
-      {/* ROW 0: Net Worth */}
-      <NetWorthCard />
 
       {/* ROW 1: Metrics + Revenue Goal */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 shrink-0">

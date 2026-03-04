@@ -92,6 +92,7 @@ export const netWorthMonthly: number[] = [
 
 export const financeTabs: Tab[] = [
   { id: 'overview', label: 'Visão Geral', icon: 'dashboard' },
+  { id: 'patrimonio', label: 'Patrimônio', icon: 'account_balance' },
   { id: 'transactions', label: 'Transações', icon: 'receipt_long' },
   { id: 'debts', label: 'Débitos', icon: 'credit_card' },
   { id: 'cashflow', label: 'Fluxo de Caixa', icon: 'swap_horiz' },

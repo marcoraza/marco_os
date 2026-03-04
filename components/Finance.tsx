@@ -9,6 +9,7 @@ import FinanceDebts from './finance/FinanceDebts';
 import FinanceCashflow from './finance/FinanceCashflow';
 import FinanceInvestments from './finance/FinanceInvestments';
 import FinanceCrypto from './finance/FinanceCrypto';
+import FinancePatrimonio from './finance/FinancePatrimonio';
 import FinanceModals from './finance/FinanceModals';
 import { financeConfig } from '../lib/formConfigs';
 import { syncToNotion } from '../lib/notionSync';
@@ -63,6 +64,7 @@ const Finance: React.FC = () => {
         </div>
 
         {activeTab === 'overview' && <FinanceOverview />}
+        {activeTab === 'patrimonio' && <FinancePatrimonio />}
         {activeTab === 'transactions' && <FinanceTransactions />}
         {activeTab === 'debts' && <FinanceDebts />}
         {activeTab === 'cashflow' && (
