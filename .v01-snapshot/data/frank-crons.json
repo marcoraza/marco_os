@@ -1,0 +1,9 @@
+{
+  "jobs": [
+    { "id": "cron-1", "name": "Triagem de inbox → fila de ações", "schedule": "*/20 * * * *", "lastRun": "22:40Z (OK)", "nextRun": "23:00Z", "status": "ok", "integration": "OpenClaw", "agentId": "frank" },
+    { "id": "cron-2", "name": "Healthcheck do gateway", "schedule": "*/5 * * * *", "lastRun": "22:50Z (OK)", "nextRun": "22:55Z", "status": "ok", "integration": "OpenClaw", "agentId": "frank" },
+    { "id": "cron-3", "name": "Destilação semanal de memória", "schedule": "0 9 * * 1", "lastRun": "2026-02-10 (PAUSADO)", "nextRun": "2026-02-17", "status": "paused", "integration": "OpenClaw", "agentId": "frank" },
+    { "id": "cron-4", "name": "Build check contínuo", "schedule": "*/15 * * * *", "lastRun": "22:45Z (OK)", "nextRun": "23:00Z", "status": "ok", "integration": "OpenClaw", "agentId": "head-code" },
+    { "id": "cron-5", "name": "Lint e validação de tipos", "schedule": "*/30 * * * *", "lastRun": "22:30Z (ALERTA)", "nextRun": "23:00Z", "status": "warning", "integration": "OpenClaw", "agentId": "qa" }
+  ]
+}

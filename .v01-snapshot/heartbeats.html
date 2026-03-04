@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HEARTBEATS — Frank OS</title>
+<style>
+/* ── RESET + VARS ─────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#111;--bg2:#1a1a1a;--bg3:#222;
+  --sep:rgba(255,255,255,.06);--sep2:rgba(255,255,255,.1);
+  --text:#e2e2e2;--dim:#888;--dim2:#555;
+  --green:#4ade80;--blue:#60a5fa;--yellow:#fbbf24;
+  --orange:#fb923c;--purple:#c084fc;--red:#f87171;--gold:#fcd34d;
+  --overlay:rgba(0,0,0,.55)
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px}
+.page{max-width:900px;margin:0 auto;padding:32px 24px 64px}
+
+/* ── HEADER ───────────────────────────────────────────────────────────────── */
+.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.header h1{font-size:22px;font-weight:600;letter-spacing:-.4px}
+.header-sub{font-size:12px;color:var(--dim);margin-top:3px;display:flex;align-items:center;gap:12px}
+.header-sub a{color:var(--dim);text-decoration:none;display:flex;align-items:center;gap:4px;transition:color .15s}
+.header-sub a:hover{color:var(--text)}
+.header-sub .sep{color:var(--dim2)}
+.header-right{display:flex;align-items:center;gap:14px;padding-top:4px}
+.status-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green)}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.clock{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+
+/* ── STATS ────────────────────────────────────────────────────────────────── */
+.stats{display:flex;gap:36px;padding:0 0 24px;border-bottom:1px solid var(--sep);margin-bottom:28px}
+.stat-val{font-size:22px;font-weight:700;line-height:1}
+.stat-lbl{font-size:11px;color:var(--dim);margin-top:3px}
+
+/* ── TABS ─────────────────────────────────────────────────────────────────── */
+.tabs{display:flex;border-bottom:1px solid var(--sep);margin-bottom:28px}
+.tab{padding:8px 16px;font-size:12px;font-weight:500;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--text);border-bottom-color:var(--green)}
+.panel{display:none}
+.panel.on{display:block}
+
+/* ── SECTION TITLE ────────────────────────────────────────────────────────── */
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:12px}
+
+/* ── HB CARDS (3 grandes) ─────────────────────────────────────────────────── */
+.hb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.hb-card{background:var(--bg2);border:1px solid var(--sep);border-radius:10px;padding:20px;cursor:pointer;transition:border-color .15s,background .15s;position:relative;overflow:hidden}
+.hb-card:hover{border-color:rgba(255,255,255,.15);background:#1d1d1d}
+.hb-card.status-ok{border-color:rgba(74,222,128,.2)}
+.hb-card.status-ok:hover{border-color:rgba(74,222,128,.4)}
+.hb-card.status-late{border-color:rgba(251,191,36,.2)}
+.hb-card.status-miss{border-color:rgba(248,113,113,.2)}
+.hb-card-glow{position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0}
+.hb-card.status-ok .hb-card-glow{background:linear-gradient(90deg,transparent,rgba(74,222,128,.6),transparent)}
+.hb-card.status-late .hb-card-glow{background:linear-gradient(90deg,transparent,rgba(251,191,36,.6),transparent)}
+.hb-card.status-miss .hb-card-glow{background:linear-gradient(90deg,transparent,rgba(248,113,113,.6),transparent)}
+.hb-time{font-size:11px;color:var(--dim2);font-variant-numeric:tabular-nums;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.hb-name{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.hb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hb-dot.ok{background:var(--green);box-shadow:0 0 8px rgba(74,222,128,.5);animation:blink 2.4s ease-in-out infinite}
+.hb-dot.late{background:var(--yellow)}
+.hb-dot.miss{background:var(--red)}
+.hb-dot.pending{background:var(--dim2)}
+.hb-status-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:20px}
+.hb-status-label.ok{background:rgba(74,222,128,.12);color:var(--green)}
+.hb-status-label.late{background:rgba(251,191,36,.12);color:var(--yellow)}
+.hb-status-label.miss{background:rgba(248,113,113,.12);color:var(--red)}
+.hb-status-label.pending{background:rgba(255,255,255,.05);color:var(--dim2)}
+.hb-meta{margin-top:14px;display:flex;flex-direction:column;gap:5px}
+.hb-meta-row{display:flex;justify-content:space-between;align-items:center}
+.hb-meta-key{font-size:10px;color:var(--dim2)}
+.hb-meta-val{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+.hb-meta-val.green{color:var(--green)}
+.hb-meta-val.yellow{color:var(--yellow)}
+.hb-meta-val.red{color:var(--red)}
+.hb-uptime-bar{margin-top:14px}
+.hb-uptime-track{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:4px}
+.hb-uptime-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.hb-uptime-fill.ok{background:var(--green)}
+.hb-uptime-fill.warn{background:var(--yellow)}
+.hb-uptime-fill.bad{background:var(--red)}
+.hb-arrow{position:absolute;top:18px;right:16px;font-size:11px;color:var(--dim2);transition:color .15s}
+.hb-card:hover .hb-arrow{color:var(--dim)}
+
+/* ── HISTÓRICO 7 DIAS ─────────────────────────────────────────────────────── */
+.history-wrap{margin-bottom:28px}
+.history-grid{display:flex;flex-direction:column;gap:10px}
+.history-row{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:12px}
+.history-label{font-size:11px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+.history-dots{display:flex;gap:4px;align-items:center}
+.hd{width:24px;height:24px;border-radius:4px;cursor:default;transition:transform .15s;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600}
+.hd:hover{transform:scale(1.15);z-index:2}
+.hd.ok{background:rgba(74,222,128,.18);color:var(--green)}
+.hd.miss{background:rgba(248,113,113,.12);color:var(--red)}
+.hd.partial{background:rgba(251,191,36,.14);color:var(--yellow)}
+.hd.future{background:rgba(255,255,255,.03);color:var(--dim2)}
+.history-days{display:flex;gap:4px;margin-bottom:4px;padding-left:132px}
+.history-day-label{width:24px;text-align:center;font-size:9px;color:var(--dim2);flex-shrink:0}
+
+/* ── TIMELINE BRT ─────────────────────────────────────────────────────────── */
+.tl-section{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--sep)}
+.tl-wrap{position:relative;height:32px}
+.tl-track{position:absolute;top:14px;left:0;right:0;height:1px;background:var(--sep2)}
+.tl-now{position:absolute;top:7px;width:2px;height:20px;background:var(--green);opacity:.7;border-radius:1px}
+.tl-dot{position:absolute;border-radius:50%;top:9px;transform:translateX(-50%);cursor:pointer;transition:transform .15s,box-shadow .15s}
+.tl-dot:hover{transform:translateX(-50%) scale(1.8);z-index:5}
+.tl-dot.ok{width:10px;height:10px;box-shadow:0 0 8px rgba(74,222,128,.5)}
+.tl-dot.late{width:10px;height:10px}
+.tl-dot.miss{width:10px;height:10px}
+.tl-dot.pending{width:8px;height:8px;opacity:.35}
+.tl-labels{display:flex;justify-content:space-between;margin-top:6px;font-size:9px;color:var(--dim2)}
+.next-info{margin-top:8px;font-size:11px;color:var(--dim)}
+.next-info b{color:var(--text);font-weight:500}
+.next-info .cd{color:var(--green)}
+
+/* ── LOG ROWS ─────────────────────────────────────────────────────────────── */
+.log-list{display:flex;flex-direction:column}
+.log-header{display:grid;grid-template-columns:100px 140px 1fr 80px 80px;padding:6px 8px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--dim2);border-bottom:1px solid var(--sep)}
+.log-row{display:grid;grid-template-columns:100px 140px 1fr 80px 80px;align-items:center;padding:9px 8px;border-bottom:1px solid var(--sep);border-radius:4px;transition:background .1s;cursor:pointer}
+.log-row:last-child{border-bottom:none}
+.log-row:hover{background:rgba(255,255,255,.025)}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
+.badge.ok{background:rgba(74,222,128,.1);color:var(--green)}
+.badge.err{background:rgba(248,113,113,.1);color:var(--red)}
+.badge.late{background:rgba(251,191,36,.1);color:var(--yellow)}
+.badge.miss{background:rgba(248,113,113,.1);color:var(--red)}
+
+/* ── DRAWER ───────────────────────────────────────────────────────────────── */
+.drawer-overlay{position:fixed;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer-overlay.on{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:-520px;width:480px;max-width:95vw;height:100vh;background:var(--bg2);border-left:1px solid var(--sep2);z-index:101;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.drawer.on{right:0}
+.drawer-head{display:flex;align-items:flex-start;justify-content:space-between;padding:20px 20px 16px;border-bottom:1px solid var(--sep);flex-shrink:0}
+.drawer-title{font-size:15px;font-weight:600;margin-bottom:3px}
+.drawer-sub{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:8px}
+.drawer-close{background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;padding:0 4px;transition:color .15s;flex-shrink:0;margin-left:8px}
+.drawer-close:hover{color:var(--text)}
+.drawer-body{flex:1;overflow-y:auto}
+.drawer-section{padding:16px 20px;border-bottom:1px solid var(--sep)}
+.drawer-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);margin-bottom:10px}
+.dr-kv{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.dr-field{display:flex;flex-direction:column;gap:3px}
+.dr-label{font-size:10px;color:var(--dim2);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.dr-val{font-size:12px;color:var(--text);padding:2px 0;font-variant-numeric:tabular-nums}
+.dr-val.green{color:var(--green)}
+.dr-val.yellow{color:var(--yellow)}
+.dr-val.red{color:var(--red)}
+.drawer-log-row{display:grid;grid-template-columns:80px 1fr 60px;align-items:center;padding:6px 8px;border-radius:4px;font-size:11px;background:var(--bg3);gap:8px;margin-bottom:4px}
+.drawer-empty{font-size:11px;color:var(--dim2);text-align:center;padding:16px 0}
+
+/* ── MINI HEATMAP 7D ──────────────────────────────────────────────────────── */
+.heatmap-inline{display:flex;gap:3px;margin-top:10px}
+.hm-cell{width:14px;height:14px;border-radius:2px;cursor:default}
+.hm-cell.ok{background:rgba(74,222,128,.35)}
+.hm-cell.miss{background:rgba(248,113,113,.2)}
+.hm-cell.partial{background:rgba(251,191,36,.2)}
+.hm-cell.future{background:rgba(255,255,255,.04)}
+
+/* ── SCROLLBAR ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--dim2)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>HEARTBEATS</h1>
+    <div class="header-sub">
+      Frank OS v4
+      <span class="sep">·</span>
+      <a href="https://notion.so/30eb72d5042d81aa94f8f5c7ef21d030" target="_blank">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Notion
+      </a>
+      <span class="sep">·</span>
+      <span id="sys-status" style="color:var(--green)">Sistema operacional</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill"><div class="sdot"></div>LIVE</div>
+    <div class="clock" id="clock">--:-- BRT</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div><div class="stat-val" style="color:var(--green)" id="s-ok">—</div><div class="stat-lbl">OK hoje</div></div>
+  <div><div class="stat-val" id="s-pending">—</div><div class="stat-lbl">Pendentes</div></div>
+  <div><div class="stat-val" id="s-uptime">—</div><div class="stat-lbl">Uptime 7d</div></div>
+  <div><div class="stat-val" style="color:var(--red)" id="s-miss">0</div><div class="stat-lbl">Missed hoje</div></div>
+  <div style="margin-left:auto;text-align:right">
+    <div class="stat-val" style="font-size:13px;color:var(--dim);font-weight:400" id="s-next">—</div>
+    <div class="stat-lbl">Próximo</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab on" onclick="switchTab('overview')">Overview</div>
+  <div class="tab" onclick="switchTab('historico')">Histórico 7d</div>
+  <div class="tab" onclick="switchTab('logs')">Logs</div>
+</div>
+
+<!-- PANEL: OVERVIEW -->
+<div id="p-overview" class="panel on">
+
+  <!-- Timeline BRT -->
+  <div class="tl-section">
+    <div class="section-title">Timeline — hoje (BRT)</div>
+    <div class="tl-wrap" id="tl-wrap">
+      <div class="tl-track"></div>
+      <div class="tl-now" id="tl-now"></div>
+    </div>
+    <div class="tl-labels" id="tl-labels"></div>
+    <div class="next-info">Próximo: <b id="nc-name">—</b><span class="cd" id="nc-cd"></span></div>
+  </div>
+
+  <!-- 3 Heartbeat cards -->
+  <div class="section-title">Status atual</div>
+  <div class="hb-grid" id="hb-grid"></div>
+
+</div>
+
+<!-- PANEL: HISTÓRICO -->
+<div id="p-historico" class="panel">
+  <div class="section-title">Últimos 7 dias — por heartbeat</div>
+  <div class="history-days" id="history-day-labels"></div>
+  <div class="history-grid" id="history-grid"></div>
+  <div style="margin-top:14px;font-size:11px;color:var(--dim2);display:flex;align-items:center;gap:10px">
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(74,222,128,.35);display:inline-block"></span> OK</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(251,191,36,.2);display:inline-block"></span> Parcial</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(248,113,113,.2);display:inline-block"></span> Missed</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,.04);display:inline-block"></span> Futuro</span>
+  </div>
+</div>
+
+<!-- PANEL: LOGS -->
+<div id="p-logs" class="panel">
+  <div class="log-header">
+    <div>Data</div><div>Heartbeat</div><div>Resposta</div><div>Latência</div><div>Status</div>
+  </div>
+  <div class="log-list" id="log-list"></div>
+</div>
+
+</div><!-- /.page -->
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <div class="drawer-title" id="dr-title">—</div>
+      <div class="drawer-sub" id="dr-sub">—</div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+
+    <!-- Status atual -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">Status atual</div>
+      <div class="dr-kv">
+        <div class="dr-field"><div class="dr-label">Status</div><div class="dr-val" id="dr-status">—</div></div>
+        <div class="dr-field"><div class="dr-label">Último ping</div><div class="dr-val" id="dr-lastping">—</div></div>
+        <div class="dr-field"><div class="dr-label">Latência média</div><div class="dr-val green" id="dr-latency">—</div></div>
+        <div class="dr-field"><div class="dr-label">Uptime 7d</div><div class="dr-val green" id="dr-uptime">—</div></div>
+        <div class="dr-field"><div class="dr-label">Horário BRT</div><div class="dr-val" id="dr-horario">—</div></div>
+        <div class="dr-field"><div class="dr-label">Cron expr</div><div class="dr-val" id="dr-cron" style="font-family:ui-monospace,monospace;font-size:11px;color:var(--dim)">—</div></div>
+      </div>
+    </div>
+
+    <!-- Heatmap 7d inline -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">Últimos 7 dias</div>
+      <div class="heatmap-inline" id="dr-heatmap"></div>
+      <div style="margin-top:6px;font-size:10px;color:var(--dim2)" id="dr-heatmap-labels"></div>
+    </div>
+
+    <!-- Últimos pings -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">Últimos pings</div>
+      <div id="dr-logs">
+        <div class="drawer-empty">Aguardando integração de logs</div>
+      </div>
+    </div>
+
+    <!-- Sobre -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">Sobre</div>
+      <div style="font-size:11px;color:var(--dim);line-height:1.7" id="dr-about">—</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── DADOS ─────────────────────────────────────────────────────────────────────
+// Os heartbeats disparam via openclaw agentTurn cron.
+// Aqui simulamos os dados até ter integração real com a API.
+
+const HBS = [
+  {
+    id:'hb10', name:'Heartbeat 10h', h:10, m:0,
+    cron:'0 10 * * *', color:'var(--green)',
+    about:'Dispara às 10:00 BRT. Verifica tarefas ativas, ClawDeck, e próximos eventos do calendário nas próximas 2h. Resposta esperada: "Sem alertas relevantes agora" ou lista de itens urgentes.',
+    latency: 312, uptime7d: 100,
+    // Simula histórico: 7 dias × 1 ping/dia → 'ok'|'miss'|'partial'|'future'
+    history: ['ok','ok','ok','ok','ok','ok','ok'],
+  },
+  {
+    id:'hb14', name:'Heartbeat 14h', h:14, m:0,
+    cron:'0 14 * * *', color:'var(--green)',
+    about:'Dispara às 14:00 BRT. Foco em tarefas pendentes de manhã + revisão de pipeline ativo. Verifica se algum cron matinal falhou.',
+    latency: 287, uptime7d: 100,
+    history: ['ok','ok','miss','ok','ok','ok','ok'],
+  },
+  {
+    id:'hb18', name:'Heartbeat 18h', h:18, m:0,
+    cron:'0 18 * * *', color:'var(--green)',
+    about:'Dispara às 18:00 BRT. Encerramento de tarde: resume o que foi feito, aponta próximos passos pra noite, verifica Radar Noturno agendado para 01h.',
+    latency: 445, uptime7d: 85,
+    history: ['ok','miss','ok','ok','partial','ok','ok'],
+  },
+];
+
+// Logs simulados (últimas execuções registradas)
+const LOGS_MOCK = [
+  { date:'Hoje 10:00', hb:'Heartbeat 10h', resp:'Sem alertas relevantes agora.', lat:'312ms', st:'ok' },
+  { date:'Hoje 09:00', hb:'Heartbeat 10h', resp:'— (antecipado)', lat:'—', st:'miss' },
+  { date:'Ontem 18:00', hb:'Heartbeat 18h', resp:'Radar Noturno agendado 01h. 2 tarefas abertas.', lat:'445ms', st:'ok' },
+  { date:'Ontem 14:00', hb:'Heartbeat 14h', resp:'Sem alertas relevantes agora.', lat:'287ms', st:'ok' },
+  { date:'Ontem 10:00', hb:'Heartbeat 10h', resp:'Reunião com João 14h detectada.', lat:'299ms', st:'ok' },
+];
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function pad(n){ return String(n).padStart(2,'0'); }
+function getBRT(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'})); }
+
+// ── CLOCK ────────────────────────────────────────────────────────────────────
+function updateClock(){
+  const d=getBRT();
+  document.getElementById('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+' BRT';
+}
+setInterval(updateClock,10000); updateClock();
+
+// ── STATUS CALC ───────────────────────────────────────────────────────────────
+function calcStatus(hb){
+  const now=getBRT();
+  const nowMin=now.getHours()*60+now.getMinutes();
+  const hbMin=hb.h*60+hb.m;
+  const window=30; // min de tolerância antes de considerar "late"
+  if(nowMin < hbMin - window) return 'pending';
+  if(nowMin >= hbMin - window && nowMin < hbMin + 5) return 'pending';
+  if(nowMin >= hbMin && nowMin < hbMin + 15) return 'ok';   // simula recebido
+  if(nowMin >= hbMin + 15 && nowMin < hbMin + 45) return 'late';
+  if(nowMin > hbMin) return 'ok'; // passou — assume ok por enquanto
+  return 'pending';
+}
+
+function statusLabel(s){ return {ok:'OK',late:'ATRASADO',miss:'MISSED',pending:'AGUARDANDO'}[s]||s; }
+function statusColor(s){ return {ok:'var(--green)',late:'var(--yellow)',miss:'var(--red)',pending:'var(--dim2)'}[s]||'var(--dim)'; }
+
+// ── STATS ────────────────────────────────────────────────────────────────────
+(function updateStats(){
+  const statuses = HBS.map(h=>calcStatus(h));
+  const ok = statuses.filter(s=>s==='ok').length;
+  const pending = statuses.filter(s=>s==='pending').length;
+  const miss = statuses.filter(s=>s==='miss').length;
+  const avgUp = Math.round(HBS.reduce((a,h)=>a+h.uptime7d,0)/HBS.length);
+  document.getElementById('s-ok').textContent=ok;
+  document.getElementById('s-pending').textContent=pending;
+  document.getElementById('s-uptime').textContent=avgUp+'%';
+  document.getElementById('s-uptime').style.color=avgUp>=95?'var(--green)':avgUp>=80?'var(--yellow)':'var(--red)';
+  document.getElementById('s-miss').textContent=miss;
+  if(miss>0) document.getElementById('sys-status').textContent='⚠ '+miss+' missed hoje';
+})();
+
+// ── NEXT HEARTBEAT ────────────────────────────────────────────────────────────
+function updateNext(){
+  const now=getBRT();
+  const cur=now.getHours()*60+now.getMinutes();
+  const sorted=[...HBS].sort((a,b)=>a.h*60+a.m-(b.h*60+b.m));
+  const next=sorted.find(h=>h.h*60+h.m>cur)||sorted[0];
+  const diff=((next.h*60+next.m)-cur+1440)%1440;
+  const hh=Math.floor(diff/60),mm=diff%60;
+  document.getElementById('nc-name').textContent=next.name;
+  document.getElementById('nc-cd').textContent=' — em '+(hh>0?hh+'h ':'')+mm+'min';
+  document.getElementById('s-next').textContent=pad(next.h)+':'+pad(next.m)+' · '+next.name.replace('Heartbeat ','');
+}
+updateNext(); setInterval(updateNext,30000);
+
+// ── TIMELINE ──────────────────────────────────────────────────────────────────
+(function buildTimeline(){
+  const now=getBRT();
+  const nowMin=now.getHours()*60+now.getMinutes();
+  document.getElementById('tl-now').style.left=(nowMin/(24*60)*100)+'%';
+  const wrap=document.getElementById('tl-wrap');
+  HBS.forEach(hb=>{
+    const st=calcStatus(hb);
+    const pct=(hb.h*60+hb.m)/(24*60)*100;
+    const d=document.createElement('div');
+    d.className='tl-dot '+st;
+    d.style.left=pct+'%';
+    d.style.background=statusColor(st);
+    d.title=hb.name+' — '+pad(hb.h)+':'+pad(hb.m)+' · '+statusLabel(st);
+    d.onclick=()=>openDrawer(hb.id);
+    wrap.appendChild(d);
+  });
+  const lbls=document.getElementById('tl-labels');
+  [0,4,8,12,16,20,23].forEach(h=>{const s=document.createElement('span');s.textContent=pad(h)+'h';lbls.appendChild(s);});
+})();
+
+// ── HB CARDS ──────────────────────────────────────────────────────────────────
+(function buildCards(){
+  const grid=document.getElementById('hb-grid');
+  HBS.forEach(hb=>{
+    const st=calcStatus(hb);
+    const col=statusColor(st);
+    const card=document.createElement('div');
+    card.className='hb-card status-'+st;
+    card.onclick=()=>openDrawer(hb.id);
+    card.innerHTML=`
+      <div class="hb-card-glow"></div>
+      <div class="hb-arrow">→</div>
+      <div class="hb-time">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        ${pad(hb.h)}:${pad(hb.m)} BRT
+      </div>
+      <div class="hb-name">
+        <div class="hb-dot ${st}"></div>
+        ${hb.name}
+      </div>
+      <span class="hb-status-label ${st}">${statusLabel(st)}</span>
+      <div class="hb-meta">
+        <div class="hb-meta-row">
+          <span class="hb-meta-key">Latência média</span>
+          <span class="hb-meta-val" style="color:${hb.latency<400?'var(--green)':'var(--yellow)'}">${hb.latency}ms</span>
+        </div>
+        <div class="hb-meta-row">
+          <span class="hb-meta-key">Uptime 7d</span>
+          <span class="hb-meta-val ${hb.uptime7d>=95?'green':hb.uptime7d>=80?'yellow':'red'}">${hb.uptime7d}%</span>
+        </div>
+      </div>
+      <div class="hb-uptime-bar">
+        <div style="font-size:9px;color:var(--dim2);margin-bottom:4px">7 dias</div>
+        <div class="hb-uptime-track">
+          <div class="hb-uptime-fill ${hb.uptime7d>=95?'ok':hb.uptime7d>=80?'warn':'bad'}" style="width:${hb.uptime7d}%"></div>
+        </div>
+      </div>
+      <div class="heatmap-inline" style="margin-top:12px">
+        ${hb.history.map(s=>`<div class="hm-cell ${s}" title="${s}"></div>`).join('')}
+      </div>`;
+    grid.appendChild(card);
+  });
+})();
+
+// ── HISTÓRICO 7D ──────────────────────────────────────────────────────────────
+(function buildHistory(){
+  const now=getBRT();
+  const dayLabels=document.getElementById('history-day-labels');
+  const grid=document.getElementById('history-grid');
+  const days=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  // Gera labels dos últimos 7 dias
+  for(let i=6;i>=0;i--){
+    const d=new Date(now); d.setDate(d.getDate()-i);
+    const lbl=document.createElement('div');
+    lbl.className='history-day-label';
+    lbl.textContent=(i===0?'Hoje':days[d.getDay()]);
+    lbl.style.color=i===0?'var(--text)':'var(--dim2)';
+    dayLabels.appendChild(lbl);
+  }
+  HBS.forEach(hb=>{
+    const row=document.createElement('div'); row.className='history-row';
+    const lbl=document.createElement('div'); lbl.className='history-label'; lbl.textContent=hb.name.replace('Heartbeat ','HB ');
+    const dots=document.createElement('div'); dots.className='history-dots';
+    hb.history.forEach((s,i)=>{
+      const cell=document.createElement('div');
+      cell.className='hd '+s;
+      cell.title=(i===6?'Hoje':i===5?'Ontem':'')+(s==='ok'?'✓':s==='miss'?'✗':s==='partial'?'~':'...');
+      cell.textContent=s==='ok'?'✓':s==='miss'?'✗':s==='partial'?'~':'';
+      dots.appendChild(cell);
+    });
+    row.appendChild(lbl); row.appendChild(dots);
+    grid.appendChild(row);
+  });
+})();
+
+// ── LOGS ──────────────────────────────────────────────────────────────────────
+function buildLogs(){
+  const el=document.getElementById('log-list');
+  if(el.children.length) return;
+  LOGS_MOCK.forEach(l=>{
+    const row=document.createElement('div'); row.className='log-row';
+    row.innerHTML=`<div style="font-size:11px;color:var(--dim2)">${l.date}</div><div style="font-size:12px">${l.hb}</div><div style="font-size:11px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.resp}</div><div style="font-size:11px;color:var(--dim2);text-align:right">${l.lat}</div><div><span class="badge ${l.st}">${l.st==='ok'?'✓ ok':l.st}</span></div>`;
+    el.appendChild(row);
+  });
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('p-'+name).classList.add('on');
+  const idx={overview:0,historico:1,logs:2}[name]??0;
+  document.querySelectorAll('.tab')[idx].classList.add('on');
+  if(name==='logs') buildLogs();
+}
+
+// ── DRAWER ────────────────────────────────────────────────────────────────────
+let activeHb=null;
+function openDrawer(id){
+  const hb=HBS.find(h=>h.id===id); if(!hb) return;
+  activeHb=hb;
+  const st=calcStatus(hb);
+  document.getElementById('drawer-overlay').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+  document.getElementById('dr-title').textContent=hb.name;
+  document.getElementById('dr-sub').innerHTML=`<span style="color:${statusColor(st)}">${statusLabel(st)}</span> &nbsp;·&nbsp; ${pad(hb.h)}:${pad(hb.m)} BRT`;
+  document.getElementById('dr-status').innerHTML=`<span class="badge ${st}">${statusLabel(st)}</span>`;
+  document.getElementById('dr-lastping').textContent='Hoje '+pad(hb.h)+':'+pad(hb.m);
+  document.getElementById('dr-latency').textContent=hb.latency+'ms';
+  document.getElementById('dr-latency').className='dr-val '+(hb.latency<400?'green':'yellow');
+  document.getElementById('dr-uptime').textContent=hb.uptime7d+'%';
+  document.getElementById('dr-uptime').className='dr-val '+(hb.uptime7d>=95?'green':hb.uptime7d>=80?'yellow':'red');
+  document.getElementById('dr-horario').textContent=pad(hb.h)+':'+pad(hb.m)+' BRT';
+  document.getElementById('dr-cron').textContent=hb.cron;
+  document.getElementById('dr-about').textContent=hb.about;
+  // Heatmap
+  const hm=document.getElementById('dr-heatmap');
+  hm.innerHTML=hb.history.map((s,i)=>`<div class="hm-cell ${s}" title="${i===6?'Hoje':i===5?'Ontem':'D-'+(6-i)}" style="width:24px;height:24px;border-radius:3px"></div>`).join('');
+  document.getElementById('dr-heatmap-labels').textContent='D-6 → Hoje';
+  // Logs do drawer
+  const dl=document.getElementById('dr-logs');
+  const myLogs=LOGS_MOCK.filter(l=>l.hb===hb.name);
+  if(myLogs.length){
+    dl.innerHTML='';
+    myLogs.forEach(l=>{
+      const r=document.createElement('div'); r.className='drawer-log-row';
+      r.innerHTML=`<span style="color:var(--dim2)">${l.date.split(' ').pop()}</span><span style="color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.resp}</span><span class="badge ${l.st}" style="font-size:9px">${l.st}</span>`;
+      dl.appendChild(r);
+    });
+  }
+}
+function closeDrawer(){
+  document.getElementById('drawer-overlay').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+  activeHb=null;
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDrawer(); });
+
+// Auto-refresh a cada 5 min
+setInterval(()=>{ location.reload(); }, 300000);
+</script>
+</body>
+</html>
