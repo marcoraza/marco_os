@@ -4,11 +4,7 @@ import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   BarChart, Bar, ResponsiveContainer
 } from 'recharts';
-import { Icon, SectionLabel, StatusDot, TabNav, Badge, FormModal, SectionJourney, showToast } from './ui';
-import { healthFields } from '../lib/formConfigs';
-import { putHealthEntry } from '../data/repository';
-import { syncToNotion } from '../lib/notionSync';
-import type { StoredHealthEntry } from '../data/models';
+import { Icon, SectionLabel, StatusDot, TabNav, Badge, JourneyOverlay, JourneyTriggerButton } from './ui';
 import { useTabSetup } from '../hooks/useTabSetup';
 import { healthDailyJourney, healthTrendsJourney } from '../lib/journeyConfigs/health';
 
@@ -104,8 +100,8 @@ const Health: React.FC = () => {
     setHabits(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showJourney, setShowJourney] = useState(false);
 
   // Per-tab journey setup
   const dailySetup = useTabSetup('health', 'daily');
@@ -135,45 +131,22 @@ const Health: React.FC = () => {
     triggerRefresh();
   }, [activeSetup, triggerRefresh]);
 
-  const handleHealthSubmit = async (data: Record<string, unknown>) => {
-    const now = new Date().toISOString();
-    const entry: StoredHealthEntry = {
-      id: crypto.randomUUID(),
-      name: String(data.name || ''),
-      tipo: (data.tipo as StoredHealthEntry['tipo']) || 'treino',
-      valor: data.valor ? Number(data.valor) : undefined,
-      duracao: data.duracao ? Number(data.duracao) : undefined,
-      data: String(data.data || now.slice(0, 10)),
-      notas: data.notas ? String(data.notas) : undefined,
-      createdAt: now,
-      updatedAt: now,
-    };
-    await putHealthEntry(entry);
-    showToast('Registro de saude salvo!');
-    syncToNotion('create-health-entry', data);
-    triggerRefresh();
-  };
-
   const tabs = [
     { id: 'daily', label: 'Registro Diario' },
     { id: 'trends', label: 'Tendencias & Insights' }
   ];
 
-  // If active tab hasn't done its journey, show the journey
-  if (!activeSetup.isSetupDone) {
-    const journeyConfig = journeyMap[activeTab];
-    if (journeyConfig) {
-      return (
-        <SectionJourney
-          config={journeyConfig}
-          onComplete={handleJourneyComplete}
-          onSkip={activeSetup.markSkipped}
-        />
-      );
-    }
-  }
-
   return (
+    <>
+      {showJourney && journeyMap[activeTab] && (
+        <JourneyOverlay
+          config={journeyMap[activeTab]}
+          isOpen={showJourney}
+          onClose={() => setShowJourney(false)}
+          onComplete={() => { handleJourneyComplete(); setShowJourney(false); }}
+        />
+      )}
+
     <div className="flex flex-col h-full bg-bg-base font-sans text-text-primary overflow-hidden">
       {/* Navigation Tabs (Replaces Header) */}
       <div className="relative bg-bg-base shrink-0">
@@ -185,21 +158,19 @@ const Health: React.FC = () => {
             completedTabs={completedTabs}
             onRedoJourney={handleRedoJourney}
         />
-        
-        {/* Status Badge + NOVO button - Positioned absolutely to align with TabNav */}
+
+        {/* Status Badge + Configurar button - Positioned absolutely to align with TabNav */}
         <div className="absolute top-0 right-6 h-full flex items-center gap-2 pointer-events-none">
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1 pointer-events-auto"
-            >
-              <Icon name="add" size="xs" />
-              NOVO
-            </button>
+            <JourneyTriggerButton
+              isConfigured={activeSetup.isSetupDone}
+              onClick={() => setShowJourney(true)}
+              className="pointer-events-auto"
+            />
             <div className="flex items-center gap-2 bg-surface px-2 py-1 rounded border border-border-panel pointer-events-auto">
-                <StatusDot 
-                    color={activeTab === 'trends' ? 'mint' : 'orange'} 
-                    pulse 
-                    className={activeTab === 'trends' ? '' : 'animate-none'} 
+                <StatusDot
+                    color={activeTab === 'trends' ? 'mint' : 'orange'}
+                    pulse
+                    className={activeTab === 'trends' ? '' : 'animate-none'}
                 />
                 <span className={`text-[9px] uppercase font-bold ${activeTab === 'trends' ? 'text-brand-mint' : 'text-accent-orange'}`}>
                   {activeTab === 'trends' ? 'Online' : 'Sincronizado'}
@@ -545,14 +516,8 @@ const Health: React.FC = () => {
 
       </div>
 
-      <FormModal
-        title="Novo Registro de Saude"
-        fields={healthFields}
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        onSubmit={handleHealthSubmit}
-      />
     </div>
+    </>
   );
 };
 

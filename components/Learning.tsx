@@ -1,9 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Icon, Badge, SectionLabel, TabNav, EmptyState, FormModal, SectionJourney, showToast } from './ui';
-import { skillsFields } from '../lib/formConfigs';
-import { putSkill } from '../data/repository';
-import { syncToNotion } from '../lib/notionSync';
-import type { StoredSkill } from '../data/models';
+import { Icon, Badge, SectionLabel, TabNav, EmptyState, JourneyOverlay, JourneyTriggerButton } from './ui';
 import { useTabSetup } from '../hooks/useTabSetup';
 import { learningCurriculumJourney, learningKnowledgeJourney, learningResourcesJourney } from '../lib/journeyConfigs/learning';
 
@@ -26,8 +22,8 @@ const Learning: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'curriculum' | 'knowledge' | 'resources'>('curriculum');
   const [showPendingOnly, setShowPendingOnly] = useState(false);
   const [knowledgeSearch, setKnowledgeSearch] = useState('');
-  const [isSkillFormOpen, setIsSkillFormOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showJourney, setShowJourney] = useState(false);
   const triggerRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
   const curriculumSetup = useTabSetup('learning', 'curriculum');
@@ -46,24 +42,6 @@ const Learning: React.FC = () => {
   };
   const activeSetup = setupMap[activeTab];
 
-  const handleSkillSubmit = async (data: Record<string, unknown>) => {
-    const now = new Date().toISOString();
-    const skill: StoredSkill = {
-      id: crypto.randomUUID(),
-      name: String(data.name || ''),
-      categoria: String(data.categoria || 'frontend'),
-      nivel: (data.nivel as StoredSkill['nivel']) || 'iniciante',
-      progresso: Math.min(100, Math.max(0, Number(data.progresso) || 0)),
-      notas: data.notas ? String(data.notas) : undefined,
-      createdAt: now,
-      updatedAt: now,
-    };
-    await putSkill(skill);
-    showToast('Skill salva!');
-    syncToNotion('create-skill', data);
-    triggerRefresh();
-  };
-
   const tabs = [
     { id: 'curriculum', label: 'Curriculo' },
     { id: 'knowledge', label: 'Conhecimento' },
@@ -75,20 +53,17 @@ const Learning: React.FC = () => {
     id => localStorage.getItem(`section_setup_done_learning_${id}`) === '1'
   );
 
-  if (!activeSetup.isSetupDone) {
-    const journeyConfig = journeyMap[activeTab];
-    if (journeyConfig) {
-      return (
-        <SectionJourney
-          config={journeyConfig}
-          onComplete={() => { activeSetup.markDone(); triggerRefresh(); }}
-          onSkip={activeSetup.markSkipped}
-        />
-      );
-    }
-  }
-
   return (
+    <>
+      {showJourney && journeyMap[activeTab] && (
+        <JourneyOverlay
+          config={journeyMap[activeTab]}
+          isOpen={showJourney}
+          onClose={() => setShowJourney(false)}
+          onComplete={() => { activeSetup.markDone(); triggerRefresh(); setShowJourney(false); }}
+        />
+      )}
+
     <div className="flex flex-col h-full bg-bg-base font-sans text-text-primary overflow-hidden">
       {/* Navigation Tabs (Replaces Header) */}
       <div className="relative bg-bg-base shrink-0">
@@ -104,13 +79,11 @@ const Learning: React.FC = () => {
             }}
         />
         <div className="absolute top-0 right-6 h-full flex items-center pointer-events-none">
-          <button
-            onClick={() => setIsSkillFormOpen(true)}
-            className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1 pointer-events-auto"
-          >
-            <Icon name="add" size="xs" />
-            SKILL
-          </button>
+          <JourneyTriggerButton
+            isConfigured={activeSetup.isSetupDone}
+            onClick={() => setShowJourney(true)}
+            className="pointer-events-auto"
+          />
         </div>
       </div>
 
@@ -591,14 +564,8 @@ const Learning: React.FC = () => {
         </aside>
       </main>
 
-      <FormModal
-        title="Nova Skill"
-        fields={skillsFields}
-        isOpen={isSkillFormOpen}
-        onClose={() => setIsSkillFormOpen(false)}
-        onSubmit={handleSkillSubmit}
-      />
     </div>
+    </>
   );
 };
 

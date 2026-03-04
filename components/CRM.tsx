@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Icon, Badge, Card, SectionLabel, StatusDot, EmptyState, showToast, FormModal, SectionJourney } from './ui';
+import { Icon, Badge, Card, SectionLabel, StatusDot, EmptyState, showToast, FormModal, JourneyOverlay, JourneyTriggerButton } from './ui';
 import type { StoredContact, StoredReuniao } from '../data/models';
 import { loadContacts, putContact, deleteContact as deleteContactDb, bootstrapContactsIfEmpty, putReuniao } from '../data/repository';
 import { reunioesFields } from '../lib/formConfigs';
@@ -92,7 +92,8 @@ const CRM: React.FC = () => {
   const [form, setForm] = useState(EMPTY_FORM);
 
   /* Journey setup */
-  const { isSetupDone, markDone, markSkipped } = useSectionSetup('crm');
+  const { isSetupDone, markDone } = useSectionSetup('crm');
+  const [showJourney, setShowJourney] = useState(false);
 
   /* Reuniao form */
   const [isReuniaoFormOpen, setIsReuniaoFormOpen] = useState(false);
@@ -250,17 +251,17 @@ const CRM: React.FC = () => {
     setForm(prev => ({ ...prev, [field]: value }));
   }
 
-  if (!isSetupDone) {
-    return (
-      <SectionJourney
-        config={crmJourneyConfig}
-        onComplete={() => { markDone(); refresh(); }}
-        onSkip={markSkipped}
-      />
-    );
-  }
-
   return (
+    <>
+      {showJourney && (
+        <JourneyOverlay
+          config={crmJourneyConfig}
+          isOpen={showJourney}
+          onClose={() => setShowJourney(false)}
+          onComplete={() => { markDone(); refresh(); setShowJourney(false); }}
+        />
+      )}
+
     <div className="relative h-full flex flex-col">
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 flex-1 w-full overflow-y-auto">
         {/* Header Stats */}
@@ -270,6 +271,10 @@ const CRM: React.FC = () => {
             <p className="text-xs text-text-secondary mt-1">Gerencie conexões estratégicas e mantenha sua rede ativa.</p>
           </div>
           <div className="flex items-center gap-4">
+            <JourneyTriggerButton
+              isConfigured={isSetupDone}
+              onClick={() => setShowJourney(true)}
+            />
             <button
               onClick={() => setIsReuniaoFormOpen(true)}
               className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1"
@@ -785,6 +790,7 @@ const CRM: React.FC = () => {
         onSubmit={handleReuniaoSubmit}
       />
     </div>
+    </>
   );
 };
 

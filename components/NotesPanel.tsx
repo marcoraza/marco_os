@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import type { StoredNote } from '../data/models';
-import { Icon, Card, SectionLabel, FormModal, SectionJourney, showToast } from './ui';
+import { Icon, Card, SectionLabel, FormModal, showToast, JourneyOverlay, JourneyTriggerButton } from './ui';
 import { cn } from '../utils/cn';
 import { braindumpFields } from '../lib/formConfigs';
 import { syncToNotion } from '../lib/notionSync';
@@ -129,7 +129,8 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
   const [showListMobile, setShowListMobile] = useState(true);
   const [previewMode, setPreviewMode] = useState(false);
   const [isBrainDumpFormOpen, setIsBrainDumpFormOpen] = useState(false);
-  const { isSetupDone, markDone, markSkipped } = useSectionSetup('notes');
+  const { isSetupDone, markDone } = useSectionSetup('notes');
+  const [showJourney, setShowJourney] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleBrainDumpSubmit = async (data: Record<string, unknown>) => {
@@ -177,17 +178,17 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
     if (selectedId === id) setSelectedId(null);
   };
 
-  if (!isSetupDone) {
-    return (
-      <SectionJourney
-        config={notesJourneyConfig}
-        onComplete={markDone}
-        onSkip={markSkipped}
-      />
-    );
-  }
-
   return (
+    <>
+      {showJourney && (
+        <JourneyOverlay
+          config={notesJourneyConfig}
+          isOpen={showJourney}
+          onClose={() => setShowJourney(false)}
+          onComplete={() => { markDone(); setShowJourney(false); }}
+        />
+      )}
+
     <div className="flex flex-col h-full overflow-hidden p-4 gap-4">
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
@@ -198,13 +199,10 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
             <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest">{projectNotes.length} notas</p>
           </div>
         </div>
-        <button
-          onClick={() => setIsBrainDumpFormOpen(true)}
-          className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1"
-        >
-          <Icon name="add" size="xs" />
-          NOVO
-        </button>
+        <JourneyTriggerButton
+          isConfigured={isSetupDone}
+          onClick={() => setShowJourney(true)}
+        />
       </div>
 
       {/* Create */}
@@ -366,6 +364,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
         onSubmit={handleBrainDumpSubmit}
       />
     </div>
+    </>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Icon, Card, SectionLabel, SectionJourney, FormModal } from './ui';
+import { Icon, Card, SectionLabel, FormModal, JourneyOverlay, JourneyTriggerButton } from './ui';
 import type { Project, Task } from '../lib/appTypes';
 import type { StoredPlan, StoredPlanStep, StoredContentEntry, StoredProjectEntry } from '../data/models';
 import { loadPlans, putPlan, deletePlan, putContentEntry, putProjetosEntry } from '../data/repository';
@@ -66,7 +66,8 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
   const [steps, setSteps] = useState<StoredPlanStep[]>([]);
 
   // Journey setup
-  const { isSetupDone, markDone, markSkipped } = useSectionSetup('planner');
+  const { isSetupDone, markDone } = useSectionSetup('planner');
+  const [showJourney, setShowJourney] = useState(false);
 
   // Modal state for new project / content
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -204,17 +205,17 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
 
   const stepsProgress = steps.length > 0 ? Math.round((steps.filter(s => s.done).length / steps.length) * 100) : 0;
 
-  if (!isSetupDone) {
-    return (
-      <SectionJourney
-        config={plannerJourneyConfig}
-        onComplete={markDone}
-        onSkip={markSkipped}
-      />
-    );
-  }
-
   return (
+    <>
+      {showJourney && (
+        <JourneyOverlay
+          config={plannerJourneyConfig}
+          isOpen={showJourney}
+          onClose={() => setShowJourney(false)}
+          onComplete={() => { markDone(); setShowJourney(false); }}
+        />
+      )}
+
     <div className="space-y-6 p-1">
       {/* ─── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
@@ -223,6 +224,10 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
           <p className="text-xs text-text-secondary mt-0.5">Ideia &rarr; Plano &rarr; Tarefas &rarr; Execução</p>
         </div>
         <div className="flex items-center gap-2">
+          <JourneyTriggerButton
+            isConfigured={isSetupDone}
+            onClick={() => setShowJourney(true)}
+          />
           <button
             onClick={() => setShowProjectModal(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-brand-mint/10 border border-brand-mint/30 text-brand-mint text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all"
@@ -570,6 +575,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
         onSubmit={handleCreateContent}
       />
     </div>
+    </>
   );
 };
 
