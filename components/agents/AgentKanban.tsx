@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Badge, Card, Icon, SectionLabel } from '../ui';
 import { cn } from '../../utils/cn';
 import { kanbanColumns, KANBAN_ORDER, KanbanStatus } from '../../data/agentMockData';
-import { useKanban, useAgents } from '../../contexts/OpenClawContext';
+import { useKanban, useAgents, useOpenClaw } from '../../contexts/OpenClawContext';
 
 interface AgentKanbanProps {
   agentId: string;
@@ -23,10 +23,33 @@ const messageTypeColor: Record<string, string> = {
 
 export default function AgentKanban({ agentId }: AgentKanbanProps) {
   const { agents } = useAgents();
+  const { updateTaskStatus } = useOpenClaw();
   const agent = agents.find(a => a.id === agentId);
   // Coordinator sees ALL tasks; sub-agents see only their own
   const tasks = useKanban(agent?.role === 'coordinator' ? undefined : agentId);
   const [collapsed, setCollapsed] = useState<Set<KanbanStatus>>(new Set());
+  const dragTaskId = useRef<string | null>(null);
+  const dragFromStatus = useRef<KanbanStatus | null>(null);
+
+  const handleDragStart = (taskId: string, fromStatus: KanbanStatus) => {
+    dragTaskId.current = taskId;
+    dragFromStatus.current = fromStatus;
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, toStatus: KanbanStatus) => {
+    e.preventDefault();
+    const taskId = dragTaskId.current;
+    const fromStatus = dragFromStatus.current;
+    if (!taskId || !fromStatus || fromStatus === toStatus) return;
+    dragTaskId.current = null;
+    dragFromStatus.current = null;
+    // Call API to persist status change
+    updateTaskStatus(taskId, toStatus);
+  };
 
   const tasksByColumn = useMemo(() => {
     const grouped: Record<KanbanStatus, typeof tasks> = {
@@ -66,6 +89,8 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
                 key={status}
                 className="w-12 shrink-0 bg-bg-base rounded-lg border border-border-panel flex flex-col items-center py-3 gap-3 cursor-pointer hover:border-text-secondary/30 transition-all"
                 onClick={() => toggleCollapse(status)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, status)}
               >
                 <Icon name="chevron_right" size="xs" className="text-text-secondary" />
                 <Badge variant={col.variant} size="xs">{columnTasks.length}</Badge>
@@ -110,7 +135,11 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
               </div>
 
               {/* Column Body */}
-              <div className="flex flex-col gap-2 min-h-[200px] bg-bg-base rounded-lg border border-border-panel p-2">
+              <div
+                className="flex flex-col gap-2 min-h-[200px] bg-bg-base rounded-lg border border-border-panel p-2"
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, status)}
+              >
                 {columnTasks.length === 0 ? (
                   <div className="flex flex-col items-center justify-center flex-1 gap-2 text-text-secondary py-8">
                     <Icon name="inbox" size="md" />
@@ -124,8 +153,10 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
                     return (
                       <Card
                         key={task.id}
-                        className="p-3 space-y-2"
+                        className="p-3 space-y-2 cursor-grab active:cursor-grabbing"
                         data-status={task.status}
+                        draggable
+                        onDragStart={() => handleDragStart(task.id, task.status)}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <span className="text-[11px] text-text-primary font-medium leading-tight">

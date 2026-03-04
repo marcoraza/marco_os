@@ -83,6 +83,7 @@ interface OpenClawContextType {
   // Kanban
   kanbanTasks: MockKanbanTask[];
   getTasksForAgent: (agentId: string) => MockKanbanTask[];
+  updateTaskStatus: (taskId: string, newStatus: string) => Promise<boolean>;
 
   // Token Usage
   tokenUsages: TokenUsage[];
@@ -396,6 +397,31 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
       } catch { /* keep current */ }
     };
 
+    const pollTasks = async () => {
+      try {
+        const res = await fetch(`${API_URL}/tasks`, { headers });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (data.ok && data.tasks?.length > 0) {
+          setLiveKanbanTasks(data.tasks.map((t: any) => ({
+            id: t.id,
+            agentId: t.agentId,
+            title: t.title,
+            status: t.status,
+            priority: t.priority,
+            createdAt: t.createdAt,
+            deadline: t.deadline,
+            tipo: t.tipo,
+            responsavel: t.responsavel,
+            contexto: t.contexto,
+            tags: t.tags || [],
+            notionUrl: t.notionUrl,
+            messages: t.messages || [],
+          })));
+        }
+      } catch { /* keep current */ }
+    };
+
     const pollAll = () => {
       pollAgents();
       pollRuns();
@@ -403,6 +429,7 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
       pollHeartbeats();
       pollTokens();
       pollMemory();
+      pollTasks();
     };
 
     // Initial fetch immediately
@@ -440,6 +467,31 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
       const base = prev.length > 0 ? prev : [...mockCronJobs];
       return base.filter(j => j.id !== jobId);
     });
+  }, []);
+
+  // ─── KANBAN ACTIONS ──────────────────────────────────────────────────────
+
+  const updateTaskStatus = useCallback(async (taskId: string, newStatus: string): Promise<boolean> => {
+    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
+    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
+    if (!API_URL) return false;
+    try {
+      const res = await fetch(`${API_URL}/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        // Optimistic update
+        setLiveKanbanTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus as any } : t));
+        return true;
+      }
+      return false;
+    } catch { return false; }
   }, []);
 
   // ─── KANBAN SYNC (hybrid: gateway → static JSON polling → mock) ──────────
@@ -598,6 +650,7 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
     deleteCronJob,
     kanbanTasks,
     getTasksForAgent,
+    updateTaskStatus,
     tokenUsages,
     memoryArtifacts: liveMemory.length > 0 ? liveMemory : mockMemoryArtifacts,
     fetchMemoryContent,
