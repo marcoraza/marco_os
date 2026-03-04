@@ -1,3 +1,5 @@
+const TZ = 'America/Sao_Paulo';
+
 export function formatRelative(date: string | Date): string {
   const now = Date.now();
   const d = new Date(date).getTime();
@@ -9,7 +11,13 @@ export function formatRelative(date: string | Date): string {
   if (hours < 24) return `${hours}h atrás`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d atrás`;
-  return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: TZ });
+}
+
+export function formatDateTime(date: string | Date): string {
+  return new Date(date).toLocaleString('pt-BR', {
+    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: TZ,
+  });
 }
 
 export function getDayKey(date: Date): string {
