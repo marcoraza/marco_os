@@ -97,8 +97,17 @@ interface OpenClawContextType {
 
   // Actions
   dispatch: (agentId: string, message: string, priority?: 'high' | 'medium' | 'low') => Promise<void>;
+  dispatchMission: (agentId: string, message: string, priority?: 'high' | 'medium' | 'low') => Promise<boolean>;
   memorySearch: (query: string) => Promise<{ results: Array<{ path: string; snippet: string; score: number }> }>;
   memoryGet: (path: string) => Promise<{ content: string; path: string }>;
+
+  // Cron API functions
+  createCronJobApi: (job: { name: string; schedule: string; agentId?: string; message?: string; enabled?: boolean }) => Promise<boolean>;
+  updateCronJobApi: (jobId: string, updates: { name?: string; schedule?: string; enabled?: boolean; message?: string }) => Promise<boolean>;
+  deleteCronJobApi: (jobId: string) => Promise<boolean>;
+
+  // Config API
+  updateAgentConfig: (agentId: string, updates: { model?: string }) => Promise<boolean>;
 
   // HTTP client for direct tool invocations
   http: OpenClawHttp | null;
@@ -591,7 +600,29 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
     clientRef.current?.disconnect();
   }, []);
 
+  const dispatchMission = useCallback(async (agentId: string, message: string, priority?: 'high' | 'medium' | 'low'): Promise<boolean> => {
+    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
+    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
+    if (!API_URL) return false;
+    try {
+      const res = await fetch(`${API_URL}/dispatch`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, message, priority: priority || 'medium' }),
+      });
+      const data = await res.json();
+      return data.ok || false;
+    } catch { return false; }
+  }, []);
+
   const dispatch = useCallback(async (agentId: string, message: string, priority?: 'high' | 'medium' | 'low') => {
+    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
+    // Try API first when available
+    if (API_URL) {
+      await dispatchMission(agentId, message, priority);
+      return;
+    }
+    // Fall back to gateway
     if (!clientRef.current?.isConnected()) {
       throw new Error('Não conectado ao OpenClaw');
     }
@@ -601,6 +632,68 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
       ? `[BAIXA PRIORIDADE] ${message}`
       : message;
     await clientRef.current.send(agentId, prefixedMessage);
+  }, [dispatchMission]);
+
+  const createCronJobApi = useCallback(async (job: { name: string; schedule: string; agentId?: string; message?: string; enabled?: boolean }): Promise<boolean> => {
+    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
+    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
+    if (!API_URL) return false;
+    try {
+      const res = await fetch(`${API_URL}/crons`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(job),
+      });
+      const data = await res.json();
+      return data.ok || false;
+    } catch { return false; }
+  }, []);
+
+  const updateCronJobApi = useCallback(async (jobId: string, updates: { name?: string; schedule?: string; enabled?: boolean; message?: string }): Promise<boolean> => {
+    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
+    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
+    if (!API_URL) return false;
+    try {
+      const res = await fetch(`${API_URL}/crons/${jobId}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json();
+      return data.ok || false;
+    } catch { return false; }
+  }, []);
+
+  const deleteCronJobApi = useCallback(async (jobId: string): Promise<boolean> => {
+    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
+    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
+    if (!API_URL) return false;
+    try {
+      const res = await fetch(`${API_URL}/crons/${jobId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${API_TOKEN}` },
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setLiveCronJobs(prev => prev.filter(j => j.id !== jobId));
+      }
+      return data.ok || false;
+    } catch { return false; }
+  }, []);
+
+  const updateAgentConfig = useCallback(async (agentId: string, updates: { model?: string }): Promise<boolean> => {
+    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
+    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
+    if (!API_URL) return false;
+    try {
+      const res = await fetch(`${API_URL}/config`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, ...updates }),
+      });
+      const data = await res.json();
+      return data.ok || false;
+    } catch { return false; }
   }, []);
 
   const memorySearch = useCallback(async (query: string) => {
@@ -656,8 +749,13 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
     fetchMemoryContent,
     crossDomainSummary: defaultCrossDomain,
     dispatch,
+    dispatchMission,
     memorySearch,
     memoryGet,
+    createCronJobApi,
+    updateCronJobApi,
+    deleteCronJobApi,
+    updateAgentConfig,
     http: httpRef.current,
   };
 

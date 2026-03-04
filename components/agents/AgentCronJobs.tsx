@@ -3,7 +3,7 @@ import { Badge, Card, Icon, SectionLabel, StatusDot } from '../ui';
 import { cn } from '../../utils/cn';
 import { jobBadge } from '../../data/agentMockData';
 import type { CronJob } from '../../data/agentMockData';
-import { useCronJobs, useCronJobActions, useAgents } from '../../contexts/OpenClawContext';
+import { useCronJobs, useCronJobActions, useAgents, useOpenClaw } from '../../contexts/OpenClawContext';
 
 interface AgentCronJobsProps {
   agentId: string;
@@ -14,6 +14,7 @@ export default function AgentCronJobs({ agentId }: AgentCronJobsProps) {
   const agent = agents.find(a => a.id === agentId);
   const jobs = useCronJobs(agent?.role === 'coordinator' ? undefined : agentId);
   const { updateCronJob, createCronJob, deleteCronJob } = useCronJobActions();
+  const { createCronJobApi, updateCronJobApi, deleteCronJobApi } = useOpenClaw();
 
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -46,25 +47,42 @@ export default function AgentCronJobs({ agentId }: AgentCronJobsProps) {
   };
 
   const saveEdit = (job: CronJob) => {
-    updateCronJob({
+    const updatedJob = {
       ...job,
       name: editName,
       schedule: editSchedule,
       status: editPaused ? 'paused' : job.status === 'paused' ? 'ok' : job.status,
+    };
+    // Update local state
+    updateCronJob(updatedJob as CronJob);
+    // Also persist via API
+    updateCronJobApi(job.id, {
+      name: editName,
+      schedule: editSchedule,
+      enabled: !editPaused,
     });
     cancelEdit();
   };
 
   const handleCreate = () => {
     if (!newName.trim() || !newSchedule.trim()) return;
-    createCronJob({
+    const jobPayload = {
       name: newName,
       schedule: newSchedule,
       lastRun: '',
       nextRun: '',
-      status: 'ok',
+      status: 'ok' as const,
       integration: 'OpenClaw',
       agentId,
+    };
+    // Update local state immediately
+    createCronJob(jobPayload);
+    // Also persist via API
+    createCronJobApi({
+      name: newName,
+      schedule: newSchedule,
+      agentId,
+      enabled: true,
     });
     setNewName('');
     setNewSchedule('');
@@ -223,7 +241,13 @@ export default function AgentCronJobs({ agentId }: AgentCronJobsProps) {
                         <Icon name="close" size="xs" /> Cancelar
                       </button>
                       <button
-                        onClick={() => { deleteCronJob(job.id); cancelEdit(); }}
+                        onClick={() => {
+                          // deleteCronJobApi handles both API delete + local state update
+                          deleteCronJobApi(job.id).then(ok => {
+                            if (!ok) deleteCronJob(job.id); // fallback local-only delete
+                          });
+                          cancelEdit();
+                        }}
                         className="flex items-center gap-1 px-3 py-1.5 rounded border border-accent-red/20 text-[9px] font-bold uppercase tracking-wider text-accent-red/60 hover:text-accent-red hover:bg-accent-red/5 transition-colors ml-auto"
                       >
                         <Icon name="delete" size="xs" /> Excluir

@@ -16,6 +16,7 @@ import {
   useDispatch,
   useConnectionState,
   useTokenUsages,
+  useOpenClaw,
 } from '../contexts/OpenClawContext';
 
 interface AgentCommandCenterProps {
@@ -29,6 +30,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
   const allExecutions = useExecutions();
   const tokenUsages = useTokenUsages();
   const { dispatch: sendDispatch } = useDispatch();
+  const { dispatchMission } = useOpenClaw();
   const { isLive } = useConnectionState();
 
   // Dispatch form
@@ -41,7 +43,12 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
     if (!missionText.trim()) return;
     setIsDispatching(true);
     try {
-      await sendDispatch(selectedAgent, missionText);
+      // Try API dispatch first (returns bool), fall back to gateway dispatch
+      const ok = await dispatchMission(selectedAgent, missionText, missionPriority);
+      if (!ok) {
+        // API not configured or failed — fall back to gateway
+        await sendDispatch(selectedAgent, missionText, missionPriority);
+      }
       setMissionText('');
     } catch {
       // handled silently

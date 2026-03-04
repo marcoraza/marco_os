@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge, Card, Icon, SectionLabel } from '../ui';
+import { cn } from '../../utils/cn';
 import { useOpenClaw } from '../../contexts/OpenClawContext';
 import { getConfigForAgent } from '../../data/agentMockData';
 import type { AgentConfig as AgentConfigType } from '../../data/agentMockData';
@@ -15,9 +16,13 @@ const roleBadge: Record<string, { variant: 'mint' | 'blue' | 'purple'; label: st
 };
 
 export default function AgentConfig({ agentId }: AgentConfigProps) {
-  const { http, isLive } = useOpenClaw();
+  const { http, isLive, updateAgentConfig } = useOpenClaw();
   const [liveConfig, setLiveConfig] = useState<AgentConfigType | null>(null);
   const [loading, setLoading] = useState(false);
+  const [editingModel, setEditingModel] = useState(false);
+  const [modelValue, setModelValue] = useState('');
+  const [savingModel, setSavingModel] = useState(false);
+  const [saveResult, setSaveResult] = useState<'ok' | 'error' | null>(null);
 
   useEffect(() => {
     if (!isLive || !http) return;
@@ -33,6 +38,24 @@ export default function AgentConfig({ agentId }: AgentConfigProps) {
   }, [isLive, http, agentId]);
 
   const config = liveConfig ?? getConfigForAgent(agentId);
+
+  const handleSaveModel = async () => {
+    if (!modelValue.trim()) return;
+    setSavingModel(true);
+    setSaveResult(null);
+    try {
+      const ok = await updateAgentConfig(agentId, { model: modelValue.trim() });
+      setSaveResult(ok ? 'ok' : 'error');
+      if (ok && liveConfig) {
+        setLiveConfig({ ...liveConfig, model: modelValue.trim() });
+      }
+      if (ok) setEditingModel(false);
+    } catch {
+      setSaveResult('error');
+    } finally {
+      setSavingModel(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -90,8 +113,53 @@ export default function AgentConfig({ agentId }: AgentConfigProps) {
 
             {/* Model */}
             <div className="space-y-1">
-              <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Modelo</span>
-              <div className="text-[11px] font-mono text-text-primary">{config.model}</div>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Modelo</span>
+                {!editingModel && (
+                  <button
+                    onClick={() => { setEditingModel(true); setModelValue(config.model); setSaveResult(null); }}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded border border-border-panel/50 text-text-secondary hover:text-brand-mint hover:border-brand-mint/20 hover:bg-brand-mint/5 transition-colors"
+                  >
+                    <Icon name="edit" size="xs" />
+                    <span className="text-[7px] font-black uppercase tracking-widest">Editar</span>
+                  </button>
+                )}
+              </div>
+              {editingModel ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={modelValue}
+                    onChange={(e) => setModelValue(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSaveModel(); if (e.key === 'Escape') setEditingModel(false); }}
+                    className="flex-1 bg-bg-base border border-border-panel rounded px-2 py-1.5 text-[10px] text-text-primary font-mono focus:outline-none focus:border-brand-mint/30 transition-colors"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveModel}
+                    disabled={savingModel || !modelValue.trim()}
+                    className={cn(
+                      'flex items-center gap-1 px-2.5 py-1.5 rounded text-[8px] font-bold uppercase tracking-wider transition-colors',
+                      modelValue.trim() && !savingModel
+                        ? 'bg-brand-mint/10 border border-brand-mint/30 text-brand-mint hover:bg-brand-mint/20'
+                        : 'bg-surface border border-border-panel text-text-secondary/40 cursor-not-allowed'
+                    )}
+                  >
+                    <Icon name={savingModel ? 'autorenew' : 'check'} size="xs" />
+                    {savingModel ? 'Salvando...' : 'Salvar'}
+                  </button>
+                  <button
+                    onClick={() => { setEditingModel(false); setSaveResult(null); }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded border border-border-panel text-[8px] font-bold uppercase tracking-wider text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    <Icon name="close" size="xs" />
+                  </button>
+                </div>
+              ) : (
+                <div className="text-[11px] font-mono text-text-primary">{config.model}</div>
+              )}
+              {saveResult === 'ok' && <p className="text-[8px] text-brand-mint">✓ Modelo atualizado</p>}
+              {saveResult === 'error' && <p className="text-[8px] text-accent-red">✗ Falha ao salvar modelo</p>}
             </div>
 
             {/* System Prompt */}
