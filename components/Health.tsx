@@ -1,16 +1,16 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   BarChart, Bar, ResponsiveContainer
 } from 'recharts';
-import { Icon, SectionLabel, StatusDot, TabNav, Badge, FormModal, showToast, Ring } from './ui';
-import { healthConfig } from '../lib/formConfigs';
-import { syncToNotion } from '../lib/notionSync';
+import { Icon, SectionLabel, StatusDot, TabNav, Badge, FormModal, SectionJourney, showToast } from './ui';
+import { healthFields } from '../lib/formConfigs';
 import { putHealthEntry } from '../data/repository';
+import { syncToNotion } from '../lib/notionSync';
 import type { StoredHealthEntry } from '../data/models';
-
-const ActivitiesView = React.lazy(() => import('./health/ActivitiesView').then(m => ({ default: m.ActivitiesView })));
+import { useTabSetup } from '../hooks/useTabSetup';
+import { healthDailyJourney, healthTrendsJourney } from '../lib/journeyConfigs/health';
 
 const trendData14Days = [
   { day: 'D1', energy: 6, sleep: 7, focus: 5, recovery: 6, mood: 7 },
@@ -61,25 +61,15 @@ const HealthTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-const Health: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'daily' | 'trends' | 'activities'>('daily');
-  const [showForm, setShowForm] = useState(false);
+const HEALTH_TAB_IDS = ['daily', 'trends'] as const;
 
-  const handleHealthSubmit = async (data: Record<string, unknown>) => {
-    const entry: StoredHealthEntry = {
-      id: crypto.randomUUID(),
-      name: String(data.name ?? ''),
-      tipo: String(data.tipo ?? ''),
-      valor: String(data.valor ?? ''),
-      duracao: String(data.duracao ?? ''),
-      data: String(data.data ?? ''),
-      notas: String(data.notas ?? ''),
-      createdAt: new Date().toISOString(),
-    };
-    await putHealthEntry(entry);
-    syncToNotion('saude', data);
-    showToast('Atividade salva');
-  };
+const journeyMap: Record<string, import('../lib/journeyTypes').JourneyConfig> = {
+  daily: healthDailyJourney,
+  trends: healthTrendsJourney,
+};
+
+const Health: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'daily' | 'trends'>('daily');
   
   // Daily Log State — persisted to localStorage per date
   const todayKey = new Date().toISOString().slice(0, 10);
@@ -114,32 +104,96 @@ const Health: React.FC = () => {
     setHabits(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Per-tab journey setup
+  const dailySetup = useTabSetup('health', 'daily');
+  const trendsSetup = useTabSetup('health', 'trends');
+
+  const setupMap: Record<string, ReturnType<typeof useTabSetup>> = {
+    daily: dailySetup,
+    trends: trendsSetup,
+  };
+
+  const triggerRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  const activeSetup = setupMap[activeTab];
+
+  // Which tabs have completed their journey
+  const completedTabs = HEALTH_TAB_IDS.filter(
+    id => localStorage.getItem(`section_setup_done_health_${id}`) === '1'
+  );
+
+  const handleRedoJourney = useCallback((tabId: string) => {
+    const setup = setupMap[tabId];
+    if (setup) setup.reset();
+  }, [setupMap]);
+
+  const handleJourneyComplete = useCallback(() => {
+    activeSetup.markDone();
+    triggerRefresh();
+  }, [activeSetup, triggerRefresh]);
+
+  const handleHealthSubmit = async (data: Record<string, unknown>) => {
+    const now = new Date().toISOString();
+    const entry: StoredHealthEntry = {
+      id: crypto.randomUUID(),
+      name: String(data.name || ''),
+      tipo: (data.tipo as StoredHealthEntry['tipo']) || 'treino',
+      valor: data.valor ? Number(data.valor) : undefined,
+      duracao: data.duracao ? Number(data.duracao) : undefined,
+      data: String(data.data || now.slice(0, 10)),
+      notas: data.notas ? String(data.notas) : undefined,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await putHealthEntry(entry);
+    showToast('Registro de saude salvo!');
+    syncToNotion('create-health-entry', data);
+    triggerRefresh();
+  };
+
   const tabs = [
-    { id: 'daily', label: 'Registro Diário' },
-    { id: 'trends', label: 'Tendências & Insights' },
-    { id: 'activities', label: 'Atividades' },
+    { id: 'daily', label: 'Registro Diario' },
+    { id: 'trends', label: 'Tendencias & Insights' }
   ];
+
+  // If active tab hasn't done its journey, show the journey
+  if (!activeSetup.isSetupDone) {
+    const journeyConfig = journeyMap[activeTab];
+    if (journeyConfig) {
+      return (
+        <SectionJourney
+          config={journeyConfig}
+          onComplete={handleJourneyComplete}
+          onSkip={activeSetup.markSkipped}
+        />
+      );
+    }
+  }
 
   return (
     <div className="flex flex-col h-full bg-bg-base font-sans text-text-primary overflow-hidden">
       {/* Navigation Tabs (Replaces Header) */}
       <div className="relative bg-bg-base shrink-0">
-        <TabNav 
-            tabs={tabs} 
-            activeTab={activeTab} 
-            onTabChange={(id) => setActiveTab(id as any)} 
-            accentColor="orange" 
+        <TabNav
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={(id) => setActiveTab(id as any)}
+            accentColor="orange"
+            completedTabs={completedTabs}
+            onRedoJourney={handleRedoJourney}
         />
         
-        {/* Status Badge + NOVO button */}
+        {/* Status Badge + NOVO button - Positioned absolutely to align with TabNav */}
         <div className="absolute top-0 right-6 h-full flex items-center gap-2 pointer-events-none">
             <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-1 px-2 py-1 min-h-[32px] rounded-sm text-[9px] font-bold uppercase tracking-widest bg-brand-mint/10 border border-brand-mint/30 text-brand-mint hover:bg-brand-mint/20 transition-colors focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none pointer-events-auto"
-              aria-label="Nova atividade"
+              onClick={() => setIsFormOpen(true)}
+              className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1 pointer-events-auto"
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span>
-              Novo
+              <Icon name="add" size="xs" />
+              NOVO
             </button>
             <div className="flex items-center gap-2 bg-surface px-2 py-1 rounded border border-border-panel pointer-events-auto">
                 <StatusDot 
@@ -260,10 +314,6 @@ const Health: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="bg-header-bg border border-border-panel p-6 flex flex-col items-center gap-3">
-                  <SectionLabel className="text-[10px] w-full">Recuperacao</SectionLabel>
-                  <Ring value={metrics.recovery * 10} size={80} strokeWidth={5} color="orange" label="Recovery" />
-                </div>
                 <div className="bg-header-bg border border-border-panel p-6">
                   <SectionLabel className="text-[10px] mb-4">Dica de Performance</SectionLabel>
                   <p className="text-xs leading-relaxed text-text-secondary">
@@ -377,7 +427,7 @@ const Health: React.FC = () => {
                 {/* Insight Card 1: Breathwork Effect */}
                 <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm flex flex-col h-auto">
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="p-2 bg-accent-orange/10 rounded-md text-accent-orange">
+                    <div className="p-2 bg-accent-orange/10 rounded-sm text-accent-orange">
                       <Icon name="self_improvement" />
                     </div>
                     <div>
@@ -416,7 +466,7 @@ const Health: React.FC = () => {
                 {/* Insight Card 2: Sleep Correlation */}
                 <div className="bg-header-bg rounded-sm border border-border-panel p-6 shadow-sm">
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="p-2 bg-accent-blue/10 rounded-md text-accent-blue">
+                    <div className="p-2 bg-accent-blue/10 rounded-sm text-accent-blue">
                       <Icon name="bedtime" />
                     </div>
                     <div>
@@ -493,20 +543,13 @@ const Health: React.FC = () => {
           </div>
         )}
 
-        {/* --- ACTIVITIES VIEW --- */}
-        {activeTab === 'activities' && (
-          <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full m-4" />}>
-            <ActivitiesView />
-          </Suspense>
-        )}
-
       </div>
 
       <FormModal
-        title={healthConfig.title}
-        fields={healthConfig.fields}
-        isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        title="Novo Registro de Saude"
+        fields={healthFields}
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
         onSubmit={handleHealthSubmit}
       />
     </div>

@@ -1,12 +1,12 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { Icon, Card, SectionLabel, TabNav } from './ui';
-import ContentCalendar from './planner/ContentCalendar';
-
-const NotionProjectsView = React.lazy(() => import('./planner/NotionProjectsView').then(m => ({ default: m.NotionProjectsView })));
+import React, { useState, useEffect } from 'react';
+import { Icon, Card, SectionLabel, SectionJourney, FormModal } from './ui';
 import type { Project, Task } from '../lib/appTypes';
-import type { StoredPlan, StoredPlanStep } from '../data/models';
-import { loadPlans, putPlan, deletePlan } from '../data/repository';
+import type { StoredPlan, StoredPlanStep, StoredContentEntry, StoredProjectEntry } from '../data/models';
+import { loadPlans, putPlan, deletePlan, putContentEntry, putProjetosEntry } from '../data/repository';
+import { contentFields, projectFields } from '../lib/formConfigs';
 import { cn } from '../utils/cn';
+import { useSectionSetup } from '../hooks/useSectionSetup';
+import { plannerJourneyConfig } from '../lib/journeyConfigs/planner';
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface PlannerProps {
@@ -64,6 +64,13 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
   // Plan state
   const [activePlan, setActivePlan] = useState<StoredPlan | null>(null);
   const [steps, setSteps] = useState<StoredPlanStep[]>([]);
+
+  // Journey setup
+  const { isSetupDone, markDone, markSkipped } = useSectionSetup('planner');
+
+  // Modal state for new project / content
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showContentModal, setShowContentModal] = useState(false);
 
   // History
   const [history, setHistory] = useState<StoredPlan[]>([]);
@@ -150,6 +157,45 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
     if (activePlan?.id === id) handleReset();
   };
 
+  const handleCreateProject = async (data: Record<string, unknown>) => {
+    const now = new Date().toISOString();
+    const entry: StoredProjectEntry = {
+      id: crypto?.randomUUID?.() ?? `proj-${Date.now()}`,
+      name: data.name as string,
+      descricao: (data.descricao as string) || undefined,
+      status: (data.status as StoredProjectEntry['status']) || 'ativo',
+      prioridade: (data.prioridade as StoredProjectEntry['prioridade']) || 'media',
+      deadline: (data.deadline as string) || undefined,
+      linkDrive: (data.linkDrive as string) || undefined,
+      linkNotion: (data.linkNotion as string) || undefined,
+      linkGithub: (data.linkGithub as string) || undefined,
+      notas: (data.notas as string) || undefined,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await putProjetosEntry(entry);
+    setShowProjectModal(false);
+  };
+
+  const handleCreateContent = async (data: Record<string, unknown>) => {
+    const now = new Date().toISOString();
+    const entry: StoredContentEntry = {
+      id: crypto?.randomUUID?.() ?? `content-${Date.now()}`,
+      title: data.title as string,
+      tipo: (data.tipo as StoredContentEntry['tipo']) || 'post',
+      plataforma: (data.plataforma as string) || 'linkedin',
+      status: (data.status as StoredContentEntry['status']) || 'ideia',
+      data: (data.data as string) || undefined,
+      link: (data.link as string) || undefined,
+      notas: (data.notas as string) || undefined,
+      projectId: activeProjectId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await putContentEntry(entry);
+    setShowContentModal(false);
+  };
+
   const priorityColor = (p: string) => {
     if (p === 'high') return 'text-accent-red';
     if (p === 'medium') return 'text-accent-orange';
@@ -158,37 +204,18 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
 
   const stepsProgress = steps.length > 0 ? Math.round((steps.filter(s => s.done).length / steps.length) * 100) : 0;
 
-  // ─── Tab state ───────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<'projetos' | 'planejador'>('projetos');
-  const plannerTabs = [
-    { id: 'projetos', label: 'Projetos' },
-    { id: 'planejador', label: 'Planejador' },
-  ];
+  if (!isSetupDone) {
+    return (
+      <SectionJourney
+        config={plannerJourneyConfig}
+        onComplete={markDone}
+        onSkip={markSkipped}
+      />
+    );
+  }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* ─── Tab Navigation ─────────────────────────────────────────────── */}
-      <div className="shrink-0">
-        <TabNav
-          tabs={plannerTabs}
-          activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as any)}
-        />
-      </div>
-
-      {/* ─── Projetos Tab ───────────────────────────────────────────────── */}
-      {activeTab === 'projetos' && (
-        <div className="flex-1 overflow-y-auto">
-          <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full m-4" />}>
-            <NotionProjectsView />
-          </Suspense>
-        </div>
-      )}
-
-      {/* ─── Planejador Tab (existing content) ──────────────────────────── */}
-      {activeTab === 'planejador' && (
-      <div className="flex-1 overflow-y-auto p-1">
-      <div className="space-y-6 p-1">
+    <div className="space-y-6 p-1">
       {/* ─── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
@@ -197,12 +224,26 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setShowProjectModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-brand-mint/10 border border-brand-mint/30 text-brand-mint text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all"
+          >
+            <Icon name="add" size="sm" />
+            Novo Projeto
+          </button>
+          <button
+            onClick={() => setShowContentModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-accent-blue/10 border border-accent-blue/30 text-accent-blue text-[9px] font-bold uppercase tracking-widest hover:bg-accent-blue/20 transition-all"
+          >
+            <Icon name="note_add" size="sm" />
+            Novo Conteudo
+          </button>
+          <button
             onClick={() => setShowHistory(!showHistory)}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors border',
               showHistory
                 ? 'bg-accent-blue/10 border-accent-blue/30 text-accent-blue'
-                : 'bg-surface border-border-card text-text-secondary hover:text-text-primary'
+                : 'bg-surface border-border-panel text-text-secondary hover:text-text-primary'
             )}
           >
             <Icon name="history" size="sm" />
@@ -216,7 +257,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
           {activePlan && (
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface hover:bg-surface-hover border border-border-card text-text-secondary text-xs transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-surface hover:bg-surface-hover border border-border-panel text-text-secondary text-xs transition-colors"
             >
               <Icon name="restart_alt" size="sm" />
               Nova Missão
@@ -227,7 +268,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
 
       {/* ─── History Panel ────────────────────────────────────────────────── */}
       {showHistory && (
-        <div className="bg-surface border border-border-card rounded-lg p-4">
+        <div className="bg-surface border border-border-panel rounded-sm p-4">
           <SectionLabel>PLANOS SALVOS</SectionLabel>
           {history.length === 0 ? (
             <p className="text-xs text-text-secondary mt-3">Nenhum plano salvo ainda.</p>
@@ -281,7 +322,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
 
       {/* ─── Input Form ─────────────────────────────────────────────────── */}
       {!activePlan && (
-        <div className="bg-surface border border-border-card rounded-lg p-5 space-y-4">
+        <div className="bg-surface border border-border-panel rounded-sm p-5 space-y-4">
           <SectionLabel>ENTRADA DA MISSÃO</SectionLabel>
 
           {/* Title */}
@@ -375,7 +416,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
       {activePlan && (
         <div className="space-y-4">
           {/* Progress bar */}
-          <div className="bg-surface border border-border-card rounded-lg p-4">
+          <div className="bg-surface border border-border-panel rounded-sm p-4">
             <div className="flex items-center justify-between mb-2">
               <SectionLabel>PROGRESSO</SectionLabel>
               <span className="text-xs font-bold text-brand-mint">{stepsProgress}%</span>
@@ -389,13 +430,13 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
           </div>
 
           {/* Summary */}
-          <div className="bg-surface border border-border-card rounded-lg p-4">
+          <div className="bg-surface border border-border-panel rounded-sm p-4">
             <SectionLabel>SUMÁRIO</SectionLabel>
             <p className="text-sm text-text-primary mt-2">{activePlan.summary}</p>
           </div>
 
           {/* Objectives */}
-          <div className="bg-surface border border-border-card rounded-lg p-4">
+          <div className="bg-surface border border-border-panel rounded-sm p-4">
             <SectionLabel>Objetivos</SectionLabel>
             <ul className="mt-2 space-y-1.5">
               {activePlan.objectives.map((obj, i) => (
@@ -408,7 +449,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
           </div>
 
           {/* Steps */}
-          <div className="bg-surface border border-border-card rounded-lg p-4">
+          <div className="bg-surface border border-border-panel rounded-sm p-4">
             <SectionLabel>Passos</SectionLabel>
             <ol className="mt-2 space-y-2">
               {steps.map((step, i) => (
@@ -437,7 +478,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
           </div>
 
           {/* Risks */}
-          <div className="bg-surface border border-border-card rounded-lg p-4">
+          <div className="bg-surface border border-border-panel rounded-sm p-4">
             <SectionLabel>RISCOS E MITIGAÇÕES</SectionLabel>
             <div className="mt-2 space-y-3">
               {activePlan.risks.map((r, i) => (
@@ -456,7 +497,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
           </div>
 
           {/* Checklist */}
-          <div className="bg-surface border border-border-card rounded-lg p-4">
+          <div className="bg-surface border border-border-panel rounded-sm p-4">
             <SectionLabel>Checklist Final</SectionLabel>
             <ul className="mt-2 space-y-1.5">
               {activePlan.checklist.map((item, i) => (
@@ -469,7 +510,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
           </div>
 
           {/* Suggested Tasks Preview */}
-          <div className="bg-surface border border-border-card rounded-lg p-4">
+          <div className="bg-surface border border-border-panel rounded-sm p-4">
             <SectionLabel>Tasks Sugeridas</SectionLabel>
             <div className="mt-2 space-y-2">
               {activePlan.suggestedTasks.map((t, i) => (
@@ -512,13 +553,22 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, addTasks }
           </div>
         </div>
       )}
-      </div>
-      </div>
-      )}
 
-      <div className="mt-6">
-        <ContentCalendar />
-      </div>
+      {/* ─── Modals ─────────────────────────────────────────────────────── */}
+      <FormModal
+        title="Novo Projeto"
+        fields={projectFields}
+        isOpen={showProjectModal}
+        onClose={() => setShowProjectModal(false)}
+        onSubmit={handleCreateProject}
+      />
+      <FormModal
+        title="Novo Conteudo"
+        fields={contentFields}
+        isOpen={showContentModal}
+        onClose={() => setShowContentModal(false)}
+        onSubmit={handleCreateContent}
+      />
     </div>
   );
 };

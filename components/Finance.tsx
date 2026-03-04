@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { TabNav, FormModal, showToast } from './ui';
+import React, { useState, useCallback } from 'react';
+import { TabNav, Icon, FormModal, SectionJourney, showToast } from './ui';
 import { financeTabs } from './finance/data';
 import { getAccentColor } from './finance/utils';
 import type { FinanceTab, AssetAllocation } from './finance/types';
@@ -9,12 +9,31 @@ import FinanceDebts from './finance/FinanceDebts';
 import FinanceCashflow from './finance/FinanceCashflow';
 import FinanceInvestments from './finance/FinanceInvestments';
 import FinanceCrypto from './finance/FinanceCrypto';
-import FinancePatrimonio from './finance/FinancePatrimonio';
 import FinanceModals from './finance/FinanceModals';
-import { financeConfig } from '../lib/formConfigs';
-import { syncToNotion } from '../lib/notionSync';
+import { financeFields } from '../lib/formConfigs';
 import { putFinanceEntry } from '../data/repository';
+import { syncToNotion } from '../lib/notionSync';
 import type { StoredFinanceEntry } from '../data/models';
+import { useTabSetup } from '../hooks/useTabSetup';
+import {
+  financeOverviewJourney,
+  financeTransactionsJourney,
+  financeDebtsJourney,
+  financeCashflowJourney,
+  financeInvestmentsJourney,
+  financeCryptoJourney,
+} from '../lib/journeyConfigs/finance';
+
+const FINANCE_TAB_IDS = ['overview', 'transactions', 'debts', 'cashflow', 'investments', 'crypto'] as const;
+
+const journeyMap: Record<string, import('../lib/journeyTypes').JourneyConfig> = {
+  overview: financeOverviewJourney,
+  transactions: financeTransactionsJourney,
+  debts: financeDebtsJourney,
+  cashflow: financeCashflowJourney,
+  investments: financeInvestmentsJourney,
+  crypto: financeCryptoJourney,
+};
 
 const Finance: React.FC = () => {
   const [activeTab, setActiveTab] = useState<FinanceTab>('overview');
@@ -22,64 +41,120 @@ const Finance: React.FC = () => {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
   const [selectedInvestment, setSelectedInvestment] = useState<AssetAllocation | null>(null);
-  const [showForm, setShowForm] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Per-tab journey setup
+  const overviewSetup = useTabSetup('finance', 'overview');
+  const transactionsSetup = useTabSetup('finance', 'transactions');
+  const debtsSetup = useTabSetup('finance', 'debts');
+  const cashflowSetup = useTabSetup('finance', 'cashflow');
+  const investmentsSetup = useTabSetup('finance', 'investments');
+  const cryptoSetup = useTabSetup('finance', 'crypto');
+
+  const setupMap: Record<string, ReturnType<typeof useTabSetup>> = {
+    overview: overviewSetup,
+    transactions: transactionsSetup,
+    debts: debtsSetup,
+    cashflow: cashflowSetup,
+    investments: investmentsSetup,
+    crypto: cryptoSetup,
+  };
+
+  const triggerRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  const activeSetup = setupMap[activeTab];
+
+  // Which tabs have completed their journey
+  const completedTabs = FINANCE_TAB_IDS.filter(
+    id => localStorage.getItem(`section_setup_done_finance_${id}`) === '1'
+  );
 
   const handleFinanceSubmit = async (data: Record<string, unknown>) => {
+    const now = new Date().toISOString();
     const entry: StoredFinanceEntry = {
       id: crypto.randomUUID(),
-      name: String(data.name ?? ''),
-      valor: String(data.valor ?? ''),
-      tipo: String(data.tipo ?? ''),
-      categoria: String(data.categoria ?? ''),
-      data: String(data.data ?? ''),
+      name: String(data.name || ''),
+      valor: Number(data.valor) || 0,
+      tipo: (data.tipo as 'entrada' | 'saida') || 'saida',
+      categoria: String(data.categoria || 'outros'),
+      data: String(data.data || now.slice(0, 10)),
       recorrente: Boolean(data.recorrente),
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
     await putFinanceEntry(entry);
-    syncToNotion('financas', data);
-    showToast('Transação salva');
+    showToast('Registro financeiro salvo!');
+    syncToNotion('create-finance-entry', data);
+    triggerRefresh();
   };
+
+  const handleRedoJourney = useCallback((tabId: string) => {
+    const setup = setupMap[tabId];
+    if (setup) setup.reset();
+  }, [setupMap]);
+
+  const handleJourneyComplete = useCallback(() => {
+    activeSetup.markDone();
+    triggerRefresh();
+  }, [activeSetup, triggerRefresh]);
+
+  // If active tab hasn't done its journey, show the journey
+  if (!activeSetup.isSetupDone) {
+    const journeyConfig = journeyMap[activeTab];
+    if (journeyConfig) {
+      return (
+        <SectionJourney
+          config={journeyConfig}
+          onComplete={handleJourneyComplete}
+          onSkip={activeSetup.markSkipped}
+        />
+      );
+    }
+  }
 
   return (
     <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full font-sans h-full overflow-y-auto relative">
       <div className="flex flex-col gap-6 h-full">
 
-        <div className="shrink-0 flex items-center gap-2">
+        <div className="shrink-0 flex items-center gap-3">
           <div className="flex-1">
-            <TabNav
-              tabs={financeTabs}
-              activeTab={activeTab}
-              onTabChange={(id) => setActiveTab(id as FinanceTab)}
-              accentColor={getAccentColor(activeTab)}
-            />
+          <TabNav
+            tabs={financeTabs}
+            activeTab={activeTab}
+            onTabChange={(id) => setActiveTab(id as FinanceTab)}
+            accentColor={getAccentColor(activeTab)}
+            completedTabs={completedTabs}
+            onRedoJourney={handleRedoJourney}
+          />
           </div>
           <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-1 px-3 py-1.5 min-h-[44px] rounded-sm text-[9px] font-bold uppercase tracking-widest bg-brand-mint/10 border border-brand-mint/30 text-brand-mint hover:bg-brand-mint/20 transition-colors focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none shrink-0"
-            aria-label="Nova transação"
+            onClick={() => setIsFormOpen(true)}
+            className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1 shrink-0"
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span>
-            Novo
+            <Icon name="add" size="xs" />
+            NOVO
           </button>
         </div>
 
-        {activeTab === 'overview' && <FinanceOverview />}
-        {activeTab === 'patrimonio' && <FinancePatrimonio />}
-        {activeTab === 'transactions' && <FinanceTransactions />}
-        {activeTab === 'debts' && <FinanceDebts />}
+        {activeTab === 'overview' && <FinanceOverview refreshKey={refreshKey} />}
+        {activeTab === 'transactions' && <FinanceTransactions refreshKey={refreshKey} />}
+        {activeTab === 'debts' && <FinanceDebts refreshKey={refreshKey} />}
         {activeTab === 'cashflow' && (
           <FinanceCashflow
             onOpenIncomeModal={() => setIsIncomeModalOpen(true)}
             onOpenExpenseModal={() => setIsExpenseModalOpen(true)}
+            refreshKey={refreshKey}
           />
         )}
         {activeTab === 'investments' && (
           <FinanceInvestments
             onOpenInvestModal={() => setIsInvestModalOpen(true)}
             onSelectInvestment={setSelectedInvestment}
+            refreshKey={refreshKey}
           />
         )}
-        {activeTab === 'crypto' && <FinanceCrypto />}
+        {activeTab === 'crypto' && <FinanceCrypto refreshKey={refreshKey} />}
 
       </div>
 
@@ -95,10 +170,10 @@ const Finance: React.FC = () => {
       />
 
       <FormModal
-        title={financeConfig.title}
-        fields={financeConfig.fields}
-        isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        title="Novo Registro Financeiro"
+        fields={financeFields}
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
         onSubmit={handleFinanceSubmit}
       />
     </div>

@@ -2,34 +2,34 @@ import React from 'react';
 import { cn } from '../../utils/cn';
 
 interface FormToggleProps {
-  label: string;
-  name: string;
+  label?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
+  className?: string;
 }
 
-export function FormToggle({ label, name, checked, onChange }: FormToggleProps) {
+export function FormToggle({ label, checked, onChange, className }: FormToggleProps) {
   return (
-    <div className="flex items-center justify-between min-h-[44px]">
-      <label htmlFor={name} className="text-[8px] font-bold uppercase tracking-widest text-text-secondary cursor-pointer select-none">
-        {label}
-      </label>
+    <div className={cn('flex items-center justify-between', className)}>
+      {label && (
+        <span className="text-[10px] font-bold uppercase text-text-secondary tracking-[0.08em]">
+          {label}
+        </span>
+      )}
       <button
         type="button"
-        id={name}
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative w-9 h-5 rounded-full transition-colors duration-200',
-          'focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none',
-          checked ? 'bg-brand-mint' : 'bg-border-panel',
+          'relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border border-border-panel transition-colors',
+          checked ? 'bg-brand-mint' : 'bg-header-bg'
         )}
       >
         <span
           className={cn(
-            'absolute top-0.5 size-4 rounded-full bg-bg-base shadow-sm transition-transform duration-200',
-            checked ? 'translate-x-[18px]' : 'translate-x-0.5',
+            'pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full shadow-sm transition-transform mt-[2px]',
+            checked ? 'translate-x-[18px] bg-bg-base' : 'translate-x-[3px] bg-text-secondary'
           )}
         />
       </button>

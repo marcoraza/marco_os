@@ -1,12 +1,11 @@
-import React, { useState, useRef, useCallback, Suspense } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import type { StoredNote } from '../data/models';
-import { Icon, Card, SectionLabel, TabNav, FormModal, showToast, SearchBar } from './ui';
+import { Icon, Card, SectionLabel, FormModal, SectionJourney, showToast } from './ui';
 import { cn } from '../utils/cn';
-import { AtomicNoteRenderer } from './notes/AtomicNoteRenderer';
-import { braindumpConfig } from '../lib/formConfigs';
+import { braindumpFields } from '../lib/formConfigs';
 import { syncToNotion } from '../lib/notionSync';
-
-const BrainDumpView = React.lazy(() => import('./notes/BrainDumpView').then(m => ({ default: m.BrainDumpView })));
+import { useSectionSetup } from '../hooks/useSectionSetup';
+import { notesJourneyConfig } from '../lib/journeyConfigs/notes';
 
 interface NotesPanelProps {
   notes: StoredNote[];
@@ -125,29 +124,36 @@ const TOOLBAR_ITEMS: { action: FormatAction; icon: string; label: string }[] = [
 
 // ─── Component ───────────────────────────────────────────────────────────────
 const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectId }) => {
-  const [activeTab, setActiveTab] = useState<'editor' | 'braindump'>('editor');
-  const notesTabs = [
-    { id: 'editor', label: 'Editor' },
-    { id: 'braindump', label: 'Brain Dump' },
-  ];
-
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [showListMobile, setShowListMobile] = useState(true);
   const [previewMode, setPreviewMode] = useState(false);
-  const [showBrainDumpForm, setShowBrainDumpForm] = useState(false);
-  const [noteSearch, setNoteSearch] = useState('');
-
-  const handleBrainDumpSubmit = async (data: Record<string, unknown>) => {
-    syncToNotion('braindump', data);
-    showToast('Brain dump salvo');
-  };
+  const [isBrainDumpFormOpen, setIsBrainDumpFormOpen] = useState(false);
+  const { isSetupDone, markDone, markSkipped } = useSectionSetup('notes');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const allProjectNotes = notes.filter(n => !n.projectId || n.projectId === activeProjectId);
-  const projectNotes = noteSearch.trim()
-    ? allProjectNotes.filter(n => n.title.toLowerCase().includes(noteSearch.toLowerCase()) || n.body.toLowerCase().includes(noteSearch.toLowerCase()))
-    : allProjectNotes;
+  const handleBrainDumpSubmit = async (data: Record<string, unknown>) => {
+    const title = String(data.name || 'Nota sem titulo');
+    const body = String(data.content || '');
+    const tipo = String(data.tipo || 'ideia');
+    const now = new Date().toISOString();
+    const id = crypto?.randomUUID?.() ?? `note-${Date.now()}`;
+    const note: StoredNote = {
+      id,
+      title: `[${tipo.toUpperCase()}] ${title}`,
+      body,
+      createdAt: now,
+      updatedAt: now,
+      projectId: activeProjectId,
+    };
+    setNotes(prev => [note, ...prev]);
+    setSelectedId(id);
+    setPreviewMode(false);
+    showToast('Nota criada!');
+    syncToNotion('create-brain-dump', data);
+  };
+
+  const projectNotes = notes.filter(n => !n.projectId || n.projectId === activeProjectId);
   const selected = projectNotes.find(n => n.id === selectedId);
 
   const createNote = () => {
@@ -171,39 +177,18 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
     if (selectedId === id) setSelectedId(null);
   };
 
+  if (!isSetupDone) {
+    return (
+      <SectionJourney
+        config={notesJourneyConfig}
+        onComplete={markDone}
+        onSkip={markSkipped}
+      />
+    );
+  }
+
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Tab Navigation */}
-      <div className="shrink-0">
-        <TabNav
-          tabs={notesTabs}
-          activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as any)}
-        />
-      </div>
-
-      {/* Brain Dump Tab */}
-      {activeTab === 'braindump' && (
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex justify-end px-4 pt-3">
-            <button
-              onClick={() => setShowBrainDumpForm(true)}
-              className="flex items-center gap-1 px-3 py-1.5 min-h-[44px] rounded-sm text-[9px] font-bold uppercase tracking-widest bg-brand-mint/10 border border-brand-mint/30 text-brand-mint hover:bg-brand-mint/20 transition-colors focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none"
-              aria-label="Novo brain dump"
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span>
-              Novo
-            </button>
-          </div>
-          <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full m-4" />}>
-            <BrainDumpView />
-          </Suspense>
-        </div>
-      )}
-
-      {/* Editor Tab (existing content) */}
-      {activeTab === 'editor' && (
-      <div className="flex flex-col flex-1 overflow-hidden p-4 gap-4">
+    <div className="flex flex-col h-full overflow-hidden p-4 gap-4">
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
@@ -213,10 +198,14 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
             <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest">{projectNotes.length} notas</p>
           </div>
         </div>
+        <button
+          onClick={() => setIsBrainDumpFormOpen(true)}
+          className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1"
+        >
+          <Icon name="add" size="xs" />
+          NOVO
+        </button>
       </div>
-
-      {/* Search */}
-      <SearchBar value={noteSearch} onChange={setNoteSearch} placeholder="Buscar notas..." className="shrink-0" />
 
       {/* Create */}
       <div className="flex gap-2 shrink-0">
@@ -346,19 +335,10 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
               )}
 
               {previewMode ? (
-                <div className="flex-1 bg-bg-base border border-border-panel rounded-sm p-4 overflow-y-auto leading-relaxed">
-                  {selected.body ? (
-                    <AtomicNoteRenderer
-                      content={selected.body}
-                      onWikiLinkClick={(term) => {
-                        // Future: navigate to matching note
-                        console.info('[AtomicNotes] wiki-link clicked:', term);
-                      }}
-                    />
-                  ) : (
-                    <span className="text-text-secondary/30 italic text-sm">Nada para exibir</span>
-                  )}
-                </div>
+                <div
+                  className="flex-1 bg-bg-base border border-border-panel rounded-md p-4 text-sm text-text-primary overflow-y-auto leading-relaxed prose-sm"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(selected.body || '<span class="text-text-secondary/30 italic">Nada para exibir</span>') }}
+                />
               ) : (
                 <textarea
                   ref={textareaRef}
@@ -377,14 +357,12 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
           )}
         </div>
       </div>
-      </div>
-      )} {/* end editor tab */}
 
       <FormModal
-        title={braindumpConfig.title}
-        fields={braindumpConfig.fields}
-        isOpen={showBrainDumpForm}
-        onClose={() => setShowBrainDumpForm(false)}
+        title="Novo Brain Dump"
+        fields={braindumpFields}
+        isOpen={isBrainDumpFormOpen}
+        onClose={() => setIsBrainDumpFormOpen(false)}
         onSubmit={handleBrainDumpSubmit}
       />
     </div>

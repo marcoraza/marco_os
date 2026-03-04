@@ -563,6 +563,15 @@ const App: React.FC = () => {
         onCreateTask={createTaskFromPalette}
         onCreateNote={createNoteFromPalette}
         onCreateEvent={createEventFromPalette}
+        onQuickAction={(actionId) => {
+          const viewMap: Record<string, View> = {
+            'new-finance': 'finance',
+            'new-health': 'health',
+            'new-braindump': 'notes',
+          };
+          const target = viewMap[actionId];
+          if (target) setCurrentView(target);
+        }}
       />
 
       {isMissionModalOpen && (

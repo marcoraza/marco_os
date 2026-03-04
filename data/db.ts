@@ -1,8 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import type { StoredAgent, StoredAgentRun, StoredContact, StoredEvent, StoredFinanceEntry, StoredHealthEntry, StoredNote, StoredPlan, StoredProject, StoredReuniao, StoredSkill, StoredTask } from './models';
-import type { ChatSession } from './types/chat';
-export type { ChatSession } from './types/chat';
-export type { ChatMessage } from './types/chat';
+import type { StoredAgent, StoredAgentRun, StoredContact, StoredContentEntry, StoredEvent, StoredFinanceEntry, StoredHealthEntry, StoredNote, StoredPlan, StoredProject, StoredProjectEntry, StoredReuniao, StoredSkill, StoredTask } from './models';
 
 interface MarcoOSDbSchema extends DBSchema {
   projects: {
@@ -46,11 +43,6 @@ interface MarcoOSDbSchema extends DBSchema {
     value: StoredPlan;
     indexes: { 'by-project': string };
   };
-  chat_sessions: {
-    key: string;
-    value: ChatSession;
-    indexes: { by_section: string; by_agent: string };
-  };
   financeEntries: {
     key: string;
     value: StoredFinanceEntry;
@@ -67,15 +59,23 @@ interface MarcoOSDbSchema extends DBSchema {
     key: string;
     value: StoredSkill;
   };
+  contentEntries: {
+    key: string;
+    value: StoredContentEntry;
+  };
+  projetosEntries: {
+    key: string;
+    value: StoredProjectEntry;
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<MarcoOSDbSchema>> | null = null;
 
 // Force nuke & rebuild if DB is stuck from a bad migration
-const DB_RESET_KEY = 'marco-os-db-reset-v8';
+const DB_RESET_KEY = 'marco-os-db-reset-v6';
 async function ensureCleanDb() {
   if (!localStorage.getItem(DB_RESET_KEY)) {
-    console.warn('[Marco OS] Forcing DB reset to v7…');
+    console.warn('[Marco OS] Forcing DB reset to v5…');
     try {
       const delReq = indexedDB.deleteDatabase('marco-os');
       await new Promise<void>((resolve, reject) => {
@@ -130,16 +130,15 @@ export function getDb() {
           }
 
           if (oldVersion < 5) {
-            const chatSessions = db.createObjectStore('chat_sessions', { keyPath: 'id' });
-            chatSessions.createIndex('by_section', 'sectionId');
-            chatSessions.createIndex('by_agent', 'agentId');
-          }
-
-          if (oldVersion < 6) {
             db.createObjectStore('financeEntries', { keyPath: 'id' });
             db.createObjectStore('healthEntries', { keyPath: 'id' });
             db.createObjectStore('reunioes', { keyPath: 'id' });
             db.createObjectStore('skills', { keyPath: 'id' });
+          }
+
+          if (oldVersion < 6) {
+            db.createObjectStore('contentEntries', { keyPath: 'id' });
+            db.createObjectStore('projetosEntries', { keyPath: 'id' });
           }
         },
       })

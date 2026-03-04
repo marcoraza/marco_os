@@ -1,336 +1,191 @@
 import type { FieldDef } from '../components/ui/FormModal';
 
-export interface FormConfig {
-  title: string;
-  fields: FieldDef[];
-  notionCommand: string;
-}
+// ─── Finance ─────────────────────────────────────────────────────────────────
 
-// ─── Finanças ─────────────────────────────────────────────────────────────────
+export const FINANCE_CATEGORIES = [
+  { value: 'moradia', label: 'Moradia' },
+  { value: 'alimentacao', label: 'Alimentacao' },
+  { value: 'transporte', label: 'Transporte' },
+  { value: 'saude', label: 'Saude' },
+  { value: 'educacao', label: 'Educacao' },
+  { value: 'lazer', label: 'Lazer' },
+  { value: 'servicos', label: 'Servicos' },
+  { value: 'receita-projeto', label: 'Receita Projeto' },
+  { value: 'outros', label: 'Outros' },
+];
 
-export const financeConfig: FormConfig = {
-  title: 'Nova Transação',
-  notionCommand: 'financas',
-  fields: [
-    {
-      name: 'name',
-      label: 'Descrição',
-      type: 'text',
-      required: true,
-      placeholder: 'Ex: Aluguel março',
-    },
-    {
-      name: 'valor',
-      label: 'Valor (R$)',
-      type: 'number',
-      required: true,
-      placeholder: '0.00',
-    },
-    {
-      name: 'tipo',
-      label: 'Tipo',
-      type: 'select',
-      required: true,
-      options: [
-        { value: 'Entrada', label: 'Entrada' },
-        { value: 'Saida', label: 'Saída' },
-      ],
-    },
-    {
-      name: 'categoria',
-      label: 'Categoria',
-      type: 'select',
-      options: [
-        { value: 'Moradia', label: 'Moradia' },
-        { value: 'Alimentação', label: 'Alimentação' },
-        { value: 'Transporte', label: 'Transporte' },
-        { value: 'Saúde', label: 'Saúde' },
-        { value: 'Educação', label: 'Educação' },
-        { value: 'Lazer', label: 'Lazer' },
-        { value: 'Serviços', label: 'Serviços' },
-        { value: 'Receita Projeto', label: 'Receita Projeto' },
-        { value: 'Outros', label: 'Outros' },
-      ],
-    },
-    {
-      name: 'data',
-      label: 'Data',
-      type: 'date',
-    },
-    {
-      name: 'recorrente',
-      label: 'Recorrente',
-      type: 'toggle',
-      defaultValue: false,
-    },
-  ],
-};
+export const financeFields: FieldDef[] = [
+  { name: 'name', label: 'Descricao', type: 'text', required: true, placeholder: 'Ex: Salario, Aluguel...', span: 2 },
+  { name: 'valor', label: 'Valor (R$)', type: 'number', required: true, placeholder: '0,00', span: 1 },
+  { name: 'tipo', label: 'Tipo', type: 'select', required: true, options: [{ value: 'entrada', label: 'Entrada' }, { value: 'saida', label: 'Saida' }], defaultValue: 'saida', span: 1 },
+  { name: 'categoria', label: 'Categoria', type: 'select', options: FINANCE_CATEGORIES, defaultValue: 'outros', span: 1 },
+  { name: 'data', label: 'Data', type: 'date', defaultValue: new Date().toISOString().slice(0, 10), span: 1 },
+  { name: 'recorrente', label: 'Recorrente', type: 'toggle', defaultValue: false },
+];
 
-// ─── Saúde ────────────────────────────────────────────────────────────────────
+// ─── Health ──────────────────────────────────────────────────────────────────
 
-export const healthConfig: FormConfig = {
-  title: 'Nova Atividade',
-  notionCommand: 'saude',
-  fields: [
-    {
-      name: 'name',
-      label: 'Atividade',
-      type: 'text',
-      required: true,
-      placeholder: 'Ex: Treino funcional',
-    },
-    {
-      name: 'tipo',
-      label: 'Tipo',
-      type: 'select',
-      required: true,
-      options: [
-        { value: 'Treino', label: 'Treino' },
-        { value: 'Peso', label: 'Peso' },
-        { value: 'Habito', label: 'Hábito' },
-        { value: 'Sono', label: 'Sono' },
-        { value: 'Humor', label: 'Humor' },
-      ],
-    },
-    {
-      name: 'valor',
-      label: 'Valor (kg, hrs, etc)',
-      type: 'number',
-      placeholder: '0',
-    },
-    {
-      name: 'duracao',
-      label: 'Duração (min)',
-      type: 'number',
-      placeholder: '0',
-    },
-    {
-      name: 'data',
-      label: 'Data',
-      type: 'date',
-    },
-    {
-      name: 'notas',
-      label: 'Notas',
-      type: 'textarea',
-      placeholder: 'Observações...',
-    },
-  ],
-};
+export const healthFields: FieldDef[] = [
+  { name: 'name', label: 'Nome', type: 'text', required: true, placeholder: 'Ex: Treino Peito, Caminhada...', span: 2 },
+  { name: 'tipo', label: 'Tipo', type: 'select', required: true, options: [
+    { value: 'treino', label: 'Treino' },
+    { value: 'peso', label: 'Peso' },
+    { value: 'habito', label: 'Habito' },
+    { value: 'sono', label: 'Sono' },
+    { value: 'humor', label: 'Humor' },
+  ], defaultValue: 'treino', span: 1 },
+  { name: 'data', label: 'Data', type: 'date', defaultValue: new Date().toISOString().slice(0, 10), span: 1 },
+  // Conditional: Treino
+  { name: 'duracao', label: 'Duracao (min)', type: 'number', placeholder: 'Ex: 60', span: 1,
+    condition: (d) => d.tipo === 'treino' },
+  { name: 'intensidade', label: 'Intensidade (1-10)', type: 'range', min: 1, max: 10, step: 1, defaultValue: 5, span: 1,
+    condition: (d) => d.tipo === 'treino' },
+  // Conditional: Peso
+  { name: 'valor', label: 'Peso (kg)', type: 'number', placeholder: 'Ex: 75.5', span: 1,
+    condition: (d) => d.tipo === 'peso', required: true },
+  // Conditional: Sono
+  { name: 'horas_sono', label: 'Horas de sono', type: 'number', placeholder: 'Ex: 7.5', span: 1,
+    condition: (d) => d.tipo === 'sono' },
+  { name: 'dormiu', label: 'Dormiu as', type: 'time', span: 1,
+    condition: (d) => d.tipo === 'sono' },
+  { name: 'acordou', label: 'Acordou as', type: 'time', span: 1,
+    condition: (d) => d.tipo === 'sono' },
+  // Conditional: Humor
+  { name: 'humor_nivel', label: 'Nivel de humor', type: 'icon-select', span: 2,
+    icons: [
+      { value: 'otimo', icon: 'sentiment_very_satisfied', label: 'Otimo' },
+      { value: 'bom', icon: 'sentiment_satisfied', label: 'Bom' },
+      { value: 'neutro', icon: 'sentiment_neutral', label: 'Neutro' },
+      { value: 'baixo', icon: 'sentiment_dissatisfied', label: 'Baixo' },
+      { value: 'pessimo', icon: 'sentiment_very_dissatisfied', label: 'Pessimo' },
+    ],
+    condition: (d) => d.tipo === 'humor' },
+  // Conditional: Habito
+  { name: 'cumprido', label: 'Habito cumprido?', type: 'toggle', defaultValue: false,
+    condition: (d) => d.tipo === 'habito' },
+  // Always visible
+  { name: 'notas', label: 'Notas', type: 'textarea', placeholder: 'Observacoes...' },
+];
 
-// ─── Reuniões ─────────────────────────────────────────────────────────────────
+// ─── Reunioes ────────────────────────────────────────────────────────────────
 
-export const reunioesConfig: FormConfig = {
-  title: 'Nova Reunião',
-  notionCommand: 'meeting',
-  fields: [
-    {
-      name: 'name',
-      label: 'Título',
-      type: 'text',
-      required: true,
-      placeholder: 'Ex: Alinhamento de projeto',
-    },
-    {
-      name: 'date',
-      label: 'Data e Hora',
-      type: 'date',
-      required: true,
-    },
-    {
-      name: 'participants',
-      label: 'Participantes',
-      type: 'text',
-      placeholder: 'Nomes separados por vírgula',
-    },
-    {
-      name: 'objective',
-      label: 'Pauta / Objetivo',
-      type: 'textarea',
-      placeholder: 'Descreva a pauta da reunião...',
-    },
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'select',
-      options: [
-        { value: 'Agendada', label: 'Agendada' },
-        { value: 'Confirmada', label: 'Confirmada' },
-      ],
-    },
-  ],
-};
+export const reunioesFields: FieldDef[] = [
+  { name: 'name', label: 'Titulo da Reuniao', type: 'text', required: true, placeholder: 'Ex: Alinhamento semanal', span: 2 },
+  { name: 'date', label: 'Data', type: 'date', required: true, defaultValue: new Date().toISOString().slice(0, 10), span: 1 },
+  { name: 'time', label: 'Horario', type: 'text', placeholder: 'Ex: 14:00', span: 1 },
+  { name: 'participants', label: 'Participantes', type: 'text', placeholder: 'Nomes separados por virgula', span: 2 },
+  { name: 'objective', label: 'Objetivo', type: 'textarea', placeholder: 'Objetivo da reuniao...' },
+  { name: 'status', label: 'Status', type: 'select', options: [
+    { value: 'agendada', label: 'Agendada' },
+    { value: 'realizada', label: 'Realizada' },
+    { value: 'cancelada', label: 'Cancelada' },
+  ], defaultValue: 'agendada', span: 1 },
+];
 
-// ─── Projetos ─────────────────────────────────────────────────────────────────
+// ─── Network (Contacts) ─────────────────────────────────────────────────────
 
-export const projetosConfig: FormConfig = {
-  title: 'Novo Projeto',
-  notionCommand: 'project',
-  fields: [
-    {
-      name: 'name',
-      label: 'Nome',
-      type: 'text',
-      required: true,
-      placeholder: 'Nome do projeto',
-    },
-    {
-      name: 'description',
-      label: 'Descrição',
-      type: 'textarea',
-      placeholder: 'Descreva o projeto...',
-    },
-    {
-      name: 'tipo',
-      label: 'Tipo',
-      type: 'select',
-      options: [
-        { value: 'Receita', label: 'Receita' },
-        { value: 'Infra', label: 'Infra' },
-        { value: 'Conteúdo', label: 'Conteúdo' },
-        { value: 'Pessoal', label: 'Pessoal' },
-      ],
-    },
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'select',
-      options: [
-        { value: 'Ativo', label: 'Ativo' },
-        { value: 'Planejamento', label: 'Planejamento' },
-        { value: 'Pausado', label: 'Pausado' },
-      ],
-    },
-  ],
-};
+export const networkFields: FieldDef[] = [
+  { name: 'name', label: 'Nome', type: 'text', required: true, placeholder: 'Nome completo', span: 2 },
+  { name: 'email', label: 'Email', type: 'text', placeholder: 'email@exemplo.com', span: 1 },
+  { name: 'phone', label: 'Telefone', type: 'text', placeholder: '+55 11 99999-9999', span: 1 },
+  { name: 'tipo', label: 'Tipo', type: 'select', options: [
+    { value: 'contato', label: 'Contato' },
+    { value: 'lead', label: 'Lead' },
+    { value: 'parceiro', label: 'Parceiro' },
+    { value: 'mentor', label: 'Mentor' },
+  ], defaultValue: 'contato', span: 1 },
+  { name: 'company', label: 'Empresa', type: 'text', placeholder: 'Ex: Acme Inc.', span: 1 },
+  { name: 'notas', label: 'Notas', type: 'textarea', placeholder: 'Observacoes sobre o contato...' },
+];
 
-// ─── Network (Contato) ────────────────────────────────────────────────────────
+// ─── Brain Dump ──────────────────────────────────────────────────────────────
 
-export const networkConfig: FormConfig = {
-  title: 'Novo Contato',
-  notionCommand: 'person',
-  fields: [
-    {
-      name: 'name',
-      label: 'Nome',
-      type: 'text',
-      required: true,
-      placeholder: 'Nome completo',
-    },
-    {
-      name: 'email',
-      label: 'Email',
-      type: 'text',
-      placeholder: 'email@exemplo.com',
-    },
-    {
-      name: 'tipo',
-      label: 'Tipo',
-      type: 'select',
-      options: [
-        { value: 'Contato', label: 'Contato' },
-        { value: 'Lead', label: 'Lead' },
-        { value: 'Parceiro', label: 'Parceiro' },
-        { value: 'Mentor', label: 'Mentor' },
-      ],
-    },
-    {
-      name: 'projeto',
-      label: 'Projeto Relacionado',
-      type: 'text',
-      placeholder: 'Nome do projeto',
-    },
-    {
-      name: 'notas',
-      label: 'Notas',
-      type: 'textarea',
-      placeholder: 'Informações sobre o contato...',
-    },
-  ],
-};
+export const braindumpFields: FieldDef[] = [
+  { name: 'name', label: 'Titulo', type: 'text', required: true, placeholder: 'Titulo da nota', span: 2 },
+  { name: 'content', label: 'Conteudo', type: 'textarea', placeholder: 'Escreva aqui...' },
+  { name: 'tipo', label: 'Tipo', type: 'select', options: [
+    { value: 'ideia', label: 'Ideia' },
+    { value: 'reflexao', label: 'Reflexao' },
+    { value: 'tarefa', label: 'Tarefa' },
+    { value: 'referencia', label: 'Referencia' },
+  ], defaultValue: 'ideia', span: 1 },
+];
 
-// ─── Brain Dump ───────────────────────────────────────────────────────────────
+// ─── Content ────────────────────────────────────────────────────────────────
 
-export const braindumpConfig: FormConfig = {
-  title: 'Novo Brain Dump',
-  notionCommand: 'braindump',
-  fields: [
-    {
-      name: 'name',
-      label: 'Título',
-      type: 'text',
-      required: true,
-      placeholder: 'Título da ideia ou nota',
-    },
-    {
-      name: 'content',
-      label: 'Conteúdo',
-      type: 'textarea',
-      placeholder: 'Escreva seus pensamentos...',
-    },
-    {
-      name: 'tipo',
-      label: 'Tipo',
-      type: 'select',
-      options: [
-        { value: 'Ideia', label: 'Ideia' },
-        { value: 'Reflexão', label: 'Reflexão' },
-        { value: 'Tarefa', label: 'Tarefa' },
-        { value: 'Referência', label: 'Referência' },
-      ],
-    },
-  ],
-};
+export const contentFields: FieldDef[] = [
+  { name: 'title', label: 'Titulo', type: 'text', required: true, placeholder: 'Ex: Como usar React 19', span: 2 },
+  { name: 'tipo', label: 'Tipo', type: 'select', required: true, options: [
+    { value: 'post', label: 'Post' },
+    { value: 'video', label: 'Video' },
+    { value: 'thread', label: 'Thread' },
+    { value: 'artigo', label: 'Artigo' },
+    { value: 'newsletter', label: 'Newsletter' },
+    { value: 'outro', label: 'Outro' },
+  ], defaultValue: 'post', span: 1 },
+  { name: 'plataforma', label: 'Plataforma', type: 'select', options: [
+    { value: 'linkedin', label: 'LinkedIn' },
+    { value: 'twitter', label: 'Twitter/X' },
+    { value: 'youtube', label: 'YouTube' },
+    { value: 'instagram', label: 'Instagram' },
+    { value: 'blog', label: 'Blog' },
+    { value: 'substack', label: 'Substack' },
+    { value: 'outro', label: 'Outro' },
+  ], defaultValue: 'linkedin', span: 1 },
+  { name: 'status', label: 'Status', type: 'select', options: [
+    { value: 'ideia', label: 'Ideia' },
+    { value: 'rascunho', label: 'Rascunho' },
+    { value: 'producao', label: 'Producao' },
+    { value: 'publicado', label: 'Publicado' },
+    { value: 'arquivado', label: 'Arquivado' },
+  ], defaultValue: 'ideia', span: 1 },
+  { name: 'data', label: 'Data', type: 'date', span: 1 },
+  { name: 'link', label: 'Link', type: 'text', placeholder: 'https://...', span: 2 },
+  { name: 'notas', label: 'Notas', type: 'textarea', placeholder: 'Observacoes...' },
+];
 
-// ─── Skills ───────────────────────────────────────────────────────────────────
+// ─── Projetos ───────────────────────────────────────────────────────────────
 
-export const skillsConfig: FormConfig = {
-  title: 'Nova Skill',
-  notionCommand: 'skill',
-  fields: [
-    {
-      name: 'name',
-      label: 'Skill',
-      type: 'text',
-      required: true,
-      placeholder: 'Ex: TypeScript, Design de UX',
-    },
-    {
-      name: 'categoria',
-      label: 'Categoria',
-      type: 'select',
-      options: [
-        { value: 'Desenvolvimento', label: 'Desenvolvimento' },
-        { value: 'Design', label: 'Design' },
-        { value: 'Negócios', label: 'Negócios' },
-        { value: 'Marketing', label: 'Marketing' },
-        { value: 'IA', label: 'IA' },
-        { value: 'Soft Skill', label: 'Soft Skill' },
-        { value: 'Outros', label: 'Outros' },
-      ],
-    },
-    {
-      name: 'nivel',
-      label: 'Nível',
-      type: 'select',
-      options: [
-        { value: 'Iniciante', label: 'Iniciante' },
-        { value: 'Intermediário', label: 'Intermediário' },
-        { value: 'Avançado', label: 'Avançado' },
-        { value: 'Expert', label: 'Expert' },
-      ],
-    },
-    {
-      name: 'progresso',
-      label: 'Progresso (%)',
-      type: 'number',
-      placeholder: '0-100',
-    },
-    {
-      name: 'notas',
-      label: 'Notas',
-      type: 'textarea',
-      placeholder: 'Recursos, cursos, observações...',
-    },
-  ],
-};
+export const projectFields: FieldDef[] = [
+  { name: 'name', label: 'Nome do Projeto', type: 'text', required: true, placeholder: 'Ex: Marco OS v2', span: 2 },
+  { name: 'descricao', label: 'Descricao', type: 'textarea', placeholder: 'Breve descricao do projeto...' },
+  { name: 'status', label: 'Status', type: 'select', required: true, options: [
+    { value: 'ativo', label: 'Ativo' },
+    { value: 'pausado', label: 'Pausado' },
+    { value: 'concluido', label: 'Concluido' },
+    { value: 'arquivado', label: 'Arquivado' },
+  ], defaultValue: 'ativo', span: 1 },
+  { name: 'prioridade', label: 'Prioridade', type: 'select', required: true, options: [
+    { value: 'alta', label: 'Alta' },
+    { value: 'media', label: 'Media' },
+    { value: 'baixa', label: 'Baixa' },
+  ], defaultValue: 'media', span: 1 },
+  { name: 'deadline', label: 'Deadline', type: 'date', span: 1 },
+  { name: 'linkDrive', label: 'Link Drive', type: 'text', placeholder: 'https://drive.google.com/...', span: 2 },
+  { name: 'linkNotion', label: 'Link Notion', type: 'text', placeholder: 'https://notion.so/...', span: 2 },
+  { name: 'linkGithub', label: 'Link GitHub', type: 'text', placeholder: 'https://github.com/...', span: 2 },
+  { name: 'notas', label: 'Notas', type: 'textarea', placeholder: 'Observacoes...' },
+];
+
+// ─── Skills ──────────────────────────────────────────────────────────────────
+
+export const skillsFields: FieldDef[] = [
+  { name: 'name', label: 'Nome da Skill', type: 'text', required: true, placeholder: 'Ex: React, Python...', span: 2 },
+  { name: 'categoria', label: 'Categoria', type: 'select', options: [
+    { value: 'frontend', label: 'Frontend' },
+    { value: 'backend', label: 'Backend' },
+    { value: 'devops', label: 'DevOps' },
+    { value: 'design', label: 'Design' },
+    { value: 'data', label: 'Data' },
+    { value: 'soft-skill', label: 'Soft Skill' },
+    { value: 'outros', label: 'Outros' },
+  ], defaultValue: 'frontend', span: 1 },
+  { name: 'nivel', label: 'Nivel', type: 'select', options: [
+    { value: 'iniciante', label: 'Iniciante' },
+    { value: 'intermediario', label: 'Intermediario' },
+    { value: 'avancado', label: 'Avancado' },
+    { value: 'expert', label: 'Expert' },
+  ], defaultValue: 'iniciante', span: 1 },
+  { name: 'progresso', label: 'Progresso (%)', type: 'number', placeholder: '0-100', defaultValue: '0', span: 1 },
+  { name: 'notas', label: 'Notas', type: 'textarea', placeholder: 'Observacoes...' },
+];

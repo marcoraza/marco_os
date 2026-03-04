@@ -13,7 +13,8 @@ type PaletteItem =
   | { kind: 'contact'; id: string; title: string; subtitle?: string }
   | { kind: 'create-task'; title: string }
   | { kind: 'create-note'; title: string }
-  | { kind: 'create-event'; title: string };
+  | { kind: 'create-event'; title: string }
+  | { kind: 'action'; id: string; title: string; subtitle: string; icon: string };
 
 interface CommandPaletteProps {
   open: boolean;
@@ -28,6 +29,7 @@ interface CommandPaletteProps {
   onCreateTask: (title: string) => void;
   onCreateNote: (title: string) => void;
   onCreateEvent: (title: string) => void;
+  onQuickAction?: (actionId: string) => void;
 }
 
 const NAV_COMMANDS: { id: View; icon: string; label: string; subtitle: string }[] = [
@@ -56,6 +58,7 @@ export default function CommandPalette(props: CommandPaletteProps) {
     onCreateTask,
     onCreateNote,
     onCreateEvent,
+    onQuickAction,
   } = props;
 
   const [query, setQuery] = useState('');
@@ -132,7 +135,14 @@ export default function CommandPalette(props: CommandPaletteProps) {
         ]
       : [];
 
-    return [...create, ...(q ? [] : navItems), ...taskItems, ...noteItems, ...eventItems, ...contactItems, ...(q ? navItems : [])];
+    // Quick actions (always available, filterable)
+    const quickActions: PaletteItem[] = [
+      { kind: 'action', id: 'new-finance', title: 'Nova entrada financeira', subtitle: 'Registrar receita ou despesa', icon: 'payments' },
+      { kind: 'action', id: 'new-health', title: 'Novo registro de saude', subtitle: 'Treino, peso, habito, sono ou humor', icon: 'monitor_heart' },
+      { kind: 'action', id: 'new-braindump', title: 'Nova nota rapida', subtitle: 'Brain dump para ideias e reflexoes', icon: 'sticky_note_2' },
+    ].filter(a => !q || a.title.toLowerCase().includes(q) || a.subtitle.toLowerCase().includes(q));
+
+    return [...create, ...(q ? [] : navItems), ...(q ? [] : quickActions), ...taskItems, ...noteItems, ...eventItems, ...contactItems, ...(q ? quickActions : []), ...(q ? navItems : [])];
   }, [query, tasks, notes, events, contacts]);
 
   const executeItem = (item: PaletteItem) => {
@@ -167,6 +177,10 @@ export default function CommandPalette(props: CommandPaletteProps) {
         break;
       case 'create-event':
         onCreateEvent(item.title);
+        onClose();
+        break;
+      case 'action':
+        onQuickAction?.(item.id);
         onClose();
         break;
     }
@@ -212,6 +226,8 @@ export default function CommandPalette(props: CommandPaletteProps) {
     if (kind === 'contact') return <Icon name="person" size="sm" className="text-accent-purple" />;
     if (kind === 'create-task') return <Icon name="add" size="sm" className="text-brand-mint" />;
     if (kind === 'create-note') return <Icon name="note_add" size="sm" className="text-accent-blue" />;
+    if (kind === 'create-event') return <Icon name="add" size="sm" className="text-accent-orange" />;
+    if (kind === 'action' && item && 'icon' in item) return <Icon name={(item as any).icon} size="sm" className="text-brand-mint" />;
     return <Icon name="add" size="sm" className="text-accent-orange" />;
   };
 
@@ -220,6 +236,7 @@ export default function CommandPalette(props: CommandPaletteProps) {
     if (item.kind === 'create-task') return `Criar task: ${item.title}`;
     if (item.kind === 'create-note') return `Criar nota: ${item.title}`;
     if (item.kind === 'create-event') return `Criar evento: ${item.title}`;
+    if (item.kind === 'action') return item.title;
     if (item.kind === 'contact') return item.title;
     return item.title;
   };
@@ -231,6 +248,7 @@ export default function CommandPalette(props: CommandPaletteProps) {
       note: { label: 'NOTA', color: 'text-accent-blue bg-accent-blue/10' },
       event: { label: 'EVENTO', color: 'text-accent-orange bg-accent-orange/10' },
       contact: { label: 'CONTATO', color: 'text-accent-purple bg-accent-purple/10' },
+      action: { label: 'ACAO', color: 'text-brand-mint bg-brand-mint/10' },
     };
     const badge = badges[kind];
     if (!badge) return null;

@@ -1,14 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Icon, Card, SectionLabel } from '../ui';
-import { MetricDelta } from '../ui/MetricDelta';
 import { detailedTransactions, pieData, PIE_COLORS, cashflowData } from './data';
 import { formatBRL } from './utils';
-import BudgetRing from './BudgetRing';
+import { loadFinanceEntries } from '../../data/repository';
+import type { StoredFinanceEntry } from '../../data/models';
 
-const pieTotal = pieData.reduce((acc, d) => acc + d.value, 0);
+interface FinanceOverviewProps {
+  refreshKey?: number;
+}
 
-export default function FinanceOverview() {
+export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps) {
+  const [entries, setEntries] = useState<StoredFinanceEntry[]>([]);
+  useEffect(() => { loadFinanceEntries().then(setEntries); }, [refreshKey]);
+
+  // Derive metrics from real data when available
+  const now = new Date();
+  const currentMonth = now.toISOString().slice(0, 7);
+  const monthEntries = entries.filter(e => e.data.startsWith(currentMonth));
+  const realIncome = monthEntries.filter(e => e.tipo === 'entrada').reduce((s, e) => s + e.valor, 0);
+  const realExpenses = monthEntries.filter(e => e.tipo === 'saida').reduce((s, e) => s + e.valor, 0);
+  const hasRealData = entries.length > 0;
+
+  const displayIncome = hasRealData ? realIncome : 12500;
+  const displayExpenses = hasRealData ? realExpenses : 11230;
+  const displayBalance = displayIncome - displayExpenses;
+
+  const usedPieData = pieData;
+  const pieTotal = usedPieData.reduce((acc, d) => acc + d.value, 0);
+
+  const usedTransactions = hasRealData
+    ? entries.slice(0, 5).map((e, i) => ({
+        id: e.id,
+        title: e.name,
+        merchant: e.categoria,
+        amount: e.valor,
+        type: e.tipo === 'entrada' ? 'income' as const : 'expense' as const,
+        icon: e.tipo === 'entrada' ? 'arrow_downward' : 'arrow_upward',
+        date: e.data,
+        category: e.categoria,
+        status: 'completed' as const,
+      }))
+    : detailedTransactions.slice(0, 5);
   return (
     <div className="flex flex-col gap-4 animate-in fade-in duration-300 h-full overflow-hidden">
 
@@ -18,26 +51,38 @@ export default function FinanceOverview() {
           <Card className="p-4 relative overflow-hidden group hover:border-brand-mint/30 transition-colors flex flex-col justify-center">
             <div className="absolute right-0 top-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Icon name="trending_up" className="text-5xl text-brand-mint" /></div>
             <SectionLabel className="mb-1 text-text-secondary tracking-[0.1em]">Receita Mensal</SectionLabel>
-            <div className="flex items-baseline gap-2"><span className="text-2xl font-bold font-mono text-brand-mint">R$ 12.500</span></div>
-            <MetricDelta value={12} label="vs mes anterior" className="mt-1" />
+            <div className="flex items-baseline gap-2"><span className="text-2xl font-bold font-mono text-brand-mint">{formatBRL(displayIncome)}</span></div>
+            <div className="mt-1 flex items-center text-[10px] text-brand-mint font-medium"><Icon name="arrow_upward" className="text-xs mr-1" />12% vs mês anterior</div>
           </Card>
           <Card className="p-4 relative overflow-hidden group hover:border-accent-red/30 transition-colors flex flex-col justify-center">
             <div className="absolute right-0 top-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Icon name="trending_down" className="text-5xl text-accent-red" /></div>
             <SectionLabel className="mb-1 text-text-secondary tracking-[0.1em]">Gastos Mensais</SectionLabel>
-            <div className="flex items-baseline gap-2"><span className="text-2xl font-bold font-mono text-accent-red">R$ 11.230</span></div>
-            <MetricDelta value={5} forceColor="red" label="vs mes anterior" className="mt-1" />
+            <div className="flex items-baseline gap-2"><span className="text-2xl font-bold font-mono text-accent-red">{formatBRL(displayExpenses)}</span></div>
+            <div className="mt-1 flex items-center text-[10px] text-accent-red font-medium"><Icon name="arrow_upward" className="text-xs mr-1" />5% vs mês anterior</div>
           </Card>
           <Card className="p-4 relative overflow-hidden group hover:border-accent-blue/30 transition-colors flex flex-col justify-center">
             <div className="absolute right-0 top-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity"><Icon name="account_balance_wallet" className="text-5xl text-accent-blue" /></div>
             <SectionLabel className="mb-1 text-text-secondary tracking-[0.1em]">Saldo Atual</SectionLabel>
-            <div className="flex items-baseline gap-2"><span className="text-2xl font-bold font-mono text-accent-blue">R$ 1.270</span></div>
-            <MetricDelta value={0} suffix="" label="Estavel" className="mt-1" />
+            <div className="flex items-baseline gap-2"><span className="text-2xl font-bold font-mono text-accent-blue">{formatBRL(displayBalance)}</span></div>
+            <div className="mt-1 flex items-center text-[10px] text-text-secondary font-medium"><Icon name="remove" className="text-xs mr-1" />Estável</div>
           </Card>
         </div>
 
         <div className="lg:col-span-4">
-          <Card className="p-4 relative overflow-hidden h-full flex flex-col items-center justify-center">
-            <BudgetRing spent={11230} budget={15000} />
+          <Card className="p-4 relative overflow-hidden h-full flex flex-col justify-center">
+            <SectionLabel className="mb-1 text-text-secondary tracking-wider">Meta de Receita</SectionLabel>
+            <div className="flex items-end gap-2 mb-3">
+              <h2 className="text-lg font-bold font-mono text-text-primary">R$ 12.500</h2>
+              <span className="text-xs text-text-secondary font-medium mb-1">/ R$ 50.000</span>
+            </div>
+            <div className="w-full h-2 bg-header-bg rounded-full overflow-hidden border border-border-panel mb-2">
+              <div className="h-full bg-brand-mint rounded-full relative" style={{width: '25%'}}>
+                <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/50"></div>
+              </div>
+            </div>
+            <p className="text-[10px] text-text-primary leading-relaxed">
+              Você atingiu <span className="text-brand-mint font-bold">25%</span> da sua meta.
+            </p>
           </Card>
         </div>
       </div>
@@ -150,7 +195,7 @@ export default function FinanceOverview() {
             </div>
             <div className="p-2 overflow-y-auto custom-scrollbar flex-grow">
               <ul className="space-y-1">
-                {detailedTransactions.slice(0, 5).map(tx => (
+                {usedTransactions.map(tx => (
                   <li key={tx.id} className="p-2 hover:bg-surface-hover rounded-md transition-colors flex items-center justify-between group cursor-pointer border border-transparent hover:border-border-panel">
                     <div className="flex items-center gap-2">
                       <div className={`w-8 h-8 rounded-sm bg-header-bg border border-border-panel flex items-center justify-center ${tx.type === 'income' ? 'text-brand-mint' : 'text-accent-red'}`}>

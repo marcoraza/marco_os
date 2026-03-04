@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
-import { Icon, Badge, Card, SectionLabel, StatusDot, EmptyState, showToast, TabNav, AlertBanner, SourceBadge, FormModal, SearchBar } from './ui';
-import { useNotionData } from '../contexts/NotionDataContext';
-import { reunioesConfig } from '../lib/formConfigs';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Icon, Badge, Card, SectionLabel, StatusDot, EmptyState, showToast, FormModal, SectionJourney } from './ui';
+import type { StoredContact, StoredReuniao } from '../data/models';
+import { loadContacts, putContact, deleteContact as deleteContactDb, bootstrapContactsIfEmpty, putReuniao } from '../data/repository';
+import { reunioesFields } from '../lib/formConfigs';
 import { syncToNotion } from '../lib/notionSync';
-import { putReuniao } from '../data/repository';
-import type { StoredReuniao } from '../data/models';
-
-const ReunioesView = React.lazy(() => import('./crm/ReunioesView').then(m => ({ default: m.ReunioesView })));
-import type { StoredContact } from '../data/models';
-import { loadContacts, putContact, deleteContact as deleteContactDb, bootstrapContactsIfEmpty } from '../data/repository';
+import { useSectionSetup } from '../hooks/useSectionSetup';
+import { crmJourneyConfig } from '../lib/journeyConfigs/crm';
 
 /* ─── Seed data (migrated from old hardcoded array) ─────────────────────────── */
 const SEED_CONTACTS: StoredContact[] = [
@@ -84,38 +81,6 @@ const EMPTY_FORM = {
 };
 
 const CRM: React.FC = () => {
-  // ─── Notion data + tab state ─────────────────────────────────────────────
-  const { reunioes } = useNotionData();
-  const [activeTab, setActiveTab] = useState<'contatos' | 'reunioes'>('contatos');
-  const [showReuniaoForm, setShowReuniaoForm] = useState(false);
-
-  const handleReuniaoSubmit = async (data: Record<string, unknown>) => {
-    const entry: StoredReuniao = {
-      id: crypto.randomUUID(),
-      name: String(data.name ?? ''),
-      date: String(data.date ?? ''),
-      participants: String(data.participants ?? ''),
-      objective: String(data.objective ?? ''),
-      status: String(data.status ?? ''),
-      createdAt: new Date().toISOString(),
-    };
-    await putReuniao(entry);
-    syncToNotion('meeting', data);
-    showToast('Reunião salva');
-  };
-  const crmTabs = [
-    { id: 'contatos', label: 'Contatos' },
-    { id: 'reunioes', label: 'Reuniões' },
-  ];
-  // reunioes.items may be the raw JSON {_meta, items} — extract safely
-  const reunioesItems: any[] = Array.isArray(reunioes.items) && reunioes.items.length > 0 && reunioes.items[0]?._meta
-    ? (reunioes.items[0] as any).items ?? []
-    : Array.isArray(reunioes.items) ? reunioes.items : [];
-  const pendingFollowUps = reunioesItems.filter((r: any) => {
-    const s = r?.Status ?? r?.status ?? '';
-    return s === 'Pendente' || s === 'pendente' || s === 'PENDENTE';
-  }).length;
-
   const [contacts, setContacts] = useState<StoredContact[]>([]);
   const [selectedContact, setSelectedContact] = useState<StoredContact | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -125,6 +90,30 @@ const CRM: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingContact, setEditingContact] = useState<StoredContact | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
+
+  /* Journey setup */
+  const { isSetupDone, markDone, markSkipped } = useSectionSetup('crm');
+
+  /* Reuniao form */
+  const [isReuniaoFormOpen, setIsReuniaoFormOpen] = useState(false);
+
+  const handleReuniaoSubmit = async (data: Record<string, unknown>) => {
+    const now = new Date().toISOString();
+    const reuniao: StoredReuniao = {
+      id: crypto.randomUUID(),
+      name: String(data.name || ''),
+      date: String(data.date || now.slice(0, 10)),
+      time: data.time ? String(data.time) : undefined,
+      participants: data.participants ? String(data.participants) : undefined,
+      objective: data.objective ? String(data.objective) : undefined,
+      status: (data.status as StoredReuniao['status']) || 'agendada',
+      createdAt: now,
+      updatedAt: now,
+    };
+    await putReuniao(reuniao);
+    showToast('Reuniao salva!');
+    syncToNotion('create-reuniao', data);
+  };
 
   /* Confirm delete */
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -261,47 +250,18 @@ const CRM: React.FC = () => {
     setForm(prev => ({ ...prev, [field]: value }));
   }
 
+  if (!isSetupDone) {
+    return (
+      <SectionJourney
+        config={crmJourneyConfig}
+        onComplete={() => { markDone(); refresh(); }}
+        onSkip={markSkipped}
+      />
+    );
+  }
+
   return (
     <div className="relative h-full flex flex-col">
-      {/* ─── AlertBanner: pending follow-ups ───────────────────────────── */}
-      {pendingFollowUps > 0 && (
-        <div className="shrink-0 px-4 md:px-6 pt-4">
-          <AlertBanner count={pendingFollowUps} label="reuniões com follow-up pendente" color="orange" />
-        </div>
-      )}
-
-      {/* ─── Tab Navigation ────────────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center gap-2 pr-4">
-        <div className="flex-1">
-          <TabNav
-            tabs={crmTabs}
-            activeTab={activeTab}
-            onTabChange={(id) => setActiveTab(id as any)}
-          />
-        </div>
-        {activeTab === 'reunioes' && (
-          <button
-            onClick={() => setShowReuniaoForm(true)}
-            className="flex items-center gap-1 px-3 py-1.5 min-h-[44px] rounded-sm text-[9px] font-bold uppercase tracking-widest bg-brand-mint/10 border border-brand-mint/30 text-brand-mint hover:bg-brand-mint/20 transition-colors focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none shrink-0"
-            aria-label="Nova reunião"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span>
-            Reunião
-          </button>
-        )}
-      </div>
-
-      {/* ─── Reuniões Tab ──────────────────────────────────────────────── */}
-      {activeTab === 'reunioes' && (
-        <div className="flex-1 overflow-y-auto">
-          <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full m-4" />}>
-            <ReunioesView />
-          </Suspense>
-        </div>
-      )}
-
-      {/* ─── Contatos Tab (existing content) ───────────────────────────── */}
-      {activeTab === 'contatos' && (
       <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6 flex-1 w-full overflow-y-auto">
         {/* Header Stats */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-border-panel">
@@ -311,8 +271,15 @@ const CRM: React.FC = () => {
           </div>
           <div className="flex items-center gap-4">
             <button
+              onClick={() => setIsReuniaoFormOpen(true)}
+              className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1"
+            >
+              <Icon name="event" size="xs" />
+              REUNIAO
+            </button>
+            <button
               onClick={openCreateModal}
-              className="flex items-center gap-2 px-4 py-2 bg-accent-blue text-white text-xs font-bold uppercase rounded-md hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20"
+              className="flex items-center gap-2 px-4 py-2 bg-brand-mint/10 border border-brand-mint/30 text-brand-mint text-[9px] font-bold uppercase tracking-widest rounded-sm hover:bg-brand-mint/20 transition-all"
             >
               <Icon name="person_add" size="sm" />
               Novo Contato
@@ -326,11 +293,14 @@ const CRM: React.FC = () => {
 
         {/* Filters */}
         <Card className="p-4 flex flex-wrap gap-4 items-center">
-          <div className="flex-1 min-w-[200px]">
-            <SearchBar
+          <div className="relative flex-1 min-w-[200px]">
+            <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm" />
+            <input
+              type="text"
               value={searchQuery}
-              onChange={setSearchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Buscar por nome, empresa ou tag..."
+              className="w-full bg-header-bg border border-border-panel rounded-sm py-2 pl-9 pr-4 text-base md:text-xs text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
             />
           </div>
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -402,8 +372,7 @@ const CRM: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right flex flex-col items-end gap-1">
-                    <SourceBadge source="local" />
+                  <div className="text-right">
                     <p className="text-[9px] text-text-secondary uppercase font-black mb-1 tracking-[0.1em]">ÚLTIMO CONTATO</p>
                     {contact.lastContact.includes('45') || contact.lastContact.includes('60') ? (
                       <div className="flex items-center gap-1 text-accent-red bg-accent-red/10 px-2 py-1 rounded-sm">
@@ -423,7 +392,7 @@ const CRM: React.FC = () => {
           {/* Sidebar (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
             {/* Reconnect Queue */}
-            <Card className="overflow-hidden shadow-lg">
+            <Card className="overflow-hidden">
               <div className="p-4 bg-header-bg border-b border-border-panel flex justify-between items-center">
                 <SectionLabel className="text-brand-mint" icon="bolt">
                   Fila de RECONEXÃO
@@ -461,7 +430,7 @@ const CRM: React.FC = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-accent-blue/10 border border-accent-blue/20 p-4 rounded-md text-center">
+              <div className="bg-accent-blue/10 border border-accent-blue/20 p-4 rounded-sm text-center">
                 <h4 className="text-xl font-black text-accent-blue">84%</h4>
                 <p className="text-[9px] font-black uppercase text-text-secondary mt-1 tracking-[0.1em]">SAÚDE DA REDE</p>
               </div>
@@ -472,7 +441,7 @@ const CRM: React.FC = () => {
             </div>
 
             {/* Promo */}
-            <div className="bg-bg-base border border-border-panel rounded-md p-5 relative overflow-hidden">
+            <div className="bg-bg-base border border-border-panel rounded-sm p-5 relative overflow-hidden">
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent-blue/20 rounded-full blur-3xl"></div>
               <h4 className="relative z-10 text-sm font-bold text-text-primary mb-2">Expanda sua rede</h4>
               <p className="relative z-10 text-xs text-text-secondary mb-4 leading-relaxed">Conecte seu LinkedIn para importar contatos automaticamente.</p>
@@ -483,7 +452,6 @@ const CRM: React.FC = () => {
           </div>
         </div>
       </div>
-      )} {/* end contatos tab */}
 
       {/* Detail Overlay - Fixed on mobile, Absolute on desktop */}
       {selectedContact && (
@@ -542,22 +510,22 @@ const CRM: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 mb-6 bg-header-bg rounded-md p-4 border border-border-panel">
+                <div className="grid grid-cols-1 gap-3 mb-6 bg-header-bg rounded-sm p-4 border border-border-panel">
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-md bg-border-panel flex items-center justify-center text-text-secondary">
+                    <div className="w-8 h-8 rounded-sm bg-border-panel flex items-center justify-center text-text-secondary">
                       <Icon name="email" size="sm" />
                     </div>
                     <span className="text-text-primary">{selectedContact.email}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="w-8 h-8 rounded-md bg-border-panel flex items-center justify-center text-text-secondary">
+                    <div className="w-8 h-8 rounded-sm bg-border-panel flex items-center justify-center text-text-secondary">
                       <Icon name="phone" size="sm" />
                     </div>
                     <span className="text-text-primary">{selectedContact.phone}</span>
                   </div>
                 </div>
 
-                <button className="w-full group relative overflow-hidden bg-gradient-to-r from-accent-blue to-blue-600 hover:from-blue-600 hover:to-accent-blue text-white p-4 rounded-md shadow-lg shadow-accent-blue/20 transition-all duration-300 hover:shadow-accent-blue/40 transform hover:-translate-y-0.5">
+                <button className="w-full group relative overflow-hidden bg-brand-mint/10 border border-brand-mint/30 text-brand-mint p-4 rounded-sm transition-all duration-300 hover:bg-brand-mint/20">
                   <div className="relative flex items-center justify-center gap-3 font-semibold tracking-wide">
                     <Icon name="auto_awesome" className="text-yellow-300 animate-pulse" />
                     GERAR MENSAGEM DE RECONEXÃO
@@ -573,7 +541,7 @@ const CRM: React.FC = () => {
                   <button className="text-xs text-accent-blue hover:underline">Salvar</button>
                 </div>
                 <textarea
-                  className="w-full bg-header-bg border border-border-panel text-text-primary rounded-md p-3 text-base md:text-sm min-h-[100px] resize-none focus:ring-1 focus:ring-accent-blue focus:border-accent-blue placeholder-text-secondary focus:outline-none"
+                  className="w-full bg-header-bg border border-border-panel text-text-primary rounded-sm p-3 text-base md:text-sm min-h-[100px] resize-none focus:ring-1 focus:ring-brand-mint focus:border-brand-mint placeholder-text-secondary focus:outline-none"
                   placeholder="Digite uma nota..."
                   defaultValue={selectedContact.notes || 'Demonstrou interesse no plano Enterprise durante a última conferência. Precisa de aprovação do CFO até o final do mês.'}
                 ></textarea>
@@ -588,7 +556,7 @@ const CRM: React.FC = () => {
 
                   <div className="relative pl-6">
                     <div className="absolute left-[11px] top-1.5 w-3 h-3 rounded-full bg-accent-blue border-2 border-surface z-10"></div>
-                    <div className="bg-header-bg p-3 rounded-md border border-border-panel">
+                    <div className="bg-header-bg p-3 rounded-sm border border-border-panel">
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-semibold text-sm text-text-primary">Email Enviado</span>
                         <span className="text-xs text-text-secondary">Hoje, 10:30</span>
@@ -599,7 +567,7 @@ const CRM: React.FC = () => {
 
                   <div className="relative pl-6">
                     <div className="absolute left-[11px] top-1.5 w-3 h-3 rounded-full bg-text-secondary border-2 border-surface z-10"></div>
-                    <div className="bg-header-bg p-3 rounded-md border border-border-panel">
+                    <div className="bg-header-bg p-3 rounded-sm border border-border-panel">
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-semibold text-sm text-text-primary">Chamada</span>
                         <span className="text-xs text-text-secondary">Ontem, 14:00</span>
@@ -617,7 +585,7 @@ const CRM: React.FC = () => {
                 <button className="flex items-center justify-center gap-2 px-4 py-3 rounded-sm border border-border-panel text-text-primary hover:bg-border-panel text-sm font-medium transition-colors">
                   <Icon name="schedule" size="sm" /> Agendar
                 </button>
-                <button className="flex items-center justify-center gap-2 px-4 py-3 rounded-sm bg-accent-blue text-white hover:bg-blue-600 text-sm font-medium transition-colors shadow-lg shadow-blue-500/20">
+                <button className="flex items-center justify-center gap-2 px-4 py-3 rounded-sm bg-brand-mint/10 border border-brand-mint/30 text-brand-mint text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all">
                   <Icon name="call" size="sm" /> Ligar
                 </button>
               </div>
@@ -629,7 +597,7 @@ const CRM: React.FC = () => {
       {/* ─── Create / Edit Modal ────────────────────────────────────────────── */}
       {showModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200 p-4">
-          <div className="w-full max-w-lg bg-surface border border-border-panel rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-lg bg-surface border border-border-panel rounded-sm shadow-2xl max-h-[90vh] overflow-y-auto">
             {/* Modal header */}
             <div className="flex items-center justify-between p-5 border-b border-border-panel">
               <h2 className="text-sm font-black uppercase tracking-tight text-text-primary">
@@ -650,7 +618,7 @@ const CRM: React.FC = () => {
                   value={form.name}
                   onChange={e => updateField('name', e.target.value)}
                   placeholder="Nome completo"
-                  className="w-full bg-header-bg border border-border-panel rounded-md py-2 px-3 text-sm text-text-primary focus:border-accent-blue focus:outline-none transition-colors"
+                  className="w-full bg-header-bg border border-border-panel rounded-sm py-2 px-3 text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
                 />
               </div>
 
@@ -663,7 +631,7 @@ const CRM: React.FC = () => {
                     value={form.role}
                     onChange={e => updateField('role', e.target.value)}
                     placeholder="Ex: CTO"
-                    className="w-full bg-header-bg border border-border-panel rounded-md py-2 px-3 text-sm text-text-primary focus:border-accent-blue focus:outline-none transition-colors"
+                    className="w-full bg-header-bg border border-border-panel rounded-sm py-2 px-3 text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -673,7 +641,7 @@ const CRM: React.FC = () => {
                     value={form.company}
                     onChange={e => updateField('company', e.target.value)}
                     placeholder="Ex: Acme Inc."
-                    className="w-full bg-header-bg border border-border-panel rounded-md py-2 px-3 text-sm text-text-primary focus:border-accent-blue focus:outline-none transition-colors"
+                    className="w-full bg-header-bg border border-border-panel rounded-sm py-2 px-3 text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -687,7 +655,7 @@ const CRM: React.FC = () => {
                     value={form.email}
                     onChange={e => updateField('email', e.target.value)}
                     placeholder="email@exemplo.com"
-                    className="w-full bg-header-bg border border-border-panel rounded-md py-2 px-3 text-sm text-text-primary focus:border-accent-blue focus:outline-none transition-colors"
+                    className="w-full bg-header-bg border border-border-panel rounded-sm py-2 px-3 text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -697,7 +665,7 @@ const CRM: React.FC = () => {
                     value={form.phone}
                     onChange={e => updateField('phone', e.target.value)}
                     placeholder="+55 11 99999-9999"
-                    className="w-full bg-header-bg border border-border-panel rounded-md py-2 px-3 text-sm text-text-primary focus:border-accent-blue focus:outline-none transition-colors"
+                    className="w-full bg-header-bg border border-border-panel rounded-sm py-2 px-3 text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -710,13 +678,13 @@ const CRM: React.FC = () => {
                     <button
                       key={s}
                       onClick={() => updateField('status', s)}
-                      className={`flex-1 py-2 text-xs font-bold uppercase rounded-md border transition-colors ${
+                      className={`flex-1 py-2 text-xs font-bold uppercase rounded-sm border transition-colors ${
                         form.status === s
                           ? s === 'hot'
-                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                            ? 'bg-brand-mint/20 border-brand-mint text-brand-mint'
                             : s === 'warm'
-                            ? 'bg-orange-500/20 border-orange-500 text-orange-400'
-                            : 'bg-gray-500/20 border-gray-500 text-gray-400'
+                            ? 'bg-accent-orange/20 border-accent-orange text-accent-orange'
+                            : 'bg-text-secondary/20 border-text-secondary text-text-secondary'
                           : 'bg-header-bg border-border-panel text-text-secondary hover:border-text-secondary'
                       }`}
                     >
@@ -734,7 +702,7 @@ const CRM: React.FC = () => {
                   value={form.tags}
                   onChange={e => updateField('tags', e.target.value)}
                   placeholder="Tech, Cliente, Parceiro"
-                  className="w-full bg-header-bg border border-border-panel rounded-md py-2 px-3 text-sm text-text-primary focus:border-accent-blue focus:outline-none transition-colors"
+                  className="w-full bg-header-bg border border-border-panel rounded-sm py-2 px-3 text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
                 />
               </div>
 
@@ -746,7 +714,7 @@ const CRM: React.FC = () => {
                   value={form.image}
                   onChange={e => updateField('image', e.target.value)}
                   placeholder="https://..."
-                  className="w-full bg-header-bg border border-border-panel rounded-md py-2 px-3 text-sm text-text-primary focus:border-accent-blue focus:outline-none transition-colors"
+                  className="w-full bg-header-bg border border-border-panel rounded-sm py-2 px-3 text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
                 />
               </div>
 
@@ -758,7 +726,7 @@ const CRM: React.FC = () => {
                   onChange={e => updateField('notes', e.target.value)}
                   placeholder="Observações sobre o contato..."
                   rows={3}
-                  className="w-full bg-header-bg border border-border-panel rounded-md py-2 px-3 text-sm text-text-primary focus:border-accent-blue focus:outline-none transition-colors resize-none"
+                  className="w-full bg-header-bg border border-border-panel rounded-sm py-2 px-3 text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors resize-none"
                 />
               </div>
             </div>
@@ -767,13 +735,13 @@ const CRM: React.FC = () => {
             <div className="flex justify-end gap-3 p-5 border-t border-border-panel">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-xs font-bold uppercase text-text-secondary border border-border-panel rounded-md hover:text-text-primary hover:border-text-secondary transition-colors"
+                className="px-4 py-2 text-xs font-bold uppercase text-text-secondary border border-border-panel rounded-sm hover:text-text-primary hover:border-text-secondary transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
-                className="px-6 py-2 text-xs font-bold uppercase bg-accent-blue text-white rounded-md hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/20"
+                className="px-6 py-2 text-[9px] font-bold uppercase tracking-widest bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm hover:bg-brand-mint/20 transition-all"
               >
                 {editingContact ? 'Salvar' : 'Criar'}
               </button>
@@ -785,7 +753,7 @@ const CRM: React.FC = () => {
       {/* ─── Confirm Delete Dialog ──────────────────────────────────────────── */}
       {confirmDeleteId && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200 p-4">
-          <div className="w-full max-w-sm bg-surface border border-border-panel rounded-lg shadow-2xl p-6 text-center">
+          <div className="w-full max-w-sm bg-surface border border-border-panel rounded-sm shadow-2xl p-6 text-center">
             <div className="w-12 h-12 rounded-full bg-accent-red/10 flex items-center justify-center mx-auto mb-4">
               <Icon name="delete" size="lg" className="text-accent-red" />
             </div>
@@ -794,13 +762,13 @@ const CRM: React.FC = () => {
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => setConfirmDeleteId(null)}
-                className="px-4 py-2 text-xs font-bold uppercase text-text-secondary border border-border-panel rounded-md hover:text-text-primary hover:border-text-secondary transition-colors"
+                className="px-4 py-2 text-xs font-bold uppercase text-text-secondary border border-border-panel rounded-sm hover:text-text-primary hover:border-text-secondary transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={() => handleDelete(confirmDeleteId)}
-                className="px-6 py-2 text-xs font-bold uppercase bg-accent-red text-white rounded-md hover:bg-red-600 transition-colors"
+                className="px-6 py-2 text-[9px] font-bold uppercase tracking-widest bg-accent-red/10 border border-accent-red/30 text-accent-red rounded-sm hover:bg-accent-red/20 transition-all"
               >
                 Excluir
               </button>
@@ -810,10 +778,10 @@ const CRM: React.FC = () => {
       )}
 
       <FormModal
-        title={reunioesConfig.title}
-        fields={reunioesConfig.fields}
-        isOpen={showReuniaoForm}
-        onClose={() => setShowReuniaoForm(false)}
+        title="Nova Reuniao"
+        fields={reunioesFields}
+        isOpen={isReuniaoFormOpen}
+        onClose={() => setIsReuniaoFormOpen(false)}
         onSubmit={handleReuniaoSubmit}
       />
     </div>

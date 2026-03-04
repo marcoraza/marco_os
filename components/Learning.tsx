@@ -1,18 +1,11 @@
-import React, { useState, Suspense } from 'react';
-import { Icon, Badge, SectionLabel, TabNav, EmptyState, SyncBadge, FormModal, showToast, SearchBar } from './ui';
-import { useNotionData } from '../contexts/NotionDataContext';
-import { skillsConfig } from '../lib/formConfigs';
-import { syncToNotion } from '../lib/notionSync';
+import React, { useState, useCallback } from 'react';
+import { Icon, Badge, SectionLabel, TabNav, EmptyState, FormModal, SectionJourney, showToast } from './ui';
+import { skillsFields } from '../lib/formConfigs';
 import { putSkill } from '../data/repository';
+import { syncToNotion } from '../lib/notionSync';
 import type { StoredSkill } from '../data/models';
-
-const LearningExploration = React.lazy(() => import('./learning/LearningExploration').then(m => ({ default: m.LearningExploration })));
-const CreatorsRoster = React.lazy(() => import('./learning/CreatorsRoster').then(m => ({ default: m.CreatorsRoster })));
-const SkillsWidget = React.lazy(() => import('./learning/SkillsWidget').then(m => ({ default: m.SkillsWidget })));
-const ChronicleView = React.lazy(() => import('./learning/ChronicleView').then(m => ({ default: m.ChronicleView })));
-const ContentPipelineView = React.lazy(() => import('./learning/ContentPipelineView').then(m => ({ default: m.ContentPipelineView })));
-const DecisionJournalView = React.lazy(() => import('./learning/DecisionJournalView').then(m => ({ default: m.DecisionJournalView })));
-const KnowledgeGraph = React.lazy(() => import('./learning/KnowledgeGraph').then(m => ({ default: m.KnowledgeGraph })));
+import { useTabSetup } from '../hooks/useTabSetup';
+import { learningCurriculumJourney, learningKnowledgeJourney, learningResourcesJourney } from '../lib/journeyConfigs/learning';
 
 const knowledgeCards = [
   { id: 1, category: 'IA', categoryVariant: 'purple' as const, date: '22 Out', status: 'PENDENTE', statusVariant: 'orange' as const,
@@ -30,49 +23,94 @@ const knowledgeCards = [
 ];
 
 const Learning: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'curriculum' | 'knowledge' | 'chronicle' | 'exploration' | 'creators' | 'content' | 'resources'>('curriculum');
+  const [activeTab, setActiveTab] = useState<'curriculum' | 'knowledge' | 'resources'>('curriculum');
   const [showPendingOnly, setShowPendingOnly] = useState(false);
   const [knowledgeSearch, setKnowledgeSearch] = useState('');
-  const { research } = useNotionData();
-  const [showSkillForm, setShowSkillForm] = useState(false);
+  const [isSkillFormOpen, setIsSkillFormOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const triggerRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  const curriculumSetup = useTabSetup('learning', 'curriculum');
+  const knowledgeSetup = useTabSetup('learning', 'knowledge');
+  const resourcesSetup = useTabSetup('learning', 'resources');
+
+  const setupMap: Record<string, ReturnType<typeof useTabSetup>> = {
+    curriculum: curriculumSetup,
+    knowledge: knowledgeSetup,
+    resources: resourcesSetup,
+  };
+  const journeyMap: Record<string, import('../lib/journeyTypes').JourneyConfig> = {
+    curriculum: learningCurriculumJourney,
+    knowledge: learningKnowledgeJourney,
+    resources: learningResourcesJourney,
+  };
+  const activeSetup = setupMap[activeTab];
 
   const handleSkillSubmit = async (data: Record<string, unknown>) => {
-    const entry: StoredSkill = {
+    const now = new Date().toISOString();
+    const skill: StoredSkill = {
       id: crypto.randomUUID(),
-      name: String(data.name ?? ''),
-      categoria: String(data.categoria ?? ''),
-      nivel: String(data.nivel ?? ''),
-      progresso: String(data.progresso ?? ''),
-      notas: String(data.notas ?? ''),
-      createdAt: new Date().toISOString(),
+      name: String(data.name || ''),
+      categoria: String(data.categoria || 'frontend'),
+      nivel: (data.nivel as StoredSkill['nivel']) || 'iniciante',
+      progresso: Math.min(100, Math.max(0, Number(data.progresso) || 0)),
+      notas: data.notas ? String(data.notas) : undefined,
+      createdAt: now,
+      updatedAt: now,
     };
-    await putSkill(entry);
-    syncToNotion('skill', data);
-    showToast('Skill salva');
+    await putSkill(skill);
+    showToast('Skill salva!');
+    syncToNotion('create-skill', data);
+    triggerRefresh();
   };
 
   const tabs = [
-    { id: 'curriculum', label: 'Currículo' },
+    { id: 'curriculum', label: 'Curriculo' },
     { id: 'knowledge', label: 'Conhecimento' },
-    { id: 'chronicle', label: 'Crônica' },
-    { id: 'exploration', label: 'Exploração' },
-    { id: 'creators', label: 'Criadores' },
-    { id: 'content', label: 'Conteúdo' },
-    { id: 'resources', label: 'Recursos' },
+    { id: 'resources', label: 'Recursos' }
   ];
+
+  const LEARNING_TAB_IDS = ['curriculum', 'knowledge', 'resources'] as const;
+  const completedTabs = LEARNING_TAB_IDS.filter(
+    id => localStorage.getItem(`section_setup_done_learning_${id}`) === '1'
+  );
+
+  if (!activeSetup.isSetupDone) {
+    const journeyConfig = journeyMap[activeTab];
+    if (journeyConfig) {
+      return (
+        <SectionJourney
+          config={journeyConfig}
+          onComplete={() => { activeSetup.markDone(); triggerRefresh(); }}
+          onSkip={activeSetup.markSkipped}
+        />
+      );
+    }
+  }
 
   return (
     <div className="flex flex-col h-full bg-bg-base font-sans text-text-primary overflow-hidden">
       {/* Navigation Tabs (Replaces Header) */}
       <div className="relative bg-bg-base shrink-0">
-        <TabNav 
-            tabs={tabs} 
-            activeTab={activeTab} 
-            onTabChange={(id) => setActiveTab(id as any)} 
-            accentColor="purple" 
+        <TabNav
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={(id) => setActiveTab(id as any)}
+            accentColor="purple"
+            completedTabs={completedTabs}
+            onRedoJourney={(tabId) => {
+              const setup = setupMap[tabId];
+              if (setup) setup.reset();
+            }}
         />
-        <div className="absolute top-0 right-4 h-full flex items-center pointer-events-none">
-          <SyncBadge lastSync={research.lastSync} isLoading={research.loading} />
+        <div className="absolute top-0 right-6 h-full flex items-center pointer-events-none">
+          <button
+            onClick={() => setIsSkillFormOpen(true)}
+            className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1 pointer-events-auto"
+          >
+            <Icon name="add" size="xs" />
+            SKILL
+          </button>
         </div>
       </div>
 
@@ -84,7 +122,7 @@ const Learning: React.FC = () => {
           {activeTab === 'curriculum' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* General Progress Card */}
-                <div className="bg-surface rounded-md p-4 md:p-6 border border-border-panel mb-6 md:mb-8 shadow-sm">
+                <div className="bg-surface rounded-sm p-4 md:p-6 border border-border-panel mb-6 md:mb-8 shadow-sm">
                     <div className="flex justify-between items-end mb-2">
                     <div>
                         <SectionLabel className="mb-1 text-text-secondary">Progresso Geral</SectionLabel>
@@ -106,9 +144,9 @@ const Learning: React.FC = () => {
                     {/* Past Weeks (Collapsed) */}
                     <div className="mb-4 md:mb-6 relative z-10 md:pl-10 group">
                     <div className="hidden md:block absolute left-[9px] top-1 w-3 h-3 rounded-full bg-accent-purple border-2 border-bg-base"></div>
-                    <div className="flex items-center justify-between bg-surface/50 p-4 rounded-md border border-border-panel hover:border-text-secondary transition-colors cursor-pointer">
+                    <div className="flex items-center justify-between bg-surface/50 p-4 rounded-sm border border-border-panel hover:border-text-secondary transition-colors cursor-pointer">
                         <div className="flex items-center gap-4 opacity-50">
-                        <Icon name="check_circle" className="text-green-500" />
+                        <Icon name="check_circle" className="text-brand-mint" />
                         <span className="font-bold text-text-primary text-sm md:text-base">SEMANA 1 — Mentalidade</span>
                         </div>
                         <span className="text-[10px] md:text-xs text-text-secondary uppercase">CONCLUÍDO</span>
@@ -116,9 +154,9 @@ const Learning: React.FC = () => {
                     </div>
                     <div className="mb-4 md:mb-6 relative z-10 md:pl-10 group">
                     <div className="hidden md:block absolute left-[9px] top-1 w-3 h-3 rounded-full bg-accent-purple border-2 border-bg-base"></div>
-                    <div className="flex items-center justify-between bg-surface/50 p-4 rounded-md border border-border-panel hover:border-text-secondary transition-colors cursor-pointer">
+                    <div className="flex items-center justify-between bg-surface/50 p-4 rounded-sm border border-border-panel hover:border-text-secondary transition-colors cursor-pointer">
                         <div className="flex items-center gap-4 opacity-50">
-                        <Icon name="check_circle" className="text-green-500" />
+                        <Icon name="check_circle" className="text-brand-mint" />
                         <span className="font-bold text-text-primary text-sm md:text-base">SEMANA 2-4 — Lógica</span>
                         </div>
                         <span className="text-[10px] md:text-xs text-text-secondary uppercase">CONCLUÍDO</span>
@@ -128,7 +166,7 @@ const Learning: React.FC = () => {
                     {/* Active Week (Expanded) */}
                     <div className="mb-6 md:mb-8 relative z-10 md:pl-10">
                     <div className="hidden md:block absolute left-[5px] top-0 w-5 h-5 rounded-full bg-accent-purple shadow-[0_0_15px_rgba(191,90,242,0.8)] border-4 border-bg-base flex items-center justify-center"></div>
-                    <div className="bg-surface rounded-md border border-accent-purple/30 shadow-[0_0_30px_rgba(0,0,0,0.3)] overflow-hidden">
+                    <div className="bg-surface rounded-sm border border-accent-purple/30 shadow-[0_0_30px_rgba(0,0,0,0.3)] overflow-hidden">
                         {/* Card Header */}
                         <div className="p-4 md:p-6 border-b border-border-panel relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 md:p-6 opacity-10">
@@ -152,7 +190,7 @@ const Learning: React.FC = () => {
                         <SectionLabel className="mb-4 text-text-secondary">Recursos da Semana</SectionLabel>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                             {/* Resource Item */}
-                            <a className="group flex items-center gap-4 p-3 rounded-md bg-header-bg hover:bg-surface-hover border border-transparent hover:border-accent-purple/30 transition-all" href="#">
+                            <a className="group flex items-center gap-4 p-3 rounded-sm bg-header-bg hover:bg-surface-hover border border-transparent hover:border-accent-purple/30 transition-all" href="#">
                             <div className="w-10 h-10 rounded-sm bg-black flex items-center justify-center border border-border-panel group-hover:border-accent-purple/50 transition-colors">
                                 <img alt="Cursor IDE Logo" className="w-6 h-6 object-contain opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPV6PngJ_7JShE_Mg_vub4VZCgdilvQwLQ0g1tFdYLPaOqHs50rcr-XOa3YXWJJ91lmblaXhnuTqMqEFUax4uYCCbJcqV3v4qZrCKJyazqEs2mM-r-oQyAY0sMx6EC9Tlx9jMmR24DAnpYbq2kremXmswH4VN-RkCXz1w6MbkphrdnPUVq-s6z_SuKJ-HoqBNwakb5Q9tdqidpRiycuL3SvOe5KoddaFsnor2mcTSpEcT18T7J6BxWBVTQiVXUYliH5M1K8i7t_g"/>
                             </div>
@@ -163,8 +201,8 @@ const Learning: React.FC = () => {
                             <Icon name="open_in_new" className="text-text-secondary group-hover:text-accent-purple text-xs" />
                             </a>
                             {/* Resource Item */}
-                            <a className="group flex items-center gap-4 p-3 rounded-md bg-header-bg hover:bg-surface-hover border border-transparent hover:border-accent-purple/30 transition-all" href="#">
-                            <div className="w-10 h-10 rounded-sm bg-indigo-900/30 flex items-center justify-center border border-indigo-900/50 group-hover:border-accent-purple/50 transition-colors">
+                            <a className="group flex items-center gap-4 p-3 rounded-sm bg-header-bg hover:bg-surface-hover border border-transparent hover:border-accent-purple/30 transition-all" href="#">
+                            <div className="w-10 h-10 rounded-sm bg-accent-purple/30 flex items-center justify-center border border-accent-purple/50 group-hover:border-accent-purple/50 transition-colors">
                                 <Icon name="electric_bolt" className="text-indigo-400" />
                             </div>
                             <div className="flex-1">
@@ -181,7 +219,7 @@ const Learning: React.FC = () => {
                         <div className="flex items-center gap-3">
                             <span className="text-[10px] md:text-xs font-bold text-text-secondary uppercase">Progresso</span>
                             <div className="w-24 md:w-32 bg-border-panel h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-green-500 h-full w-3/5 rounded-full"></div>
+                            <div className="bg-brand-mint h-full w-3/5 rounded-full"></div>
                             </div>
                         </div>
                         <button className="text-[10px] md:text-xs font-bold text-text-primary hover:text-accent-purple transition-colors flex items-center gap-1 uppercase tracking-wide">
@@ -195,7 +233,7 @@ const Learning: React.FC = () => {
                     {/* Future Weeks */}
                     <div className="mb-4 md:mb-6 relative z-10 md:pl-10 opacity-60 hover:opacity-100 transition-opacity">
                     <div className="hidden md:block absolute left-[11px] top-2 w-2 h-2 rounded-full bg-text-secondary border border-bg-base"></div>
-                    <div className="p-4 rounded-md border border-dashed border-text-secondary/50 text-text-secondary">
+                    <div className="p-4 rounded-sm border border-dashed border-text-secondary/50 text-text-secondary">
                         <div className="flex items-center justify-between">
                         <span className="font-bold text-xs md:text-sm">SEMANA 6 — Backend / Supabase</span>
                         <Icon name="lock" className="text-xs" />
@@ -204,7 +242,7 @@ const Learning: React.FC = () => {
                     </div>
                     <div className="mb-4 md:mb-6 relative z-10 md:pl-10 opacity-60 hover:opacity-100 transition-opacity">
                     <div className="hidden md:block absolute left-[11px] top-2 w-2 h-2 rounded-full bg-text-secondary border border-bg-base"></div>
-                    <div className="p-4 rounded-md border border-dashed border-text-secondary/50 text-text-secondary">
+                    <div className="p-4 rounded-sm border border-dashed border-text-secondary/50 text-text-secondary">
                         <div className="flex items-center justify-between">
                         <span className="font-bold text-xs md:text-sm">SEMANA 7 — APIs e Integrações</span>
                         <Icon name="lock" className="text-xs" />
@@ -213,7 +251,7 @@ const Learning: React.FC = () => {
                     </div>
                     <div className="mb-6 relative z-10 md:pl-10 opacity-60 hover:opacity-100 transition-opacity">
                     <div className="hidden md:block absolute left-[11px] top-2 w-2 h-2 rounded-full bg-text-secondary border border-bg-base"></div>
-                    <div className="p-4 rounded-md border border-dashed border-text-secondary/50 text-text-secondary">
+                    <div className="p-4 rounded-sm border border-dashed border-text-secondary/50 text-text-secondary">
                         <div className="flex items-center justify-between">
                         <span className="font-bold text-xs md:text-sm">SEMANA 8-12 — Projeto Final</span>
                         <Icon name="lock" className="text-xs" />
@@ -221,41 +259,31 @@ const Learning: React.FC = () => {
                     </div>
                     </div>
                 </div>
-                {/* SkillsWidget — Sprint A addition */}
-                <div className="flex items-center justify-between mt-6 mb-2">
-                  <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Skills</span>
-                  <button
-                    onClick={() => setShowSkillForm(true)}
-                    className="flex items-center gap-1 px-3 py-1.5 min-h-[44px] rounded-sm text-[9px] font-bold uppercase tracking-widest bg-brand-mint/10 border border-brand-mint/30 text-brand-mint hover:bg-brand-mint/20 transition-colors focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none"
-                    aria-label="Nova skill"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>add</span>
-                    Skill
-                  </button>
-                </div>
-                <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-12 w-full" />}>
-                  <SkillsWidget />
-                </Suspense>
             </div>
           )}
 
           {activeTab === 'knowledge' && (
              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
                 {/* Controls Toolbar */}
-                <div className="bg-surface rounded-md p-4 shadow-sm border border-border-panel flex flex-col sm:flex-row gap-4 justify-between items-center sticky top-0 z-40 transition-shadow hover:shadow-md">
+                <div className="bg-surface rounded-sm p-4 shadow-sm border border-border-panel flex flex-col sm:flex-row gap-4 justify-between items-center sticky top-0 z-40 transition-shadow hover:shadow-md">
                     {/* Search */}
-                    <div className="w-full sm:w-64">
-                        <SearchBar
+                    <div className="relative w-full sm:w-64">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Icon name="search" className="text-text-secondary text-xl" />
+                        </div>
+                        <input
                           value={knowledgeSearch}
-                          onChange={setKnowledgeSearch}
-                          placeholder="Buscar anotacoes..."
+                          onChange={e => setKnowledgeSearch(e.target.value)}
+                          className="block w-full pl-10 pr-3 py-2 border border-border-panel rounded-sm leading-5 bg-header-bg text-text-primary placeholder-text-secondary focus:outline-none focus:placeholder-text-secondary focus:ring-1 focus:ring-accent-purple focus:border-accent-purple text-base md:text-sm transition-colors"
+                          placeholder="Buscar anotações..."
+                          type="text"
                         />
                     </div>
                     {/* Filters Group */}
                     <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
                         {/* Theme Filter Dropdown */}
                         <div className="relative inline-block text-left group">
-                            <button className="inline-flex justify-center w-full rounded-md border border-border-panel shadow-sm px-4 py-2 bg-header-bg text-xs md:text-sm font-medium text-text-primary hover:bg-surface-hover focus:outline-none transition-colors" type="button">
+                            <button className="inline-flex justify-center w-full rounded-sm border border-border-panel shadow-sm px-4 py-2 bg-header-bg text-xs md:text-sm font-medium text-text-primary hover:bg-surface-hover focus:outline-none transition-colors" type="button">
                                 Filtro: Todos
                                 <Icon name="expand_more" className="ml-2 -mr-1 h-5 w-5 text-text-secondary" />
                             </button>
@@ -282,7 +310,7 @@ const Learning: React.FC = () => {
                         return card.title.toLowerCase().includes(q) || card.category.toLowerCase().includes(q) || card.bullets.some(b => b.toLowerCase().includes(q));
                       })
                       .map(card => (
-                      <div key={card.id} className={`group bg-surface rounded-md p-4 md:p-6 shadow-sm border border-border-panel hover:border-accent-purple/50 transition-all duration-300 hover:shadow-md ${card.done ? 'opacity-80 hover:opacity-100' : ''}`}>
+                      <div key={card.id} className={`group bg-surface rounded-sm p-4 md:p-6 shadow-sm border border-border-panel hover:border-accent-purple/50 transition-all duration-300 hover:shadow-md ${card.done ? 'opacity-80 hover:opacity-100' : ''}`}>
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-3">
                                 <Badge variant={card.categoryVariant}>{card.category}</Badge>
@@ -299,8 +327,8 @@ const Learning: React.FC = () => {
                               </div>
                             ))}
                         </div>
-                        <div className="bg-header-bg rounded-md p-3 md:p-4 border border-border-panel flex items-start gap-3">
-                            <div className="p-1.5 rounded-md bg-accent-purple/10 text-accent-purple">
+                        <div className="bg-header-bg rounded-sm p-3 md:p-4 border border-border-panel flex items-start gap-3">
+                            <div className="p-1.5 rounded-sm bg-accent-purple/10 text-accent-purple">
                                 <Icon name="bolt" className="text-sm" />
                             </div>
                             <div>
@@ -319,43 +347,7 @@ const Learning: React.FC = () => {
                       <EmptyState icon="school" title="Nenhuma anotação encontrada" description="Tente ajustar a busca ou o filtro de pendentes." />
                     )}
                 </div>
-
-                {/* Knowledge Graph — Sprint D */}
-                <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-12 w-full mt-6" />}>
-                  <KnowledgeGraph className="mt-6" />
-                </Suspense>
-
-                {/* Decision Journal — Sprint D */}
-                <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-12 w-full mt-6" />}>
-                  <DecisionJournalView className="mt-6" />
-                </Suspense>
              </div>
-          )}
-
-          {/* Chronicle tab — Sprint D */}
-          {activeTab === 'chronicle' && (
-            <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full" />}>
-              <ChronicleView />
-            </Suspense>
-          )}
-
-          {activeTab === 'exploration' && (
-            <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full" />}>
-              <LearningExploration />
-            </Suspense>
-          )}
-
-          {activeTab === 'creators' && (
-            <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full" />}>
-              <CreatorsRoster />
-            </Suspense>
-          )}
-
-          {/* Content Pipeline tab — Sprint D */}
-          {activeTab === 'content' && (
-            <Suspense fallback={<div className="animate-pulse bg-border-panel rounded-sm h-24 w-full" />}>
-              <ContentPipelineView />
-            </Suspense>
           )}
 
           {activeTab === 'resources' && (
@@ -372,9 +364,9 @@ const Learning: React.FC = () => {
                     { name: 'Supabase', desc: 'Backend-as-a-Service', icon: 'database', color: 'brand-mint' },
                     { name: 'Figma', desc: 'Design colaborativo', icon: 'draw', color: 'accent-red' },
                   ].map(tool => (
-                    <div key={tool.name} className="group bg-surface rounded-md p-4 border border-border-panel hover:border-accent-purple/40 transition-all cursor-pointer">
+                    <div key={tool.name} className="group bg-surface rounded-sm p-4 border border-border-panel hover:border-accent-purple/40 transition-all cursor-pointer">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-8 h-8 rounded-md bg-${tool.color}/10 flex items-center justify-center text-${tool.color}`}>
+                        <div className={`w-8 h-8 rounded-sm bg-${tool.color}/10 flex items-center justify-center text-${tool.color}`}>
                           <Icon name={tool.icon} size="sm" />
                         </div>
                         <div>
@@ -397,7 +389,7 @@ const Learning: React.FC = () => {
                     { name: 'Artigos & Blogs', items: '24 artigos', icon: 'article', badge: 'Leitura' },
                     { name: 'Cursos Online', items: '3 em andamento', icon: 'school', badge: 'Curso' },
                   ].map(channel => (
-                    <div key={channel.name} className="flex items-center justify-between p-4 bg-surface border border-border-panel rounded-md hover:border-accent-purple/30 transition-colors cursor-pointer group">
+                    <div key={channel.name} className="flex items-center justify-between p-4 bg-surface border border-border-panel rounded-sm hover:border-accent-purple/30 transition-colors cursor-pointer group">
                       <div className="flex items-center gap-3">
                         <Icon name={channel.icon} className="text-text-secondary group-hover:text-accent-purple transition-colors" />
                         <div>
@@ -421,7 +413,7 @@ const Learning: React.FC = () => {
                     { title: 'Tailwind CSS v4 Migration Guide', source: 'tailwindcss.com', tag: 'CSS' },
                     { title: 'PostgreSQL Performance Tips', source: 'supabase.com', tag: 'DB' },
                   ].map(bookmark => (
-                    <div key={bookmark.title} className="p-3 bg-surface border border-border-panel rounded-md hover:border-accent-purple/30 transition-colors cursor-pointer group">
+                    <div key={bookmark.title} className="p-3 bg-surface border border-border-panel rounded-sm hover:border-accent-purple/30 transition-colors cursor-pointer group">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <h4 className="text-xs font-bold text-text-primary truncate group-hover:text-accent-purple transition-colors">{bookmark.title}</h4>
@@ -442,17 +434,17 @@ const Learning: React.FC = () => {
           {activeTab === 'curriculum' && (
              <div className="animate-in fade-in slide-in-from-right duration-500 space-y-6">
                 {/* Statistics Card */}
-                <div className="bg-surface rounded-md p-5 border border-border-panel">
+                <div className="bg-surface rounded-sm p-5 border border-border-panel">
                     <div className="flex items-center justify-between mb-4">
                     <SectionLabel className="text-text-secondary">ESTATÍSTICAS</SectionLabel>
                     <Icon name="bar_chart" className="text-text-secondary text-sm" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-header-bg rounded-md p-3 text-center">
+                    <div className="bg-header-bg rounded-sm p-3 text-center">
                         <span className="block text-lg font-bold text-text-primary mb-1">12</span>
                         <span className="text-[10px] text-text-secondary uppercase">ANOTAÇÕES</span>
                     </div>
-                    <div className="bg-header-bg rounded-md p-3 text-center">
+                    <div className="bg-header-bg rounded-sm p-3 text-center">
                         <span className="block text-lg font-bold text-accent-purple mb-1">5</span>
                         <span className="text-[10px] text-text-secondary uppercase">Semanas</span>
                     </div>
@@ -460,7 +452,7 @@ const Learning: React.FC = () => {
                     <div className="mt-4 pt-4 border-t border-border-panel">
                     <div className="flex items-center justify-between text-xs mb-1">
                         <span className="text-text-secondary">Consistência</span>
-                        <span className="text-green-500 font-bold">Alta 🔥</span>
+                        <span className="text-brand-mint font-bold">Alta 🔥</span>
                     </div>
                     <div className="flex gap-1 h-8 items-end">
                         <div className="flex-1 h-[40%] bg-surface-hover rounded-sm"></div>
@@ -475,7 +467,7 @@ const Learning: React.FC = () => {
                 </div>
 
                 {/* Reading Queue Card */}
-                <div className="bg-surface rounded-md p-5 border border-border-panel flex-1">
+                <div className="bg-surface rounded-sm p-5 border border-border-panel flex-1">
                     <div className="flex items-center justify-between mb-6">
                     <SectionLabel className="text-text-secondary">Fila de Leitura</SectionLabel>
                     <button className="text-accent-purple hover:text-text-primary transition-colors">
@@ -531,7 +523,7 @@ const Learning: React.FC = () => {
                 </div>
 
                 {/* Quick Tip */}
-                <div className="bg-gradient-to-br from-accent-purple/20 to-transparent rounded-md p-4 border border-accent-purple/20">
+                <div className="bg-gradient-to-br from-accent-purple/20 to-transparent rounded-sm p-4 border border-accent-purple/20">
                     <div className="flex gap-3 items-start">
                     <Icon name="lightbulb" className="text-accent-purple text-lg mt-0.5" />
                     <div>
@@ -548,7 +540,7 @@ const Learning: React.FC = () => {
           {activeTab === 'knowledge' && (
               <div className="animate-in fade-in slide-in-from-right duration-500 space-y-6">
                 {/* Weekly Review Card */}
-                <div className="bg-gradient-to-b from-surface to-header-bg rounded-md border border-border-panel overflow-hidden relative">
+                <div className="bg-gradient-to-b from-surface to-header-bg rounded-sm border border-border-panel overflow-hidden relative">
                     {/* Decorative bg pattern */}
                     <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-accent-purple rounded-full opacity-20 blur-3xl"></div>
                     <div className="p-6 relative z-10">
@@ -560,7 +552,7 @@ const Learning: React.FC = () => {
                             <div className="w-12 h-12 rounded-full bg-surface-hover border-2 border-border-panel overflow-hidden shrink-0">
                                 <img alt="Frank AI Assistant Avatar" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzUSaEyIBK7c_NID_WUbZ9obih2J4F_cKzpBbQ5De0b7x9fvQvVDMIglFx2Jdw3OKT-myK5TBlzlwLI-gr_PF1BjhzEanr9UP7cL5w39n0ZUS0E1qOGI1S0Uzom6qGFF_GSkOVGRBOgfok1EEzo29ofe-ge5VO0UuKbNHDI7XG-QxNAjdfneF76v2jlrFGheTUzfxNvbMjgxP8LT8eTtksKTnTHz47EuuYdZ0rbIqSceHWNHrq4jShZSmuikcdb5AsigX0bmpICg"/>
                             </div>
-                            <div className="bg-header-bg/80 p-3 rounded-md rounded-tl-none border border-border-panel/50 backdrop-blur-sm">
+                            <div className="bg-header-bg/80 p-3 rounded-sm rounded-tl-none border border-border-panel/50 backdrop-blur-sm">
                                 <p className="text-sm text-text-primary italic">"Olá, aqui é o Frank. Você tem <span className="text-accent-purple font-bold">2 anotações pendentes</span> marcadas como importantes essa semana. Revise agora para consolidar o aprendizado."</p>
                             </div>
                         </div>
@@ -573,18 +565,18 @@ const Learning: React.FC = () => {
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-surface rounded-md p-4 border border-border-panel text-center">
+                    <div className="bg-surface rounded-sm p-4 border border-border-panel text-center">
                         <span className="block text-lg font-bold text-text-primary mb-1">12</span>
                         <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Lidos hoje</span>
                     </div>
-                    <div className="bg-surface rounded-md p-4 border border-border-panel text-center">
-                        <span className="block text-lg font-bold text-emerald-500 mb-1">85%</span>
+                    <div className="bg-surface rounded-sm p-4 border border-border-panel text-center">
+                        <span className="block text-lg font-bold text-brand-mint mb-1">85%</span>
                         <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">RETENÇÃO</span>
                     </div>
                 </div>
 
                 {/* Tags Cloud */}
-                <div className="bg-surface rounded-md p-6 border border-border-panel">
+                <div className="bg-surface rounded-sm p-6 border border-border-panel">
                     <SectionLabel className="mb-4 text-text-secondary">TOP TÓPICOS</SectionLabel>
                     <div className="flex flex-wrap gap-2">
                         <a className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel" href="#">#inteligencia-artificial</a>
@@ -600,10 +592,10 @@ const Learning: React.FC = () => {
       </main>
 
       <FormModal
-        title={skillsConfig.title}
-        fields={skillsConfig.fields}
-        isOpen={showSkillForm}
-        onClose={() => setShowSkillForm(false)}
+        title="Nova Skill"
+        fields={skillsFields}
+        isOpen={isSkillFormOpen}
+        onClose={() => setIsSkillFormOpen(false)}
         onSubmit={handleSkillSubmit}
       />
     </div>
