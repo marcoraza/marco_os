@@ -152,7 +152,7 @@ const App: React.FC = () => {
 
   // ─── Agents ────────────────────────────────────────────────────────────────
   const [agentRoster, setAgentRoster] = useState<Agent[]>([]);
-  const [activeAgentId, setActiveAgentId] = useState<string>('frank-opus');
+  const [activeAgentId, setActiveAgentId] = useState<string>('main');
   const [isAddAgentOpen, setIsAddAgentOpen] = useState(false);
 
   const activeAgent = agentRoster.find(a => a.id === activeAgentId) ?? agentRoster[0];
