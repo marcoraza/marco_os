@@ -2,8 +2,8 @@
   "_meta": {
     "db_id": "30bb72d5-042d-8176-a902-deaef821c5f2",
     "db_name": "research",
-    "synced_at": "2026-03-04T22:00:02.670816+00:00",
-    "count": 45
+    "synced_at": "2026-03-04T23:00:02.035848+00:00",
+    "count": 46
   },
   "items": [
     {
@@ -1422,6 +1422,34 @@
       ],
       "Link Original": "https://www.youtube.com/watch?v=lhl0jgb0siI",
       "Name": "Criando uma marca PREMIUM com IA (Sem ser bom de design)"
+    },
+    {
+      "_id": "319b72d5-042d-81a6-96ff-c1e74d377a5b",
+      "_created_time": "2026-03-04T22:37:00.000Z",
+      "_edited_time": "2026-03-04T22:46:00.000Z",
+      "_url": "https://www.notion.so/ashen_one-X-Twitter-319b72d5042d81a696ffc1e74d377a5b",
+      "Resumo": "O vídeo explica como usar uma nova “habilidade” lançada por Phantom e Dflow para facilitar a criação de bots de trade e agentes de análise (ex.: mercados de previsão) no ecossistema Solana.\nO autor defende que, com ferramentas de “vibe coding” e um LLM (citado como OpenCl…/OpenCloth), é possível prototipar um bot e um site de suporte ao trading em poucos minutos.\nEle enfatiza a importância de detalhar bem o prompt e planejar requisitos antes de pedir para a IA gerar o projeto.\nTambém argumenta que stablecoins (ex.: USDC) são uma forma mais segura/prática de dar “carteira” e capacidade de pagamento a agentes autônomos, sem expor cartão de crédito.\nPor fim, justifica Solana como escolha por adoção em micropagamentos para agentes de IA e por ser um dos principais ecossistemas para esse tipo de integração.",
+      "Reprocessar": false,
+      "Data": "2026-03-04",
+      "Processado por": "Frank",
+      "Deep Dives": null,
+      "Link Drive": "https://drive.google.com/file/d/1MS65e_TCp_mZaWPeyqsPHPrg-W7TwjhR/view?usp=drivesdk",
+      "Plataforma": "X",
+      "Idioma": "Inglês",
+      "Qualidade": "Alta",
+      "Tem transcript": true,
+      "Tags": [
+        "IA / AI Coding"
+      ],
+      "Content (Inspiração)": null,
+      "Place": null,
+      "Tópico": [],
+      "Criador": "319b72d5-042d-8120-8764-fb1b774fd017",
+      "Estilo": [
+        "Análise técnica"
+      ],
+      "Link Original": "https://x.com/ashen_one/status/2029260116436861338",
+      "Name": "@ashen_one — X/Twitter"
     },
     {
       "_id": "319b72d5-042d-81b6-b232-ed27387044f1",
