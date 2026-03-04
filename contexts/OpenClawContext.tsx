@@ -124,8 +124,8 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
   const [liveKanbanTasks, setLiveKanbanTasks] = useState<MockKanbanTask[]>([]);
 
   // Use live data when available, mock data as final fallback
-  const agents = isLive && liveAgents.length > 0 ? liveAgents : mockAgents;
-  const executions = isLive && liveExecutions.length > 0 ? liveExecutions : mockExecutions;
+  const agents = liveAgents.length > 0 ? liveAgents : mockAgents;
+  const executions = liveExecutions.length > 0 ? liveExecutions : mockExecutions;
   const heartbeats = isLive && liveHeartbeats.length > 0 ? liveHeartbeats : mockHeartbeats;
   // Cron jobs: live gateway > static JSON polling > mock fallback
   const cronJobs = liveCronJobs.length > 0 ? liveCronJobs : mockCronJobs;
@@ -286,6 +286,80 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
       clearInterval(interval);
     };
   }, [isLive, parseCronJson]);
+
+  // ─── BRIDGE API POLLING (real data from Flask) ─────────────────────────────
+
+  useEffect(() => {
+    let cancelled = false;
+    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
+    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
+
+    if (!API_URL) return; // No API configured
+
+    const headers: Record<string, string> = {
+      'Authorization': `Bearer ${API_TOKEN}`,
+    };
+
+    const pollAgents = async () => {
+      try {
+        const res = await fetch(`${API_URL}/agents`, { headers });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (data.ok && data.agents?.length > 0) {
+          setLiveAgents(data.agents);
+        }
+      } catch { /* keep current state */ }
+    };
+
+    const pollRuns = async () => {
+      try {
+        const res = await fetch(`${API_URL}/runs`, { headers });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (data.ok && data.runs) {
+          setLiveExecutions(data.runs.map((r: any) => ({
+            id: r.id,
+            agentId: r.agentId,
+            agentName: r.agentName,
+            task: r.task,
+            status: r.status,
+            startedAt: r.startedAt,
+            completedAt: r.completedAt,
+            duration: r.duration,
+            output: r.output,
+            error: r.error,
+          })));
+        }
+      } catch { /* keep current state */ }
+    };
+
+    const pollCrons = async () => {
+      try {
+        const res = await fetch(`${API_URL}/crons`, { headers });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (data.ok && data.crons?.length > 0) {
+          setLiveCronJobs(data.crons);
+        }
+      } catch { /* keep current state */ }
+    };
+
+    const pollAll = () => {
+      pollAgents();
+      pollRuns();
+      pollCrons();
+    };
+
+    // Initial fetch immediately
+    pollAll();
+    // Then every 30 seconds
+    const interval = setInterval(pollAll, 30_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []); // Empty deps — run once on mount
 
   // ─── CRON JOB ACTIONS ─────────────────────────────────────────────────────
 
