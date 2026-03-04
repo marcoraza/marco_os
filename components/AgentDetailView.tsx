@@ -17,6 +17,11 @@ const AgentStandup = lazy(() => import('./agents/AgentStandup'));
 const ActivityFeed = lazy(() => import('./agents/ActivityFeed'));
 const AgentChat = lazy(() => import('./agents/AgentChat'));
 const GitHubIssues = lazy(() => import('./agents/GitHubIssues'));
+const QualityReviewGates = lazy(() => import('./agents/QualityReviewGates'));
+const AuditLog = lazy(() => import('./agents/AuditLog'));
+const GlobalSearch = lazy(() => import('./agents/GlobalSearch'));
+const PipelineOrchestration = lazy(() => import('./agents/PipelineOrchestration'));
+const WebhookManager = lazy(() => import('./agents/WebhookManager'));
 
 function TabFallback() {
   return (
@@ -43,6 +48,11 @@ const agentTabs: Tab[] = [
   { id: 'atividade', label: 'Atividade', icon: 'timeline' },
   { id: 'chat', label: 'Chat', icon: 'chat' },
   { id: 'github', label: 'GitHub', icon: 'code' },
+  { id: 'revisao', label: 'Revisão', icon: 'verified' },
+  { id: 'auditoria', label: 'Auditoria', icon: 'history' },
+  { id: 'busca', label: 'Busca', icon: 'search' },
+  { id: 'pipelines', label: 'Pipelines', icon: 'route' },
+  { id: 'webhooks', label: 'Webhooks', icon: 'webhook' },
 ];
 
 export default function AgentDetailView({ agentId, onBack }: AgentDetailViewProps) {
@@ -166,6 +176,31 @@ export default function AgentDetailView({ agentId, onBack }: AgentDetailViewProp
         {activeTab === 'github' && (
           <Suspense fallback={<TabFallback />}>
             <GitHubIssues />
+          </Suspense>
+        )}
+        {activeTab === 'revisao' && (
+          <Suspense fallback={<TabFallback />}>
+            <QualityReviewGates />
+          </Suspense>
+        )}
+        {activeTab === 'auditoria' && (
+          <Suspense fallback={<TabFallback />}>
+            <AuditLog />
+          </Suspense>
+        )}
+        {activeTab === 'busca' && (
+          <Suspense fallback={<TabFallback />}>
+            <GlobalSearch />
+          </Suspense>
+        )}
+        {activeTab === 'pipelines' && (
+          <Suspense fallback={<TabFallback />}>
+            <PipelineOrchestration />
+          </Suspense>
+        )}
+        {activeTab === 'webhooks' && (
+          <Suspense fallback={<TabFallback />}>
+            <WebhookManager />
           </Suspense>
         )}
       </div>

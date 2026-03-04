@@ -119,6 +119,17 @@ interface OpenClawContextType {
   fetchTaskComments: (taskId: string) => Promise<any[]>;
   addTaskComment: (taskId: string, text: string) => Promise<boolean>;
   fetchGitHubIssues: () => Promise<any[]>;
+
+  // Quality Review / Audit / Search / Pipelines / Webhooks
+  reviewTask: (taskId: string, action: string, reviewer?: string) => Promise<boolean>;
+  fetchAuditLog: (limit?: number, type?: string) => Promise<any[]>;
+  globalSearch: (query: string, limit?: number) => Promise<any[]>;
+  fetchPipelines: () => Promise<any[]>;
+  createPipeline: (name: string, steps: any[], trigger?: string) => Promise<any>;
+  runPipeline: (pipelineId: string) => Promise<boolean>;
+  fetchWebhooks: () => Promise<any[]>;
+  createWebhook: (url: string, events: string[], name?: string) => Promise<any>;
+  deleteWebhook: (webhookId: string) => Promise<boolean>;
 }
 
 const OpenClawContext = createContext<OpenClawContextType | undefined>(undefined);
@@ -807,6 +818,154 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
     } catch { return []; }
   }, []);
 
+  // ─── QUALITY REVIEW / AUDIT / SEARCH / PIPELINES / WEBHOOKS ─────────────
+
+  const reviewTask = useCallback(async (taskId: string, action: string, reviewer?: string): Promise<boolean> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+      'Content-Type': 'application/json',
+    };
+    if (!bridgeBase) return false;
+    try {
+      const res = await fetch(`${bridgeBase}/tasks/${taskId}/review`, {
+        method: 'PATCH',
+        headers: bridgeHeaders,
+        body: JSON.stringify({ action, reviewer }),
+      });
+      const data = await res.json();
+      return data.ok || false;
+    } catch { return false; }
+  }, []);
+
+  const fetchAuditLog = useCallback(async (limit = 50, type?: string): Promise<any[]> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+    };
+    if (!bridgeBase) return [];
+    try {
+      const params = new URLSearchParams({ limit: String(limit) });
+      if (type) params.set('type', type);
+      const res = await fetch(`${bridgeBase}/audit?${params}`, { headers: bridgeHeaders });
+      const data = await res.json();
+      const list = data.ok ? (data.entries ?? data.data ?? []) : [];
+      return Array.isArray(list) ? list : [];
+    } catch { return []; }
+  }, []);
+
+  const globalSearch = useCallback(async (query: string, limit = 20): Promise<any[]> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+    };
+    if (!bridgeBase) return [];
+    try {
+      const params = new URLSearchParams({ q: query, limit: String(limit) });
+      const res = await fetch(`${bridgeBase}/search?${params}`, { headers: bridgeHeaders });
+      const data = await res.json();
+      const list = data.ok ? (data.results ?? data.data ?? []) : [];
+      return Array.isArray(list) ? list : [];
+    } catch { return []; }
+  }, []);
+
+  const fetchPipelines = useCallback(async (): Promise<any[]> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+    };
+    if (!bridgeBase) return [];
+    try {
+      const res = await fetch(`${bridgeBase}/pipelines`, { headers: bridgeHeaders });
+      const data = await res.json();
+      const list = data.ok ? (data.pipelines ?? data.data ?? []) : [];
+      return Array.isArray(list) ? list : [];
+    } catch { return []; }
+  }, []);
+
+  const createPipeline = useCallback(async (name: string, steps: any[], trigger?: string): Promise<any> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+      'Content-Type': 'application/json',
+    };
+    if (!bridgeBase) return null;
+    try {
+      const res = await fetch(`${bridgeBase}/pipelines`, {
+        method: 'POST',
+        headers: bridgeHeaders,
+        body: JSON.stringify({ name, steps, trigger }),
+      });
+      const data = await res.json();
+      return data.ok ? (data.pipeline ?? data) : null;
+    } catch { return null; }
+  }, []);
+
+  const runPipeline = useCallback(async (pipelineId: string): Promise<boolean> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+      'Content-Type': 'application/json',
+    };
+    if (!bridgeBase) return false;
+    try {
+      const res = await fetch(`${bridgeBase}/pipelines/${pipelineId}/run`, {
+        method: 'POST',
+        headers: bridgeHeaders,
+      });
+      const data = await res.json();
+      return data.ok || false;
+    } catch { return false; }
+  }, []);
+
+  const fetchWebhooks = useCallback(async (): Promise<any[]> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+    };
+    if (!bridgeBase) return [];
+    try {
+      const res = await fetch(`${bridgeBase}/webhooks`, { headers: bridgeHeaders });
+      const data = await res.json();
+      const list = data.ok ? (data.webhooks ?? data.data ?? []) : [];
+      return Array.isArray(list) ? list : [];
+    } catch { return []; }
+  }, []);
+
+  const createWebhook = useCallback(async (url: string, events: string[], name?: string): Promise<any> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+      'Content-Type': 'application/json',
+    };
+    if (!bridgeBase) return null;
+    try {
+      const res = await fetch(`${bridgeBase}/webhooks`, {
+        method: 'POST',
+        headers: bridgeHeaders,
+        body: JSON.stringify({ url, events, name }),
+      });
+      const data = await res.json();
+      return data.ok ? (data.webhook ?? data) : null;
+    } catch { return null; }
+  }, []);
+
+  const deleteWebhook = useCallback(async (webhookId: string): Promise<boolean> => {
+    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
+    const bridgeHeaders: Record<string, string> = {
+      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
+    };
+    if (!bridgeBase) return false;
+    try {
+      const res = await fetch(`${bridgeBase}/webhooks/${webhookId}`, {
+        method: 'DELETE',
+        headers: bridgeHeaders,
+      });
+      const data = await res.json();
+      return data.ok || false;
+    } catch { return false; }
+  }, []);
+
   // ─── FETCH MEMORY CONTENT ────────────────────────────────────────────────
 
   const fetchMemoryContent = useCallback(async (path: string): Promise<string> => {
@@ -864,6 +1023,15 @@ export function OpenClawProvider({ children, config: configOverride, autoConnect
     fetchTaskComments,
     addTaskComment,
     fetchGitHubIssues,
+    reviewTask,
+    fetchAuditLog,
+    globalSearch,
+    fetchPipelines,
+    createPipeline,
+    runPipeline,
+    fetchWebhooks,
+    createWebhook,
+    deleteWebhook,
   };
 
   return (
