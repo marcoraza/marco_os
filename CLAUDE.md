@@ -619,4 +619,46 @@ HTML files remain as fallback URLs.
 
 ---
 
-*Rules version: 3.0 | Source: PRD v3.0 + Uma UX Design Pipeline | Last updated: 2026-03-03*
+---
+
+## Guardrails — Regras Operacionais para Agentes
+
+### Deployment Checklist
+- Verify all env vars are set in production
+- Never push without confirming with user first
+- After deploy, confirm live URL is responding
+- Run smoke test on critical paths before declaring done
+
+### Debugging Rules
+- After 2 failed attempts on the same bug, STOP and ask
+- Never blame cache without evidence (check logs first)
+- Diagnose root cause before proposing a fix
+- Summarize your diagnosis in 1 sentence before coding
+
+### VPS/Infrastructure
+- Check for orphan processes FIRST before starting services
+- SSH commands timeout at 30s — use background jobs for long ops
+- Always run smoke test after any infra change
+- Confirm ports are open before declaring service is up
+
+### Payment Integration
+- Pix is not a subscription — they are different flows
+- Map all architectural differences BEFORE writing any code
+- Never assume payment provider behavior — read the docs first
+- Test with sandbox credentials before any production deploy
+
+### Testing
+- Run full test suite after any refactor
+- grep for removed function names in test files before deleting
+- A passing build does not mean the feature works
+- Confirm test coverage on the changed path explicitly
+
+### UI/Frontend
+- Describe proposed visual changes and ask for confirmation before implementing
+- Never declare done based on build success alone — check in the browser
+- Screenshot or describe the result after UI changes
+- Ask if the interaction feels right, not just if it compiles
+
+---
+
+*Rules version: 4.0 | Source: PRD v2.0 + Uma UX Design Pipeline + Guardrails | Last updated: 2026-03-04*
