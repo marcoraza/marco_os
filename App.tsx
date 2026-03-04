@@ -37,7 +37,7 @@ import CommandPalette from './components/CommandPalette';
 import AgentAddModal from './components/AgentAddModal';
 import MissionModal from './components/MissionModal';
 import { ToastContainer, showToast } from './components/ui';
-import { useConnectionState } from './contexts/OpenClawContext';
+import { useConnectionState, useOpenClaw } from './contexts/OpenClawContext';
 import { NotionDataProvider } from './contexts/NotionDataContext';
 
 // Layout components
@@ -136,6 +136,7 @@ const App: React.FC = () => {
 
   // OpenClaw connection
   const { connectionState, isLive } = useConnectionState();
+  const { agents: liveAgents } = useOpenClaw();
 
   // ─── Projects ──────────────────────────────────────────────────────────────
   const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
@@ -226,7 +227,14 @@ const App: React.FC = () => {
     (async () => {
       try {
         await bootstrapIfEmpty({ projects: DEFAULT_PROJECTS, tasks: DEFAULT_TASKS, notes: [], events: [] });
-        await bootstrapAgentsIfEmpty(defaultAgents);
+        // Force re-bootstrap if stored agents don't include the real IDs
+        const existingAgents = await loadAgents();
+        const hasRealIds = existingAgents.some(a => a.id === 'main');
+        if (!hasRealIds) {
+          for (const agent of defaultAgents) {
+            await putAgent(agent);
+          }
+        }
         const { projects: p, tasks: t, notes: n, events: e } = await loadAll();
         if (p.length) setProjects(p);
         if (t.length) setTasks(t);
@@ -284,6 +292,38 @@ const App: React.FC = () => {
     if (!didHydrateRef.current) return;
     schedulePersist('events', () => { void saveEvents(events).then(() => showToast('Salvo')); });
   }, [events]);
+
+  // ─── Sync Bridge API agents to agentRoster ──────────────────────────────────
+  useEffect(() => {
+    if (liveAgents.length === 0) return;
+    // Only sync if agents have real data (check for known real IDs)
+    const hasRealAgent = liveAgents.some(a => ['main', 'coder', 'researcher'].includes(a.id));
+    if (!hasRealAgent) return;
+
+    setAgentRoster(prev => {
+      const merged = [...prev];
+      for (const live of liveAgents) {
+        const idx = merged.findIndex(a => a.id === live.id);
+        const updated: Agent = {
+          id: live.id,
+          name: live.name,
+          role: live.role as Agent['role'],
+          model: live.model,
+          status: live.status as Agent['status'],
+          lastHeartbeat: live.lastHeartbeat || '',
+          uptime: live.uptime || '',
+          tags: live.tags || [],
+          currentMission: live.currentMission,
+        };
+        if (idx >= 0) {
+          merged[idx] = { ...merged[idx], ...updated };
+        } else {
+          merged.push(updated);
+        }
+      }
+      return merged;
+    });
+  }, [liveAgents]);
 
   // ─── Project management ─────────────────────────────────────────────────────
   const addProject = (name: string) => {
