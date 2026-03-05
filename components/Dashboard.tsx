@@ -13,6 +13,7 @@ import {
   HealthScoreWidget,
   ActivityHeatmapWidget,
 } from './dashboard/index';
+import TaskEditPanel from './dashboard/TaskEditPanel';
 import CalendarWidget from './dashboard/CalendarWidget';
 import { useQuickActions } from '../hooks/useQuickActions';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -56,6 +57,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [activeColumn, setActiveColumn] = useState<Task['status']>('assigned');
   const [collapsedCols, setCollapsedCols] = useState<Set<Task['status']>>(new Set());
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
 
   // Handlers
   const handleQuickCaptureKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -122,7 +124,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     const notionId = (task as Task & { notionId?: string })?.notionId;
     if (apiBase && notionId) {
       try {
-        await fetch(`${apiBase}/api/tasks/${notionId}`, {
+        await fetch(`${apiBase}/tasks/${notionId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -134,6 +136,43 @@ const Dashboard: React.FC<DashboardProps> = ({
         console.warn('[DeleteTask] Could not archive in Notion:', err);
       }
     }
+  };
+
+  const handleTaskEditSave = async (
+    taskId: number,
+    changes: { title: string; status: Task['status']; priority: Task['priority']; deadline: string; deadlineIso?: string }
+  ) => {
+    // Optimistic update
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...changes } : t));
+    // Sync status change if changed
+    const task = tasks.find(t => t.id === taskId);
+    if (task && task.status !== changes.status && onTaskStatusSync) {
+      void onTaskStatusSync(taskId, changes.status);
+    }
+    // PATCH full update via Bridge API
+    const apiBase = import.meta.env.VITE_FORM_API_URL;
+    const apiToken = import.meta.env.VITE_FORM_API_TOKEN;
+    const notionId = (task as Task & { notionId?: string })?.notionId;
+    if (apiBase && notionId) {
+      try {
+        await fetch(`${apiBase}/tasks/${notionId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiToken || ''}`,
+          },
+          body: JSON.stringify({
+            title: changes.title,
+            status: changes.status,
+            priority: changes.priority,
+            prazo: changes.deadlineIso || undefined,
+          }),
+        });
+      } catch (err) {
+        console.warn('[TaskEdit] Could not update in Notion:', err);
+      }
+    }
+    setEditingTaskId(null);
   };
 
   // Derived state
@@ -222,7 +261,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           collapsedCols={collapsedCols}
           activeColumn={activeColumn}
           onToggleCollapse={toggleCollapse}
-          onTaskClick={id => onTaskClick && onTaskClick(id)}
+          onTaskClick={id => setEditingTaskId(id)}
           onAddTask={() => onAddTask && onAddTask()}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
@@ -319,6 +358,18 @@ const Dashboard: React.FC<DashboardProps> = ({
           onNavigate={onNavigate}
         />
       )}
+
+      {/* Task edit panel modal */}
+      {editingTaskId !== null && (() => {
+        const editTask = tasks.find(t => t.id === editingTaskId);
+        return editTask ? (
+          <TaskEditPanel
+            task={editTask}
+            onClose={() => setEditingTaskId(null)}
+            onSave={handleTaskEditSave}
+          />
+        ) : null;
+      })()}
     </div>
   );
 };

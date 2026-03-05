@@ -135,7 +135,7 @@ export default function KanbanBoard({
               <div
                 className="flex flex-col gap-2 overflow-y-auto"
                 style={{
-                  maxHeight: '280px',
+                  maxHeight: '320px',
                   scrollbarWidth: 'thin',
                   scrollbarColor: 'var(--color-border-panel) transparent',
                 }}

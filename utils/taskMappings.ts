@@ -155,7 +155,7 @@ export async function syncTaskStatus(
   const apiStatus = TASK_STATUS_TO_API[newStatus];
   
   try {
-    const response = await fetch(`${apiBase}/api/tasks/${notionId}`, {
+    const response = await fetch(`${apiBase}/tasks/${notionId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
