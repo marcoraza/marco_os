@@ -91,7 +91,7 @@ export default function KanbanBoard({
               <Badge variant={col.variant} size="xs">{colTasks.length}</Badge>
             </div>
 
-            <div className="flex flex-col gap-2 bg-bg-base rounded-lg border border-border-panel p-2 overflow-y-auto scrollbar-thin" style={{ maxHeight: '280px' }}
+            <div className="flex flex-col gap-2 bg-bg-base rounded-lg border border-border-panel p-2 overflow-y-auto scrollbar-thin" style={{ maxHeight: '280px' }}>
               {colTasks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center flex-1 gap-2 text-text-secondary py-8">
                   <Icon name="inbox" size="md" />
