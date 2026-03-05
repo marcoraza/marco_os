@@ -455,7 +455,12 @@ const TasksTab: React.FC<TasksTabProps> = ({ projects, openForm, onOpenForm, onC
   const { checklist, refetch } = useSupabaseData();
   const tasks: ChecklistItem[] = checklist.items;
 
-  const [filters, setFilters] = useState<TaskFilters>(loadFilters);
+  const [filters, setFilters] = useState<TaskFilters>(() => {
+    const saved = loadFilters();
+    // Default to Marco's tasks only — agent tasks belong in Agent Kanban
+    if (!saved.owner || saved.owner === 'Todos') saved.owner = 'Marco';
+    return saved;
+  });
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
   const updateFilters = useCallback((update: Partial<TaskFilters>) => {
@@ -485,12 +490,17 @@ const TasksTab: React.FC<TasksTabProps> = ({ projects, openForm, onOpenForm, onC
     void refetch();
   }, [onCloseForm, refetch]);
 
-  // Filter tasks
+  // Filter tasks — "Marco" includes tasks with no responsavel (personal tasks)
   const filteredTasks = tasks.filter(task => {
     if (filters.owner !== 'Todos') {
       const resp = (task.responsavel || '').toLowerCase();
       const owner = filters.owner.toLowerCase();
-      if (!resp.includes(owner)) return false;
+      if (owner === 'marco') {
+        // Marco's view: show his tasks + unassigned tasks (personal)
+        if (resp && resp !== 'marco') return false;
+      } else {
+        if (!resp.includes(owner)) return false;
+      }
     }
     if (filters.priority) {
       const pLabel = PRIORITY_LABELS[task.prioridade] ?? '';
