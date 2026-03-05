@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHotkeys, useGoKeys } from './hooks/useHotkeys';
 import { useFlowState } from './hooks/useFlowState';
@@ -42,8 +42,14 @@ import MissionModal from './components/MissionModal';
 import { ToastContainer, showToast } from './components/ui';
 import { useConnectionState, useOpenClaw } from './contexts/OpenClawContext';
 import { NotionDataProvider } from './contexts/NotionDataContext';
-import { SupabaseDataProvider } from './contexts/SupabaseDataContext';
+import { SupabaseDataProvider, useSupabaseData } from './contexts/SupabaseDataContext';
 import { ProjectProvider } from './contexts/ProjectContext';
+import {
+  checklistItemToTask,
+  projetoItemToProject,
+  buildProjectIdMap,
+  syncTaskStatus,
+} from './utils/taskMappings';
 
 // Layout components
 import { AppHeader, AppSidebar, ProjectSwitcher, MobileNav, ShortcutsDialog } from './components/layout';
@@ -126,7 +132,11 @@ function agentToStoredAgent(a: Agent): StoredAgent {
   };
 }
 
-const App: React.FC = () => {
+// ─── App Content (uses hooks inside providers) ─────────────────────────────
+const AppContent: React.FC = () => {
+  // ─── Supabase data for real tasks/projects ────────────────────────────────
+  const { checklist, projetos } = useSupabaseData();
+  
   const [currentView, setCurrentView] = useState<View>('dashboard');
   const [isMissionModalOpen, setIsMissionModalOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
@@ -143,8 +153,26 @@ const App: React.FC = () => {
   const { connectionState, isLive } = useConnectionState();
   const { agents: liveAgents } = useOpenClaw();
 
-  // ─── Projects ──────────────────────────────────────────────────────────────
-  const [projects, setProjects] = useState<Project[]>(DEFAULT_PROJECTS);
+  // ─── Projects (from Supabase with fallback) ────────────────────────────────
+  const realProjects = useMemo<Project[]>(() => {
+    const activeProjects = projetos.items.filter(p => p.status === 'Ativo');
+    if (activeProjects.length === 0) return [];
+    
+    const pessoalProject: Project = {
+      id: 'pessoal',
+      name: 'Pessoal',
+      color: '#00FF95',
+      icon: 'person',
+      deletable: false,
+    };
+    
+    const mapped = activeProjects.map((p, i) => projetoItemToProject(p, i));
+    return [pessoalProject, ...mapped];
+  }, [projetos.items]);
+  
+  const [localProjects, setLocalProjects] = useState<Project[]>(DEFAULT_PROJECTS);
+  const projects = realProjects.length > 0 ? realProjects : localProjects;
+  const setProjects = setLocalProjects; // For local additions
   const [activeProjectId, setActiveProjectId] = useState<string>('pessoal');
 
   // ─── Theme ─────────────────────────────────────────────────────────────────
@@ -171,8 +199,71 @@ const App: React.FC = () => {
           : 'red';
   const agentsOnlineCount = agentRoster.filter(a => a.status !== 'offline').length;
 
-  // ─── Tasks ─────────────────────────────────────────────────────────────────
-  const [tasks, setTasks] = useState<Task[]>(DEFAULT_TASKS);
+  // ─── Tasks (from Supabase with fallback) ───────────────────────────────────
+  // Build project name → ID map for task mapping
+  const projectIdMap = useMemo(() => buildProjectIdMap(projects), [projects]);
+  
+  // Map ChecklistItem to Task - filter for Marco's tasks only
+  const realTasks = useMemo<Task[]>(() => {
+    const marcoTasks = checklist.items.filter(item => {
+      const resp = (item.responsavel || '').toLowerCase();
+      // Include tasks for Marco or tasks without responsavel (personal)
+      return resp === '' || resp === 'marco' || resp === 'ma';
+    });
+    
+    if (marcoTasks.length === 0) return [];
+    return marcoTasks.map(item => checklistItemToTask(item, projectIdMap));
+  }, [checklist.items, projectIdMap]);
+  
+  // Local tasks state (for fallback and local additions)
+  const [localTasks, setLocalTasks] = useState<Task[]>(DEFAULT_TASKS);
+  
+  // Combined tasks: prefer real tasks, fallback to local
+  const tasks = realTasks.length > 0 ? realTasks : localTasks;
+  
+  // Wrapper setTasks that handles both local and API sync
+  const setTasks: React.Dispatch<React.SetStateAction<Task[]>> = useCallback((action) => {
+    setLocalTasks(prev => {
+      const newTasks = typeof action === 'function' ? action(prev) : action;
+      return newTasks;
+    });
+  }, []);
+  
+  // Notify ID map for syncing (notionId → Task ID)
+  const notionIdMap = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const task of realTasks) {
+      if ((task as Task & { notionId?: string }).notionId) {
+        map.set(task.id, (task as Task & { notionId?: string }).notionId!);
+      }
+    }
+    return map;
+  }, [realTasks]);
+  
+  // Status sync handler - called when dragging tasks in kanban
+  const handleTaskStatusSync = useCallback(async (taskId: number, newStatus: Task['status']) => {
+    const notionId = notionIdMap.get(taskId);
+    if (!notionId) {
+      console.warn('[TaskSync] No Notion ID for task:', taskId);
+      return;
+    }
+    
+    const apiBase = import.meta.env.VITE_FORM_API_URL;
+    const apiToken = import.meta.env.VITE_FORM_API_TOKEN;
+    
+    if (!apiBase) {
+      console.warn('[TaskSync] VITE_FORM_API_URL not configured');
+      return;
+    }
+    
+    const success = await syncTaskStatus(notionId, newStatus, apiBase, apiToken || '');
+    if (success) {
+      showToast('Status atualizado');
+    } else {
+      showToast('Erro ao sincronizar');
+    }
+  }, [notionIdMap]);
+  
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
   // ─── Notes, Events & Contacts (persisted; used by Command Palette) ─────────
@@ -435,12 +526,6 @@ const App: React.FC = () => {
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
-    // SupabaseDataProvider is the primary data source (Realtime + REST).
-    // NotionDataProvider wraps inside as fallback — if Supabase is unreachable,
-    // components can still use useNotionData() from NotionDataContext directly.
-    <SupabaseDataProvider>
-    <NotionDataProvider>
-    <ProjectProvider>
     <div className="flex h-screen w-full flex-col bg-bg-base text-text-primary overflow-hidden font-sans transition-colors duration-300">
       <AgentAddModal
         open={isAddAgentOpen}
@@ -506,6 +591,7 @@ const App: React.FC = () => {
                     events={events}
                     setEvents={setEvents}
                     onNavigate={navigate}
+                    onTaskStatusSync={handleTaskStatusSync}
                   />
                 )}
                 {currentView === 'finance'         && <Finance />}
@@ -619,8 +705,18 @@ const App: React.FC = () => {
 
       <ToastContainer />
     </div>
-    </ProjectProvider>
-    </NotionDataProvider>
+  );
+};
+
+// ─── App (provider wrapper) ─────────────────────────────────────────────────
+const App: React.FC = () => {
+  return (
+    <SupabaseDataProvider>
+      <NotionDataProvider>
+        <ProjectProvider>
+          <AppContent />
+        </ProjectProvider>
+      </NotionDataProvider>
     </SupabaseDataProvider>
   );
 };

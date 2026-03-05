@@ -29,10 +29,11 @@ interface DashboardProps {
   events: StoredEvent[];
   setEvents: React.Dispatch<React.SetStateAction<StoredEvent[]>>;
   onNavigate?: (view: string) => void;
+  onTaskStatusSync?: (taskId: number, newStatus: Task['status']) => Promise<void>;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
-  tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask, events, setEvents, onNavigate,
+  tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask, events, setEvents, onNavigate, onTaskStatusSync,
 }) => {
   const activeProject = projects.find(p => p.id === activeProjectId);
   const { isMobile } = useBreakpoint();
@@ -97,6 +98,10 @@ const Dashboard: React.FC<DashboardProps> = ({
     const id = parseInt(e.dataTransfer.getData('taskId'));
     if (!isNaN(id)) {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+      // Sync status to Notion via Bridge API
+      if (onTaskStatusSync) {
+        void onTaskStatusSync(id, newStatus);
+      }
     }
   };
 

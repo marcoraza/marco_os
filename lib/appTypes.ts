@@ -35,4 +35,5 @@ export interface Task {
   deadline: string;
   assignee: string;
   dependencies?: number;
+  notionId?: string; // Notion page ID for API sync
 }
