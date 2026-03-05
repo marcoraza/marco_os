@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { Task } from '../../lib/appTypes';
 import { Icon, Badge, Card, showToast } from '../ui';
 import { cn } from '../../utils/cn';
@@ -19,6 +19,7 @@ interface KanbanBoardProps {
   onDrop: (e: React.DragEvent, newStatus: Task['status']) => void;
   onDeleteTask?: (id: number) => void;
   onStatusChange?: (id: number, status: Task['status']) => void;
+  className?: string;
 }
 
 /** Per-card delete confirmation state */
@@ -37,8 +38,11 @@ export default function KanbanBoard({
   onDrop,
   onDeleteTask,
   onStatusChange,
+  className,
 }: KanbanBoardProps) {
   const [deleteStates, setDeleteStates] = useState<Record<number, DeleteState>>({});
+  // Bug 2: track dragging to prevent click opening edit panel after drag
+  const draggingRef = useRef(false);
 
   const setDeleteState = (id: number, state: DeleteState) => {
     setDeleteStates(prev => ({ ...prev, [id]: state }));
@@ -69,7 +73,7 @@ export default function KanbanBoard({
   };
 
   return (
-    <div className="flex-grow p-4 flex gap-3 h-full overflow-hidden">
+    <div className={cn('flex-grow p-4 flex gap-3 h-full overflow-hidden', className)}>
       {columns.map((col) => {
         const colTasks = displayTasks.filter(t => t.status === col.id);
         const isCollapsed = collapsedCols.has(col.id);
@@ -130,15 +134,18 @@ export default function KanbanBoard({
               <Badge variant={col.variant} size="xs">{colTasks.length}</Badge>
             </div>
 
-            {/* Task list — max 2 visible, scroll for more */}
-            <div className="flex flex-col bg-bg-base rounded-lg border border-border-panel p-2 gap-2 overflow-hidden">
+            {/* Task list — scrollable, fills available height */}
+            <div className="flex flex-col bg-bg-base rounded-lg border border-border-panel p-2 gap-2 overflow-hidden flex-1 min-h-0">
+              {/* Bug 2: also apply drag handlers to inner scroll div so events aren't swallowed */}
+              {/* Bug 4: use dynamic max-h instead of fixed 320px */}
               <div
-                className="flex flex-col gap-2 overflow-y-auto"
+                className="flex flex-col gap-2 overflow-y-auto max-h-[calc(100vh-420px)] min-h-[200px]"
                 style={{
-                  maxHeight: '320px',
                   scrollbarWidth: 'thin',
                   scrollbarColor: 'var(--color-border-panel) transparent',
                 }}
+                onDragOver={onDragOver}
+                onDrop={(e) => onDrop(e, col.id)}
               >
                 {colTasks.length === 0 ? (
                   <div className="flex flex-col items-center justify-center gap-2 text-text-secondary py-6">
@@ -153,8 +160,19 @@ export default function KanbanBoard({
                         key={task.id}
                         className="p-2 space-y-0.5 cursor-grab active:cursor-grabbing relative group rounded-sm"
                         draggable
-                        onDragStart={(e) => onDragStart(e, task.id)}
-                        onClick={() => delState === 'idle' && onTaskClick(task.id)}
+                        onDragStart={(e) => {
+                          draggingRef.current = true;
+                          onDragStart(e, task.id);
+                        }}
+                        onDragEnd={() => {
+                          // slight delay so the click handler fires after we've set the flag
+                          setTimeout(() => { draggingRef.current = false; }, 100);
+                        }}
+                        onClick={() => {
+                          // Bug 2: skip opening edit panel if this was a drag, not a click
+                          if (draggingRef.current) return;
+                          if (delState === 'idle') onTaskClick(task.id);
+                        }}
                       >
                         {/* Delete button — hover-only, top-right */}
                         {delState === 'idle' && (
@@ -163,7 +181,7 @@ export default function KanbanBoard({
                             onClick={(e) => handleDeleteClick(e, task.id)}
                             title="Excluir"
                           >
-                            ×
+                            x
                           </button>
                         )}
 
@@ -184,7 +202,7 @@ export default function KanbanBoard({
                               className="text-[10px] font-bold text-text-secondary hover:text-text-primary px-1.5 py-0.5 rounded-sm border border-border-panel transition-colors"
                               onClick={(e) => handleDeleteCancel(e, task.id)}
                             >
-                              Não
+                              N&#227;o
                             </button>
                           </div>
                         )}
@@ -200,13 +218,22 @@ export default function KanbanBoard({
                           {task.tag && task.tag !== '[]' && task.tag !== '' && (
                             <p className="text-[11px] text-text-secondary leading-relaxed">{task.tag}</p>
                           )}
-                          {task.deadline && task.deadline !== 'A definir' && (
-                            <p className={cn('text-[11px] leading-relaxed', getDeadlineColor(task.deadline))}>
-                              {task.deadline === 'Hoje' ? 'Prazo: Hoje — urgente'
-                                : task.deadline === 'Amanhã' ? 'Prazo: Amanhã'
-                                : task.deadline === 'Ontem' ? 'Concluído ontem'
-                                : task.deadline.includes('atrás') ? `Finalizado ${task.deadline}`
-                                : `Prazo: ${task.deadline}`}
+                          {/* Bug 3: correct deadline labels based on task status */}
+                          {task.deadline && task.deadline !== 'A definir' && task.status !== 'done' && (
+                            <p className={cn('text-[11px] leading-relaxed',
+                              (task.deadline === 'Hoje' || task.deadline === 'Ontem' || task.deadline.includes('atrás'))
+                                ? 'text-accent-red'
+                                : getDeadlineColor(task.deadline)
+                            )}>
+                              {task.deadline === 'Hoje'
+                                ? 'Prazo: Hoje — urgente'
+                                : task.deadline === 'Amanh\u00e3'
+                                  ? 'Prazo: Amanh\u00e3'
+                                  : task.deadline === 'Ontem'
+                                    ? 'Prazo: Ontem — atrasada'
+                                    : task.deadline.includes('atrás')
+                                      ? `Prazo: ${task.deadline} — atrasada`
+                                      : `Prazo: ${task.deadline}`}
                             </p>
                           )}
                         </div>

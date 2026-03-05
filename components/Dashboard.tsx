@@ -255,6 +255,8 @@ const Dashboard: React.FC<DashboardProps> = ({
           displayTasks={displayTasks}
         />
 
+        {/* Bug 5: flex-col wrapper so KanbanBoard grows to fill space before Sprint B */}
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         <KanbanBoard
           columns={KANBAN_COLUMNS}
           displayTasks={displayTasks}
@@ -268,10 +270,11 @@ const Dashboard: React.FC<DashboardProps> = ({
           onDrop={handleDrop}
           onDeleteTask={handleDeleteTask}
           onStatusChange={handleTaskStatusChange}
+          className="flex-1 min-h-0"
         />
 
         {/* Sprint B — below Kanban, compact */}
-        <div className="px-4 py-2 flex flex-col gap-2">
+        <div className="px-4 py-2 flex flex-col gap-2 shrink-0">
           <div className={isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2'}>
             <HealthScoreWidget />
             <ActivityHeatmapWidget />
@@ -284,6 +287,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           )}
           <MorningBriefCard />
         </div>
+        </div>{/* end flex-col wrapper (KanbanBoard + Sprint B) */}
 
         {/* Mobile — "..." button to toggle right panel */}
         {isMobile && (
