@@ -107,6 +107,33 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const handleTaskStatusChange = (taskId: number, status: Task['status']) => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
+    if (onTaskStatusSync) {
+      void onTaskStatusSync(taskId, status);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: number) => {
+    // Optimistic remove
+    setTasks(prev => prev.filter(t => t.id !== taskId));
+    // PATCH archive via Bridge API
+    const apiBase = import.meta.env.VITE_FORM_API_URL;
+    const apiToken = import.meta.env.VITE_FORM_API_TOKEN;
+    const task = tasks.find(t => t.id === taskId);
+    const notionId = (task as Task & { notionId?: string })?.notionId;
+    if (apiBase && notionId) {
+      try {
+        await fetch(`${apiBase}/api/tasks/${notionId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiToken || ''}`,
+          },
+          body: JSON.stringify({ archived: true }),
+        });
+      } catch (err) {
+        console.warn('[DeleteTask] Could not archive in Notion:', err);
+      }
+    }
   };
 
   // Derived state
@@ -200,6 +227,8 @@ const Dashboard: React.FC<DashboardProps> = ({
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
+          onDeleteTask={handleDeleteTask}
+          onStatusChange={handleTaskStatusChange}
         />
 
         {/* Sprint B — below Kanban, compact */}

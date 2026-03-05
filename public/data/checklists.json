@@ -2,8 +2,8 @@
   "_meta": {
     "db_id": "30fb72d5-042d-81d2-bc6b-e2515ca8d3e2",
     "db_name": "checklists",
-    "synced_at": "2026-03-05T01:00:06.843745+00:00",
-    "count": 33
+    "synced_at": "2026-03-05T01:30:10.296766+00:00",
+    "count": 42
   },
   "items": [
     {
@@ -602,6 +602,132 @@
       "Name": "Testar Marco OS no celular"
     },
     {
+      "_id": "31ab72d5-042d-8121-bb5b-e5718f20e429",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Marketing-Plan-TurboClaw-31ab72d5042d8121bb5be5718f20e429",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🔴 Urgente",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "PROJETOS"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-05",
+      "Total": null,
+      "Name": "Marketing Plan TurboClaw"
+    },
+    {
+      "_id": "31ab72d5-042d-8141-ba3a-f5007790a038",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Reuni-o-D-bora-hor-rio-a-confirmar-31ab72d5042d8141ba3af5007790a038",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🟢 Normal",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "NEGÓCIOS"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-05",
+      "Total": null,
+      "Name": "Reunião Débora — horário a confirmar"
+    },
+    {
+      "_id": "31ab72d5-042d-816b-ad8a-d023ad0eeece",
+      "_created_time": "2026-03-05T01:02:00.000Z",
+      "_edited_time": "2026-03-05T01:02:00.000Z",
+      "_url": "https://www.notion.so/Teste-callback-DELETAR-31ab72d5042d816bad8ad023ad0eeece",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🟢 Normal",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "TESTE"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-05",
+      "Total": null,
+      "Name": "Teste callback - DELETAR"
+    },
+    {
+      "_id": "31ab72d5-042d-8181-b9c5-c9e797e3cf05",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Montar-Treino-Calistenia-31ab72d5042d8181b9c5c9e797e3cf05",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🔴 Urgente",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "SAÚDE"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-10",
+      "Total": null,
+      "Name": "Montar Treino Calistenia"
+    },
+    {
+      "_id": "31ab72d5-042d-818c-a2db-d9c62c7d0928",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Marco-OS-1-0-Operacional-31ab72d5042d818ca2dbd9c62c7d0928",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🟢 Normal",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "PRODUTIVIDADE"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-10",
+      "Total": null,
+      "Name": "Marco OS 1.0 Operacional"
+    },
+    {
+      "_id": "31ab72d5-042d-8192-9242-fc0aca7c9c14",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Pagar-cart-es-31ab72d5042d81929242fc0aca7c9c14",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🔴 Urgente",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "FINANÇAS"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-07",
+      "Total": null,
+      "Name": "Pagar cartões"
+    },
+    {
       "_id": "31ab72d5-042d-819e-8cd4-dc0d3c072194",
       "_created_time": "2026-03-05T00:51:00.000Z",
       "_edited_time": "2026-03-05T00:51:00.000Z",
@@ -640,6 +766,27 @@
       "Name": "Definir nicho Emili — pesquisa mercado"
     },
     {
+      "_id": "31ab72d5-042d-81bc-addf-fcc0cb1adc2f",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Vender-Birb-31ab72d5042d81bcaddffcc0cb1adc2f",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🔴 Urgente",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "FINANÇAS"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-05",
+      "Total": null,
+      "Name": "Vender $Birb"
+    },
+    {
       "_id": "31ab72d5-042d-81d1-9f25-fab5519dcc81",
       "_created_time": "2026-03-05T00:51:00.000Z",
       "_edited_time": "2026-03-05T00:51:00.000Z",
@@ -659,6 +806,27 @@
       "Name": "Preparar pauta reunião Gui — sexta"
     },
     {
+      "_id": "31ab72d5-042d-81db-84d5-e0887e98fd38",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Ligar-V-31ab72d5042d81db84d5e0887e98fd38",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🔴 Urgente",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "FAMÍLIA"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-05",
+      "Total": null,
+      "Name": "Ligar Vó"
+    },
+    {
       "_id": "31ab72d5-042d-81e3-877a-f91620d7398f",
       "_created_time": "2026-03-05T00:52:00.000Z",
       "_edited_time": "2026-03-05T00:52:00.000Z",
@@ -676,6 +844,27 @@
       "Prazo": "2026-03-12",
       "Total": null,
       "Name": "Organizar Drive — pasta Emili"
+    },
+    {
+      "_id": "31ab72d5-042d-81f1-a09e-eed988b854b3",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Planejar-Viagem-29-03-31ab72d5042d81f1a09eeed988b854b3",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🔴 Urgente",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "RELACIONAMENTO"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-09",
+      "Total": null,
+      "Name": "Planejar Viagem 29/03"
     }
   ]
 }
