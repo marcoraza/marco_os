@@ -217,17 +217,44 @@ const AppContent: React.FC = () => {
   
   // Local tasks state (for fallback and local additions)
   const [localTasks, setLocalTasks] = useState<Task[]>(DEFAULT_TASKS);
+  // Track deleted task IDs for optimistic removal from realTasks
+  const [deletedIds, setDeletedIds] = useState<Set<number>>(new Set());
+  // Track local status overrides (for drag-drop before Supabase refreshes)
+  const [statusOverrides, setStatusOverrides] = useState<Map<number, Task['status']>>(new Map());
   
-  // Combined tasks: prefer real tasks, fallback to local
-  const tasks = realTasks.length > 0 ? realTasks : localTasks;
+  // Combined tasks: prefer real tasks (minus deleted), fallback to local
+  const tasks = useMemo(() => {
+    const base = realTasks.length > 0 ? realTasks : localTasks;
+    return base
+      .filter(t => !deletedIds.has(t.id))
+      .map(t => statusOverrides.has(t.id) ? { ...t, status: statusOverrides.get(t.id)! } : t);
+  }, [realTasks, localTasks, deletedIds, statusOverrides]);
   
-  // Wrapper setTasks that handles both local and API sync
+  // Wrapper setTasks that handles delete + status overrides
   const setTasks: React.Dispatch<React.SetStateAction<Task[]>> = useCallback((action) => {
+    if (typeof action === 'function') {
+      // Check if this is a filter (delete) operation
+      const current = realTasks.length > 0 ? realTasks : localTasks;
+      const result = action(current);
+      // Find deleted IDs
+      const currentIds = new Set(current.map(t => t.id));
+      const resultIds = new Set(result.map(t => t.id));
+      currentIds.forEach(id => {
+        if (!resultIds.has(id)) setDeletedIds(prev => new Set(prev).add(id));
+      });
+      // Find status changes
+      result.forEach(t => {
+        const orig = current.find(o => o.id === t.id);
+        if (orig && orig.status !== t.status) {
+          setStatusOverrides(prev => new Map(prev).set(t.id, t.status));
+        }
+      });
+    }
     setLocalTasks(prev => {
       const newTasks = typeof action === 'function' ? action(prev) : action;
       return newTasks;
     });
-  }, []);
+  }, [realTasks, localTasks]);
   
   // Notify ID map for syncing (notionId → Task ID)
   const notionIdMap = useMemo(() => {
