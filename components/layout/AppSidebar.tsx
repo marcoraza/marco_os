@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { View, UptimeView } from '../../lib/appTypes';
 import type { Agent } from '../../types/agents';
 import { Icon, SectionLabel, StatusDot } from '../ui';
@@ -43,10 +43,32 @@ export default function AppSidebar({
   const [uptime, setUptime] = useState(0);
   const [uptimeView, setUptimeView] = useState<UptimeView>('24H');
 
+  // Mobile sidebar state
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
     const interval = setInterval(() => setUptime(prev => prev + 1), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Close mobile sidebar on outside click
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
+        setIsMobileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [isMobileOpen]);
+
+  // Auto-close on navigation (mobile)
+  const handleNavigate = (view: View) => {
+    onNavigate(view);
+    setIsMobileOpen(false);
+  };
 
   const cycleUptimeView = () => {
     const views: UptimeView[] = ['24H', '7D', '30D', '90D', '120D', '365D'];
@@ -76,22 +98,28 @@ export default function AppSidebar({
 
   if (currentView === 'mission-detail') return null;
 
-  return (
-    <aside className="w-[220px] bg-header-bg border-r border-border-panel flex-col shrink-0 hidden md:flex z-10 transition-colors duration-300">
+  // ─── Sidebar inner content (shared between desktop and mobile) ───────────
+  const SidebarContent = ({ compact = false }: { compact?: boolean }) => (
+    <>
       <div className="flex-grow overflow-y-auto py-6">
         <div className="px-4 mb-8">
-          <SectionLabel className="mb-4 px-3">NAVEGAÇÃO</SectionLabel>
+          {!compact && <SectionLabel className="mb-4 px-3">NAVEGAÇÃO</SectionLabel>}
           <nav className="space-y-1">
             {filteredNavItems.map(item => (
               <button
                 key={item.id}
-                onClick={() => onNavigate(item.id as View)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-[10px] font-bold uppercase tracking-wide transition-all duration-300 ease-out ${
+                onClick={() => handleNavigate(item.id as View)}
+                title={compact ? item.label : undefined}
+                className={cn(
+                  'w-full flex items-center rounded-sm transition-all duration-300 ease-out',
+                  compact
+                    ? 'justify-center p-2.5'
+                    : 'gap-3 px-3 py-2.5 text-[10px] font-bold uppercase tracking-wide',
                   currentView === item.id ? 'nav-item-active' : 'nav-item-inactive'
-                }`}
+                )}
               >
                 <Icon name={item.icon} size="lg" />
-                {item.label}
+                {!compact && item.label}
               </button>
             ))}
           </nav>
@@ -101,28 +129,35 @@ export default function AppSidebar({
 
         {/* Agents */}
         <div className="px-4">
-          <div className="flex items-center justify-between mb-3 px-1">
-            <div className="flex items-center gap-2">
-              <SectionLabel>Agentes</SectionLabel>
-              <div className={cn(
-                'size-1.5 rounded-full',
-                isLive ? 'bg-brand-mint shadow-[0_0_4px_rgba(0,255,149,0.5)]' : connectionState === 'connecting' ? 'bg-accent-orange animate-pulse' : 'bg-text-secondary/30'
-              )} title={isLive ? 'OpenClaw conectado' : connectionState === 'connecting' ? 'Conectando...' : 'Offline (mock data)'} />
+          {!compact && (
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                <SectionLabel>Agentes</SectionLabel>
+                <div className={cn(
+                  'size-1.5 rounded-full',
+                  isLive ? 'bg-brand-mint shadow-[0_0_4px_rgba(0,255,149,0.5)]' : connectionState === 'connecting' ? 'bg-accent-orange animate-pulse' : 'bg-text-secondary/30'
+                )} title={isLive ? 'OpenClaw conectado' : connectionState === 'connecting' ? 'Conectando...' : 'Offline (mock data)'} />
+              </div>
+              <span className="text-[9px] font-bold text-text-secondary/50 bg-surface px-2 py-0.5 rounded-sm border border-border-panel">
+                {agentsOnlineCount}/{agentRoster.length}
+              </span>
             </div>
-            <span className="text-[9px] font-bold text-text-secondary/50 bg-surface px-2 py-0.5 rounded-sm border border-border-panel">
-              {agentsOnlineCount}/{agentRoster.length}
-            </span>
-          </div>
+          )}
 
           <nav className="space-y-0.5 mb-3">
             <button
-              onClick={() => onNavigate('agents-overview')}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-sm text-[10px] font-bold uppercase tracking-wide transition-all duration-300 ease-out ${
+              onClick={() => handleNavigate('agents-overview')}
+              title={compact ? 'Mission Control' : undefined}
+              className={cn(
+                'w-full flex items-center rounded-sm transition-all duration-300 ease-out',
+                compact
+                  ? 'justify-center p-2.5'
+                  : 'gap-3 px-3 py-2 text-[10px] font-bold uppercase tracking-wide',
                 currentView === 'agents-overview' ? 'nav-item-active' : 'nav-item-inactive'
-              }`}
+              )}
             >
               <Icon name="hub" size="lg" />
-              Mission Control
+              {!compact && 'Mission Control'}
             </button>
           </nav>
 
@@ -135,10 +170,31 @@ export default function AppSidebar({
               const isOnline = agent.status === 'online' || agent.status === 'busy';
               const isSelected = currentView === 'agent-detail' && activeAgentId === agent.id;
 
+              if (compact) {
+                return (
+                  <div
+                    key={agent.id}
+                    onClick={() => { onAgentClick(agent.id); setIsMobileOpen(false); }}
+                    title={agent.name}
+                    className={cn(
+                      'flex items-center justify-center p-2 rounded-md cursor-pointer transition-all group relative',
+                      isSelected ? 'bg-brand-mint/5 border border-brand-mint/20' : 'hover:bg-surface border border-transparent'
+                    )}
+                  >
+                    <div className={`size-7 rounded-sm flex items-center justify-center shrink-0 ${roleBg}`}>
+                      <Icon name={agent.avatarIcon || (agent.role === 'coordinator' ? 'shield' : 'engineering')} size="md" />
+                    </div>
+                    <div className="absolute bottom-0.5 right-0.5">
+                      <StatusDot color={statusColor} glow={isOnline} />
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   key={agent.id}
-                  onClick={() => onAgentClick(agent.id)}
+                  onClick={() => { onAgentClick(agent.id); setIsMobileOpen(false); }}
                   className={cn(
                     'p-2 rounded-md flex items-center gap-3 cursor-pointer transition-all group',
                     isSelected
@@ -165,38 +221,99 @@ export default function AppSidebar({
 
           <button
             onClick={onAddAgent}
-            className="w-full mt-3 flex items-center justify-center gap-1.5 py-2 px-3 rounded-md border border-border-panel/50 text-text-secondary/60 hover:text-brand-mint hover:bg-brand-mint/5 hover:border-brand-mint/20 transition-all text-[9px] font-bold uppercase tracking-widest"
+            title={compact ? 'Adicionar Agente' : undefined}
+            className={cn(
+              'w-full mt-3 flex items-center rounded-md border border-border-panel/50 text-text-secondary/60 hover:text-brand-mint hover:bg-brand-mint/5 hover:border-brand-mint/20 transition-all text-[9px] font-bold uppercase tracking-widest',
+              compact ? 'justify-center p-2' : 'justify-center gap-1.5 py-2 px-3'
+            )}
           >
             <Icon name="add" size="xs" />
-            Adicionar Agente
+            {!compact && 'Adicionar Agente'}
           </button>
         </div>
       </div>
 
       {/* Uptime Counter */}
-      <div className="px-4 py-3 border-t border-border-panel bg-bg-base/50 shrink-0">
-        <button
-          onClick={cycleUptimeView}
-          className="w-full group"
-          title="Alternar período"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <div className="size-5 rounded-sm bg-brand-mint/10 border border-brand-mint/20 flex items-center justify-center">
-                <Icon name="timer" size="xs" className="text-brand-mint" />
+      {!compact && (
+        <div className="px-4 py-3 border-t border-border-panel bg-bg-base/50 shrink-0">
+          <button
+            onClick={cycleUptimeView}
+            className="w-full group"
+            title="Alternar período"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <div className="size-5 rounded-sm bg-brand-mint/10 border border-brand-mint/20 flex items-center justify-center">
+                  <Icon name="timer" size="xs" className="text-brand-mint" />
+                </div>
+                <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Uptime</span>
+                <span className="text-[7px] font-bold bg-surface border border-border-panel px-1.5 py-0.5 rounded-sm text-text-secondary/60 group-hover:border-brand-mint/30 transition-colors">{uptimeView}</span>
               </div>
-              <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Uptime</span>
-              <span className="text-[7px] font-bold bg-surface border border-border-panel px-1.5 py-0.5 rounded-sm text-text-secondary/60 group-hover:border-brand-mint/30 transition-colors">{uptimeView}</span>
+              <span className="text-[11px] font-black text-brand-mint font-mono">{getDisplayUptime()}</span>
             </div>
-            <span className="text-[11px] font-black text-brand-mint font-mono">{getDisplayUptime()}</span>
-          </div>
-          <div className="w-full h-[3px] bg-bg-base rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-brand-mint/30 to-brand-mint/60 rounded-full relative" style={{ width: '100%' }}>
-              <div className="absolute right-0 top-0 h-full w-4 bg-brand-mint/80 rounded-full animate-pulse" />
+            <div className="w-full h-[3px] bg-bg-base rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-brand-mint/30 to-brand-mint/60 rounded-full relative" style={{ width: '100%' }}>
+                <div className="absolute right-0 top-0 h-full w-4 bg-brand-mint/80 rounded-full animate-pulse" />
+              </div>
             </div>
+          </button>
+        </div>
+      )}
+
+      {compact && (
+        <div className="px-2 py-3 border-t border-border-panel bg-bg-base/50 shrink-0 flex justify-center">
+          <div className="size-5 rounded-sm bg-brand-mint/10 border border-brand-mint/20 flex items-center justify-center" title={getDisplayUptime()}>
+            <Icon name="timer" size="xs" className="text-brand-mint" />
           </div>
-        </button>
-      </div>
-    </aside>
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <>
+      {/* ─── Mobile Hamburger Button (visible only on mobile) ──────────── */}
+      <button
+        onClick={() => setIsMobileOpen(v => !v)}
+        aria-label="Abrir menu"
+        className="md:hidden fixed top-3 left-3 z-50 size-10 flex items-center justify-center rounded-sm bg-header-bg border border-border-panel text-text-primary hover:text-brand-mint transition-colors shadow-lg"
+      >
+        <Icon name={isMobileOpen ? 'close' : 'menu'} size="md" />
+      </button>
+
+      {/* ─── Mobile Overlay backdrop ──────────────────────────────────── */}
+      {isMobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* ─── Mobile Sidebar (full, overlay) ──────────────────────────── */}
+      <aside
+        ref={sidebarRef}
+        className={cn(
+          'md:hidden fixed top-0 left-0 h-full z-50 w-[260px] bg-header-bg border-r border-border-panel flex flex-col transition-transform duration-300 ease-out',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        {/* Mobile header with close */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border-panel shrink-0">
+          <span className="text-[10px] font-black uppercase tracking-widest text-brand-mint">Marco OS</span>
+          <button
+            onClick={() => setIsMobileOpen(false)}
+            className="p-1 hover:bg-surface rounded transition-colors text-text-secondary"
+          >
+            <Icon name="close" size="sm" />
+          </button>
+        </div>
+        <SidebarContent compact={false} />
+      </aside>
+
+      {/* ─── Desktop Sidebar (icon rail on small, full on md+) ────────── */}
+      <aside className="hidden md:flex w-[220px] bg-header-bg border-r border-border-panel flex-col shrink-0 z-10 transition-colors duration-300">
+        <SidebarContent compact={false} />
+      </aside>
+    </>
   );
 }

@@ -13,6 +13,9 @@ import {
   HealthScoreWidget,
   ActivityHeatmapWidget,
 } from './dashboard/index';
+import CalendarWidget from './dashboard/CalendarWidget';
+import { useQuickActions } from '../hooks/useQuickActions';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const PredictiveWidgets = lazy(() => import('./dashboard/PredictiveWidgets').then(m => ({ default: m.PredictiveWidgets })));
 
@@ -32,6 +35,16 @@ const Dashboard: React.FC<DashboardProps> = ({
   tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask, events, setEvents, onNavigate,
 }) => {
   const activeProject = projects.find(p => p.id === activeProjectId);
+  const { isMobile } = useBreakpoint();
+
+  // Mobile right sidebar panel state
+  const [showMobileRightPanel, setShowMobileRightPanel] = useState(false);
+
+  // Quick actions hook
+  const quickActions = useQuickActions({
+    onNavigate,
+    onOpenNovaTarefa: () => { if (onNavigate) onNavigate('planner'); },
+  });
 
   // State
   const [quickCapture, setQuickCapture] = useState('');
@@ -186,12 +199,43 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Sprint B — below Kanban, compact */}
         <div className="px-4 py-2 flex flex-col gap-2">
-          <div className="grid grid-cols-2 gap-2">
+          <div className={isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2'}>
             <HealthScoreWidget />
             <ActivityHeatmapWidget />
           </div>
+          {/* S10: Calendar Widget — visible on mobile (right sidebar hidden) */}
+          {isMobile && (
+            <CalendarWidget
+              onConnectCalendar={() => { if (onNavigate) onNavigate('settings'); }}
+            />
+          )}
           <MorningBriefCard />
         </div>
+
+        {/* Mobile — "..." button to toggle right panel */}
+        {isMobile && (
+          <div className="px-4 py-2">
+            <button
+              onClick={() => setShowMobileRightPanel(v => !v)}
+              className="flex items-center gap-2 px-3 py-2 rounded-sm bg-surface border border-border-panel text-text-secondary text-[10px] font-bold uppercase tracking-widest hover:text-text-primary transition-colors min-h-[44px]"
+            >
+              <span>Painel lateral</span>
+              <span className="text-lg leading-none">{showMobileRightPanel ? '▲' : '▼'}</span>
+            </button>
+            {showMobileRightPanel && (
+              <div className="mt-2">
+                <DashboardRightSidebar
+                  criticalMission={criticalMission}
+                  onTaskClick={id => onTaskClick && onTaskClick(id)}
+                  events={events}
+                  setEvents={setEvents}
+                  activeProjectId={activeProjectId}
+                  onNavigate={onNavigate}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {focusMode && focusTask && (
           <FocusMode
@@ -205,36 +249,42 @@ const Dashboard: React.FC<DashboardProps> = ({
           />
         )}
 
-        <GamificationBar
-          level={level}
-          xpInLevel={xpInLevel}
-          xpToNext={xpToNext}
-          totalXP={totalXP}
-          completedTasks={completedTasks}
-          focusMode={focusMode}
-          onToggleFocusMode={() => setFocusMode(v => !v)}
-          focusTask={focusTask}
-          missionView={missionView}
-          onToggleMissionView={() => {
-            if (missionView === 'hoje') setMissionView('semana');
-            else if (missionView === 'semana') setMissionView('mes');
-            else setMissionView('hoje');
-          }}
-          achievements={achievements}
-          unlockedCount={achievements.filter(a => a.unlocked).length}
-          statusChartData={statusChartData}
-          weeklyActivityData={weeklyActivityData}
-        />
+        {/* Gamification bar: horizontal scroll on mobile */}
+        <div className={isMobile ? 'overflow-x-auto' : ''}>
+          <GamificationBar
+            level={level}
+            xpInLevel={xpInLevel}
+            xpToNext={xpToNext}
+            totalXP={totalXP}
+            completedTasks={completedTasks}
+            focusMode={focusMode}
+            onToggleFocusMode={() => setFocusMode(v => !v)}
+            focusTask={focusTask}
+            missionView={missionView}
+            onToggleMissionView={() => {
+              if (missionView === 'hoje') setMissionView('semana');
+              else if (missionView === 'semana') setMissionView('mes');
+              else setMissionView('hoje');
+            }}
+            achievements={achievements}
+            unlockedCount={achievements.filter(a => a.unlocked).length}
+            statusChartData={statusChartData}
+            weeklyActivityData={weeklyActivityData}
+          />
+        </div>
       </div>
 
-      <DashboardRightSidebar
-        criticalMission={criticalMission}
-        onTaskClick={id => onTaskClick && onTaskClick(id)}
-        events={events}
-        setEvents={setEvents}
-        activeProjectId={activeProjectId}
-        onNavigate={onNavigate}
-      />
+      {/* Right sidebar: hidden on mobile */}
+      {!isMobile && (
+        <DashboardRightSidebar
+          criticalMission={criticalMission}
+          onTaskClick={id => onTaskClick && onTaskClick(id)}
+          events={events}
+          setEvents={setEvents}
+          activeProjectId={activeProjectId}
+          onNavigate={onNavigate}
+        />
+      )}
     </div>
   );
 };

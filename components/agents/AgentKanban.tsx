@@ -3,6 +3,7 @@ import { Badge, Card, Icon, SectionLabel } from '../ui';
 import { cn } from '../../utils/cn';
 import { kanbanColumns, KANBAN_ORDER, KanbanStatus } from '../../data/agentMockData';
 import { useKanban, useAgents, useOpenClaw } from '../../contexts/OpenClawContext';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface TaskComment {
   id: string;
@@ -39,6 +40,8 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
   const [collapsed, setCollapsed] = useState<Set<KanbanStatus>>(new Set());
   const dragTaskId = useRef<string | null>(null);
   const dragFromStatus = useRef<KanbanStatus | null>(null);
+  const { isMobile } = useBreakpoint();
+  const [mobileColumn, setMobileColumn] = useState<KanbanStatus>('backlog');
 
   // Comments state
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
@@ -137,6 +140,65 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
       return next;
     });
   };
+
+  // Mobile: single column view with dropdown selector
+  if (isMobile) {
+    const col = kanbanColumns[mobileColumn];
+    const columnTasks = tasksByColumn[mobileColumn];
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <SectionLabel icon="view_kanban">KANBAN</SectionLabel>
+          <select
+            value={mobileColumn}
+            onChange={e => setMobileColumn(e.target.value as KanbanStatus)}
+            className="flex-1 bg-bg-base border border-border-panel rounded-sm px-2 py-1.5 text-[10px] text-text-primary focus:outline-none focus:border-brand-mint transition-colors"
+          >
+            {KANBAN_ORDER.map(s => (
+              <option key={s} value={s}>
+                {kanbanColumns[s].label} ({tasksByColumn[s].length})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div
+          className="flex flex-col gap-2 min-h-[200px] bg-bg-base rounded-lg border border-border-panel p-2"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, mobileColumn)}
+        >
+          {columnTasks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center flex-1 gap-2 text-text-secondary py-8">
+              <Icon name="inbox" size="md" />
+              <span className="text-[10px]">Sem tarefas</span>
+            </div>
+          ) : (
+            columnTasks.map((task) => {
+              const prio = priorityMap[task.priority];
+              return (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-sm bg-surface border border-border-panel min-h-[44px]"
+                  draggable
+                  onDragStart={() => handleDragStart(task.id, task.status)}
+                >
+                  <div className={cn('size-2 rounded-full shrink-0', prio.color)} />
+                  <span className="flex-1 text-[11px] text-text-primary font-medium truncate">{task.title}</span>
+                  <Badge variant={prio.variant} size="xs">{prio.label}</Badge>
+                  <div className="size-2 rounded-full shrink-0 bg-brand-mint/60" title={task.status} />
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <p className="text-[9px] text-text-secondary font-mono text-center">
+          {col.label}: {columnTasks.length} tarefa{columnTasks.length !== 1 ? 's' : ''}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
