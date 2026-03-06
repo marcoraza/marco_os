@@ -103,7 +103,7 @@ export default function KanbanBoard({
                     key={task.id}
                     className="p-4 space-y-2 cursor-grab active:cursor-grabbing"
                     draggable
-                    onDragStart={(e) => onDragStart(e, task.id)}
+                    onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, task.id)}
                     onClick={() => onTaskClick(task.id)}
                   >
                     <div className="flex items-start justify-between gap-3">

@@ -137,9 +137,9 @@ export default function CommandPalette(props: CommandPaletteProps) {
 
     // Quick actions (always available, filterable)
     const quickActions: PaletteItem[] = [
-      { kind: 'action', id: 'new-finance', title: 'Nova entrada financeira', subtitle: 'Registrar receita ou despesa', icon: 'payments' },
-      { kind: 'action', id: 'new-health', title: 'Novo registro de saude', subtitle: 'Treino, peso, habito, sono ou humor', icon: 'monitor_heart' },
-      { kind: 'action', id: 'new-braindump', title: 'Nova nota rapida', subtitle: 'Brain dump para ideias e reflexoes', icon: 'sticky_note_2' },
+      { kind: 'action' as const, id: 'new-finance', title: 'Nova entrada financeira', subtitle: 'Registrar receita ou despesa', icon: 'payments' },
+      { kind: 'action' as const, id: 'new-health', title: 'Novo registro de saude', subtitle: 'Treino, peso, habito, sono ou humor', icon: 'monitor_heart' },
+      { kind: 'action' as const, id: 'new-braindump', title: 'Nova nota rapida', subtitle: 'Brain dump para ideias e reflexoes', icon: 'sticky_note_2' },
     ].filter(a => !q || a.title.toLowerCase().includes(q) || a.subtitle.toLowerCase().includes(q));
 
     return [...create, ...(q ? [] : navItems), ...(q ? [] : quickActions), ...taskItems, ...noteItems, ...eventItems, ...contactItems, ...(q ? quickActions : []), ...(q ? navItems : [])];

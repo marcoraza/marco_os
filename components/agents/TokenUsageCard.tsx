@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot } from '../ui';
 import { cn } from '../../utils/cn';
 import { getTokenUsageForAgent, formatTokens } from '../../data/agentMockData';
-import { useOpenClaw } from '../../contexts/OpenClawContext';
+import { useTokenUsages } from '../../contexts/OpenClawContext';
 
 interface TokenUsageCardProps {
   agentId: string;
@@ -10,11 +10,15 @@ interface TokenUsageCardProps {
 }
 
 export default function TokenUsageCard({ agentId, compact }: TokenUsageCardProps) {
-  const { tokenUsages } = useOpenClaw();
+  const tokenUsages = useTokenUsages();
   const usage = useMemo(
     () => tokenUsages.find(t => t.agentId === agentId) ?? getTokenUsageForAgent(agentId),
     [agentId, tokenUsages]
   );
+  const maxTokens = useMemo(() => {
+    if (!usage?.last7Days.length) return 1;
+    return Math.max(...usage.last7Days.map(d => Math.max(d.tokensIn, d.tokensOut)));
+  }, [usage]);
 
   if (!usage) {
     if (compact) {
@@ -78,11 +82,6 @@ export default function TokenUsageCard({ agentId, compact }: TokenUsageCardProps
       </Card>
     );
   }
-
-  const maxTokens = useMemo(() => {
-    if (!usage.last7Days.length) return 1;
-    return Math.max(...usage.last7Days.map(d => Math.max(d.tokensIn, d.tokensOut)));
-  }, [usage.last7Days]);
 
   return (
     <Card className="p-4 space-y-4">

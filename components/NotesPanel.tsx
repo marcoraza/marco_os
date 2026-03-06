@@ -15,7 +15,7 @@ interface NotesPanelProps {
 
 // ─── Simple markdown → HTML renderer ─────────────────────────────────────────
 function renderMarkdown(md: string): string {
-  let html = md
+  const html = md
     // Code blocks (```...```)
     .replace(/```([\s\S]*?)```/g, '<pre class="bg-bg-base border border-border-panel rounded p-3 text-xs font-mono overflow-x-auto my-2"><code>$1</code></pre>')
     // Inline code (`...`)

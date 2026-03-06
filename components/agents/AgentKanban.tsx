@@ -2,17 +2,14 @@ import { useMemo, useState, useRef, useCallback } from 'react';
 import { Badge, Card, Icon, SectionLabel } from '../ui';
 import { cn } from '../../utils/cn';
 import { kanbanColumns, KANBAN_ORDER, KanbanStatus } from '../../data/agentMockData';
-import { useKanban, useAgents, useOpenClaw } from '../../contexts/OpenClawContext';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useKanban, useAgents, useKanbanActions, useOpenClawActions } from '../../contexts/OpenClawContext';
 
 interface TaskComment {
   id: string;
   text: string;
   createdAt: string;
 }
-
-const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
 
 interface AgentKanbanProps {
   agentId: string;
@@ -33,7 +30,8 @@ const messageTypeColor: Record<string, string> = {
 
 export default function AgentKanban({ agentId }: AgentKanbanProps) {
   const { agents } = useAgents();
-  const { updateTaskStatus } = useOpenClaw();
+  const { updateTaskStatus } = useKanbanActions();
+  const { fetchTaskComments, addTaskComment } = useOpenClawActions();
   const agent = agents.find(a => a.id === agentId);
   // Coordinator sees ALL tasks; sub-agents see only their own
   const tasks = useKanban(agent?.role === 'coordinator' ? undefined : agentId);
@@ -49,22 +47,21 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
   const [loadingComments, setLoadingComments] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState('');
   const [postingComment, setPostingComment] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   const fetchComments = useCallback(async (taskId: string) => {
-    if (!API_URL) return;
     setLoadingComments(taskId);
+    setCommentError(null);
     try {
-      const res = await fetch(`${API_URL}/tasks/${taskId}/comments`, {
-        headers: { Authorization: `Bearer ${API_TOKEN}` },
-      });
-      if (!res.ok) return;
-      const json = await res.json();
-      const list = json.ok ? (json.comments ?? json.data ?? []) : [];
+      const list = await fetchTaskComments(taskId);
       setCommentsByTask(prev => ({ ...prev, [taskId]: Array.isArray(list) ? list : [] }));
-    } catch { /* ignore */ } finally {
+    } catch {
+      setCommentError('Nao foi possivel carregar comentarios.');
+    } finally {
       setLoadingComments(null);
     }
-  }, []);
+  }, [fetchTaskComments]);
 
   const handleTaskExpand = useCallback((taskId: string) => {
     if (expandedTaskId === taskId) {
@@ -79,25 +76,23 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
 
   const handlePostComment = useCallback(async (taskId: string) => {
     const text = commentInput.trim();
-    if (!text || postingComment || !API_URL) return;
+    if (!text || postingComment) return;
     setPostingComment(true);
+    setCommentError(null);
     try {
-      const res = await fetch(`${API_URL}/tasks/${taskId}/comments`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-      });
-      if (res.ok) {
+      const ok = await addTaskComment(taskId, text);
+      if (ok) {
         setCommentInput('');
-        fetchComments(taskId);
+        await fetchComments(taskId);
+      } else {
+        setCommentError('Nao foi possivel enviar comentario.');
       }
-    } catch { /* ignore */ } finally {
+    } catch {
+      setCommentError('Nao foi possivel enviar comentario.');
+    } finally {
       setPostingComment(false);
     }
-  }, [commentInput, postingComment, fetchComments]);
+  }, [addTaskComment, commentInput, postingComment, fetchComments]);
 
   const handleDragStart = (taskId: string, fromStatus: KanbanStatus) => {
     dragTaskId.current = taskId;
@@ -115,8 +110,12 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
     if (!taskId || !fromStatus || fromStatus === toStatus) return;
     dragTaskId.current = null;
     dragFromStatus.current = null;
-    // Call API to persist status change
-    updateTaskStatus(taskId, toStatus);
+    setStatusError(null);
+    void updateTaskStatus(taskId, toStatus).then((ok) => {
+      if (!ok) {
+        setStatusError('Nao foi possivel mover a tarefa.');
+      }
+    });
   };
 
   const tasksByColumn = useMemo(() => {
@@ -203,6 +202,11 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
   return (
     <div className="space-y-3">
       <SectionLabel icon="view_kanban">KANBAN</SectionLabel>
+      {statusError && (
+        <div className="rounded border border-accent-red/30 bg-accent-red/10 px-3 py-2 text-[10px] text-accent-red">
+          {statusError}
+        </div>
+      )}
 
       <div className="flex gap-3 items-stretch">
         {KANBAN_ORDER.map((status) => {
@@ -326,6 +330,11 @@ export default function AgentKanban({ agentId }: AgentKanbanProps) {
                             className="border-t border-border-panel pt-2 space-y-2"
                             onClick={(e) => e.stopPropagation()}
                           >
+                            {commentError && (
+                              <div className="rounded border border-accent-red/30 bg-accent-red/10 px-2 py-1.5 text-[9px] text-accent-red">
+                                {commentError}
+                              </div>
+                            )}
                             {loadingComments === task.id ? (
                               <div className="flex items-center gap-2 text-text-secondary py-1">
                                 <Icon name="hourglass_empty" size="xs" className="animate-spin" />

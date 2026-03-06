@@ -3,7 +3,7 @@ import { Badge, Card, Icon, SectionLabel, StatusDot } from '../ui';
 import { cn } from '../../utils/cn';
 import { jobBadge } from '../../data/agentMockData';
 import type { CronJob } from '../../data/agentMockData';
-import { useCronJobs, useCronJobActions, useAgents, useOpenClaw } from '../../contexts/OpenClawContext';
+import { useCronJobs, useCronJobActions, useAgents, useOpenClawActions } from '../../contexts/OpenClawContext';
 
 interface AgentCronJobsProps {
   agentId: string;
@@ -14,7 +14,7 @@ export default function AgentCronJobs({ agentId }: AgentCronJobsProps) {
   const agent = agents.find(a => a.id === agentId);
   const jobs = useCronJobs(agent?.role === 'coordinator' ? undefined : agentId);
   const { updateCronJob, createCronJob, deleteCronJob } = useCronJobActions();
-  const { createCronJobApi, updateCronJobApi, deleteCronJobApi } = useOpenClaw();
+  const { createCronJobApi, updateCronJobApi, deleteCronJobApi } = useOpenClawActions();
 
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');

@@ -3,11 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useHotkeys, useGoKeys } from './hooks/useHotkeys';
 import { useFlowState } from './hooks/useFlowState';
 import { useGhostMode } from './hooks/useGhostMode';
+import { useAppHydration, useDebouncedPersistence } from './hooks/useAppPersistence';
+import { useAgentRosterSync } from './hooks/useAgentRosterSync';
+import { useAppDomainActions } from './hooks/useAppDomainActions';
 import type { StoredAgent, StoredContact, StoredEvent, StoredNote } from './data/models';
-import { bootstrapIfEmpty, bootstrapAgentsIfEmpty, loadAll, loadAgents, loadContacts, putAgent, deleteAgent, saveEvents, saveNotes, saveProjects, saveTasks } from './data/repository';
-import { defaultAgents } from './data/agentsSeed';
+import { putAgent } from './data/repository';
 import type { Agent } from './types/agents';
 import type { View, Theme, Project, Task } from './lib/appTypes';
+import AppContentRouter from './components/AppContentRouter';
 
 // Re-export types for backwards compatibility
 export type { View, Project, Task } from './lib/appTypes';
@@ -19,29 +22,18 @@ const DeepWorkPanel = lazy(() => import('./components/focus/DeepWorkPanel').then
 // Lazy-loaded Sprint E components
 const QuickCaptureModal = lazy(() => import('./components/capture/QuickCaptureModal').then(m => ({ default: m.QuickCaptureModal })));
 
-// Lazy-loaded pages (code-split)
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const Finance = lazy(() => import('./components/Finance'));
-const Health = lazy(() => import('./components/Health'));
-const Learning = lazy(() => import('./components/Learning'));
-const Planner = lazy(() => import('./components/Planner'));
-const CRM = lazy(() => import('./components/CRM'));
-const Settings = lazy(() => import('./components/Settings'));
-const NotesPanel = lazy(() => import('./components/NotesPanel'));
-const AgentCommandCenter = lazy(() => import('./components/AgentCommandCenter'));
-const AgentDetailView = lazy(() => import('./components/AgentDetailView'));
-const MissionDetail = lazy(() => import('./components/MissionDetail'));
+const CommandPalette = lazy(() => import('./components/CommandPalette'));
+const AgentAddModal = lazy(() => import('./components/AgentAddModal'));
+const MissionModal = lazy(() => import('./components/MissionModal'));
+const ProjectSwitcher = lazy(() => import('./components/layout/ProjectSwitcher'));
+const ShortcutsDialog = lazy(() => import('./components/layout/ShortcutsDialog'));
+const NotionDataProvider = lazy(() => import('./contexts/NotionDataContext').then(m => ({ default: m.NotionDataProvider })));
 
 // Error boundary
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-// Eagerly loaded (always needed)
-import CommandPalette from './components/CommandPalette';
-import AgentAddModal from './components/AgentAddModal';
-import MissionModal from './components/MissionModal';
 import { ToastContainer, showToast } from './components/ui';
-import { useConnectionState, useOpenClaw } from './contexts/OpenClawContext';
-import { NotionDataProvider } from './contexts/NotionDataContext';
+import { useAgents, useConnectionState } from './contexts/OpenClawContext';
 import { SupabaseDataProvider, useSupabaseData } from './contexts/SupabaseDataContext';
 import { ProjectProvider } from './contexts/ProjectContext';
 import {
@@ -52,7 +44,9 @@ import {
 } from './utils/taskMappings';
 
 // Layout components
-import { AppHeader, AppSidebar, ProjectSwitcher, MobileNav, ShortcutsDialog } from './components/layout';
+import AppHeader from './components/layout/AppHeader';
+import AppSidebar from './components/layout/AppSidebar';
+import MobileNav from './components/layout/MobileNav';
 
 // ─── Framer Motion variants ─────────────────────────────────────────────────
 const pageVariants = {
@@ -60,7 +54,8 @@ const pageVariants = {
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -8 },
 };
-const pageTransition = { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] };
+const pageTransition = { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] as const };
+const NOTION_VIEWS = new Set<View>(['dashboard', 'health', 'learning', 'planner', 'notes', 'crm']);
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 const PROJECT_COLORS = ['#0A84FF', '#BF5AF2', '#FF9F0A', '#FF453A', '#FF5500', '#4CD964', '#5AC8FA'];
@@ -151,7 +146,7 @@ const AppContent: React.FC = () => {
 
   // OpenClaw connection
   const { connectionState, isLive } = useConnectionState();
-  const { agents: liveAgents } = useOpenClaw();
+  const { agents: liveAgents } = useAgents();
 
   // ─── Projects (from Supabase with fallback) ────────────────────────────────
   const realProjects = useMemo<Project[]>(() => {
@@ -309,214 +304,57 @@ const AppContent: React.FC = () => {
     localStorage.setItem('marco-os-theme', theme);
   }, [theme]);
 
-  // ─── Local persistence (IndexedDB via idb) ─────────────────────────────────
-  const didHydrateRef = useRef(false);
-  const persistTimersRef = useRef<Record<string, ReturnType<typeof setTimeout> | undefined>>({});
+  const didHydrateRef = useAppHydration({
+    defaultProjects: DEFAULT_PROJECTS,
+    defaultTasks: DEFAULT_TASKS,
+    activeProjectId,
+    activeAgentId,
+    setProjects,
+    setTasks,
+    setNotes,
+    setEvents,
+    setAgentRoster,
+    setActiveProjectId,
+    setActiveAgentId,
+    setPaletteContacts,
+    storedAgentToAgent,
+  });
 
-  const schedulePersist = (key: string, fn: () => void, delayMs = 350) => {
-    const prev = persistTimersRef.current[key];
-    if (prev) clearTimeout(prev);
-    persistTimersRef.current[key] = setTimeout(fn, delayMs);
-  };
+  useDebouncedPersistence({
+    projects,
+    tasks,
+    notes,
+    events,
+    didHydrateRef,
+    onPersisted: () => showToast('Salvo'),
+  });
 
-  useEffect(() => {
-    (async () => {
-      try {
-        await bootstrapIfEmpty({ projects: DEFAULT_PROJECTS, tasks: DEFAULT_TASKS, notes: [], events: [] });
-        // Force re-bootstrap if stored agents don't include the real IDs
-        const existingAgents = await loadAgents();
-        const hasRealIds = existingAgents.some(a => a.id === 'main');
-        const hasOldIds = existingAgents.some(a => ['frank', 'head-code', 'planner', 'qa'].includes(a.id));
-        if (!hasRealIds || hasOldIds) {
-          // Remove old mock agents
-          for (const old of existingAgents) {
-            if (['frank', 'head-code', 'planner', 'qa'].includes(old.id)) {
-              await deleteAgent(old.id);
-            }
-          }
-          // Add real agents
-          for (const agent of defaultAgents) {
-            await putAgent(agent);
-          }
-        }
-        const { projects: p, tasks: t, notes: n, events: e } = await loadAll();
-        if (p.length) setProjects(p);
-        if (t.length) setTasks(t);
-        setNotes(n);
-        setEvents(e);
-        if (p.length && !p.some(x => x.id === activeProjectId)) setActiveProjectId(p[0].id);
-      } catch (err) {
-        console.error('[Marco OS] hydration (core):', err);
-      }
+  useAgentRosterSync(liveAgents, setAgentRoster);
 
-      try {
-        const agents = await loadAgents();
-        if (agents.length) {
-          setAgentRoster(agents.map(storedAgentToAgent));
-          if (!agents.some(a => a.id === activeAgentId)) setActiveAgentId(agents[0].id);
-        } else {
-          console.warn('[Marco OS] No agents in DB after bootstrap — using in-memory fallback');
-          setAgentRoster(defaultAgents.map(storedAgentToAgent));
-          setActiveAgentId(defaultAgents[0].id);
-        }
-      } catch (err) {
-        console.error('[Marco OS] hydration (agents):', err);
-        setAgentRoster(defaultAgents.map(storedAgentToAgent));
-        setActiveAgentId(defaultAgents[0].id);
-      }
-
-      try {
-        const cts = await loadContacts();
-        setPaletteContacts(cts);
-      } catch (err) {
-        console.error('[Marco OS] hydration (contacts):', err);
-      }
-
-      didHydrateRef.current = true;
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (!didHydrateRef.current) return;
-    schedulePersist('projects', () => { void saveProjects(projects).then(() => showToast('Salvo')); });
-  }, [projects]);
-
-  useEffect(() => {
-    if (!didHydrateRef.current) return;
-    schedulePersist('tasks', () => { void saveTasks(tasks).then(() => showToast('Salvo')); });
-  }, [tasks]);
-
-  useEffect(() => {
-    if (!didHydrateRef.current) return;
-    schedulePersist('notes', () => { void saveNotes(notes).then(() => showToast('Salvo')); });
-  }, [notes]);
-
-  useEffect(() => {
-    if (!didHydrateRef.current) return;
-    schedulePersist('events', () => { void saveEvents(events).then(() => showToast('Salvo')); });
-  }, [events]);
-
-  // ─── Sync Bridge API agents to agentRoster ──────────────────────────────────
-  useEffect(() => {
-    if (liveAgents.length === 0) return;
-    // Only sync if agents have real data (check for known real IDs)
-    const hasRealAgent = liveAgents.some(a => ['main', 'coder', 'researcher'].includes(a.id));
-    if (!hasRealAgent) return;
-
-    setAgentRoster(prev => {
-      const merged = [...prev];
-      for (const live of liveAgents) {
-        const idx = merged.findIndex(a => a.id === live.id);
-        const updated: Agent = {
-          id: live.id,
-          name: live.name,
-          role: live.role as Agent['role'],
-          model: live.model,
-          status: live.status as Agent['status'],
-          lastHeartbeat: live.lastHeartbeat || '',
-          uptime: live.uptime || '',
-          tags: live.tags || [],
-          currentMission: live.currentMission,
-        };
-        if (idx >= 0) {
-          merged[idx] = { ...merged[idx], ...updated };
-        } else {
-          merged.push(updated);
-        }
-      }
-      return merged;
-    });
-  }, [liveAgents]);
-
-  // ─── Project management ─────────────────────────────────────────────────────
-  const addProject = (name: string) => {
-    const id = `proj-${Date.now()}`;
-    const color = PROJECT_COLORS[projects.length % PROJECT_COLORS.length];
-    setProjects(prev => [...prev, { id, name, color, icon: 'folder', deletable: true }]);
-    setActiveProjectId(id);
-  };
-
-  // ─── Task management ────────────────────────────────────────────────────────
-  const addTask = (newTask: any) => {
-    const adapted: Task = {
-      id: Date.now(),
-      title: newTask.title,
-      tag: newTask.tag || 'GERAL',
-      projectId: activeProjectId,
-      status: 'assigned',
-      priority: newTask.priority || 'medium',
-      deadline: 'A definir',
-      assignee: 'MA',
-      dependencies: 0,
-    };
-    setTasks(prev => [...prev, adapted]);
-    setIsMissionModalOpen(false);
-  };
-
-  const addTasks = (newTasks: Omit<Task, 'id' | 'assignee' | 'dependencies'>[]) => {
-    const adapted: Task[] = newTasks.map((t, i) => ({
-      ...t,
-      id: Date.now() + i,
-      assignee: 'MA',
-      dependencies: 0,
-    }));
-    setTasks(prev => [...prev, ...adapted]);
-  };
-
-  const createTaskFromPalette = (title: string) => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    setTasks(prev => [...prev, {
-      id: Date.now(),
-      title: trimmed,
-      tag: 'GERAL',
-      projectId: activeProjectId,
-      status: 'assigned',
-      priority: 'medium',
-      deadline: 'A definir',
-      assignee: 'MA',
-      dependencies: 0,
-    }]);
-    setCurrentView('dashboard');
-  };
-
-  const createNoteFromPalette = (title: string) => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    const now = new Date().toISOString();
-    const id = (typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? crypto.randomUUID() : `note-${Date.now()}`;
-    setNotes(prev => [{ id, title: trimmed, body: '', createdAt: now, updatedAt: now, projectId: activeProjectId }, ...prev]);
-  };
-
-  const createEventFromPalette = (title: string) => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    const now = new Date();
-    const iso = now.toISOString();
-    const id = (typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? crypto.randomUUID() : `event-${Date.now()}`;
-    const date = iso.slice(0, 10);
-    setEvents(prev => [{ id, title: trimmed, date, createdAt: iso, updatedAt: iso, projectId: activeProjectId }, ...prev]);
-  };
-
-  const openTaskFromPalette = (_taskId: number, projectId: string) => {
-    setActiveProjectId(projectId);
-    setCurrentView('dashboard');
-  };
-
-  const openNoteFromPalette = (_noteId: string) => {
-    setCurrentView('notes');
-  };
-
-  const handleTaskClick = (taskId: number) => {
-    setSelectedTaskId(taskId);
-    setCurrentView('mission-detail');
-  };
-
-  const handleAgentClick = (agentId: string) => {
-    setActiveAgentId(agentId);
-    setCurrentView('agent-detail');
-  };
+  const {
+    addProject,
+    addTask,
+    addTasks,
+    createTaskFromPalette,
+    createNoteFromPalette,
+    createEventFromPalette,
+    openTaskFromPalette,
+    openNoteFromPalette,
+    handleTaskClick,
+    handleAgentClick,
+  } = useAppDomainActions({
+    activeProjectId,
+    setProjects,
+    setActiveProjectId,
+    setTasks,
+    setNotes,
+    setEvents,
+    setCurrentView,
+    setSelectedTaskId,
+    setActiveAgentId,
+    setIsMissionModalOpen,
+    projectColors: PROJECT_COLORS,
+  });
 
   // ─── Derived state ─────────────────────────────────────────────────────────
   const activeTaskCounts = projects.reduce((acc, proj) => {
@@ -527,16 +365,19 @@ const AppContent: React.FC = () => {
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex h-screen w-full flex-col bg-bg-base text-text-primary overflow-hidden font-sans transition-colors duration-300">
-      <AgentAddModal
-        open={isAddAgentOpen}
-        onClose={() => setIsAddAgentOpen(false)}
-        onCreate={(agent) => {
-          const stored = agentToStoredAgent(agent);
-          putAgent(stored);
-          setAgentRoster(prev => [agent, ...prev]);
-          setActiveAgentId(agent.id);
-        }}
-      />
+      <Suspense fallback={null}>
+        <AgentAddModal
+          open={isAddAgentOpen}
+          onClose={() => setIsAddAgentOpen(false)}
+          onCreate={async (agent) => {
+            const stored = agentToStoredAgent(agent);
+            const { putAgent } = await import('./data/repository');
+            await putAgent(stored);
+            setAgentRoster(prev => [agent, ...prev]);
+            setActiveAgentId(agent.id);
+          }}
+        />
+      </Suspense>
 
       <AppHeader
         currentView={currentView}
@@ -580,8 +421,32 @@ const AppContent: React.FC = () => {
               >
                 <ErrorBoundary>
                 <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="animate-pulse text-text-secondary text-xs font-mono">Carregando...</div></div>}>
-                {currentView === 'dashboard' && (
-                  <Dashboard
+                {NOTION_VIEWS.has(currentView) ? (
+                  <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="animate-pulse text-text-secondary text-xs font-mono">Sincronizando dados...</div></div>}>
+                    <NotionDataProvider>
+                      <AppContentRouter
+                        currentView={currentView}
+                        tasks={tasks}
+                        setTasks={setTasks}
+                        onTaskClick={handleTaskClick}
+                        activeProjectId={activeProjectId}
+                        projects={projects}
+                        onAddTask={() => setIsMissionModalOpen(true)}
+                        events={events}
+                        setEvents={setEvents}
+                        addTasks={addTasks}
+                        notes={notes}
+                        setNotes={setNotes}
+                        onAgentClick={handleAgentClick}
+                        onNavigate={setCurrentView}
+                        activeAgentId={activeAgentId}
+                        selectedTaskId={selectedTaskId}
+                      />
+                    </NotionDataProvider>
+                  </Suspense>
+                ) : (
+                  <AppContentRouter
+                    currentView={currentView}
                     tasks={tasks}
                     setTasks={setTasks}
                     onTaskClick={handleTaskClick}
@@ -590,32 +455,14 @@ const AppContent: React.FC = () => {
                     onAddTask={() => setIsMissionModalOpen(true)}
                     events={events}
                     setEvents={setEvents}
-                    onNavigate={navigate}
-                    onTaskStatusSync={handleTaskStatusSync}
-                  />
-                )}
-                {currentView === 'finance'         && <Finance />}
-                {currentView === 'health'          && <Health />}
-                {currentView === 'learning'        && <Learning />}
-                {currentView === 'planner'         && (
-                  <Planner
-                    projects={projects}
-                    activeProjectId={activeProjectId}
                     addTasks={addTasks}
-                  />
-                )}
-                {currentView === 'notes'           && <NotesPanel notes={notes} setNotes={setNotes} activeProjectId={activeProjectId} />}
-                {currentView === 'crm'             && <CRM />}
-                {currentView === 'agents-overview' && <AgentCommandCenter onAgentClick={handleAgentClick} onNavigate={setCurrentView} />}
-                {currentView === 'agent-detail' && activeAgentId && <AgentDetailView agentId={activeAgentId} onBack={() => setCurrentView('agents-overview')} />}
-                {currentView === 'settings'        && <Settings />}
-                {currentView === 'mission-detail' && selectedTaskId && (
-                  <MissionDetail
-                    task={tasks.find(t => t.id === selectedTaskId)!}
-                    onBack={() => setCurrentView('dashboard')}
-                    onStatusChange={(taskId, newStatus) => {
-                      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
-                    }}
+                    notes={notes}
+                    setNotes={setNotes}
+                    onAgentClick={handleAgentClick}
+                    onNavigate={setCurrentView}
+                    onTaskStatusSync={handleTaskStatusSync}
+                    activeAgentId={activeAgentId}
+                    selectedTaskId={selectedTaskId}
                   />
                 )}
                 </Suspense>
@@ -625,15 +472,17 @@ const AppContent: React.FC = () => {
           </div>
 
           {currentView === 'dashboard' && (
-            <ProjectSwitcher
-              projects={projects}
-              activeProjectId={activeProjectId}
-              activeTaskCounts={activeTaskCounts}
-              onProjectChange={setActiveProjectId}
-              onAddProject={addProject}
-              theme={theme}
-              onThemeChange={setTheme}
-            />
+            <Suspense fallback={null}>
+              <ProjectSwitcher
+                projects={projects}
+                activeProjectId={activeProjectId}
+                activeTaskCounts={activeTaskCounts}
+                onProjectChange={setActiveProjectId}
+                onAddProject={addProject}
+                theme={theme}
+                onThemeChange={setTheme}
+              />
+            </Suspense>
           )}
         </div>
       </div>
@@ -649,35 +498,41 @@ const AppContent: React.FC = () => {
         onStartAddProject={() => { setCurrentView('dashboard'); }}
       />
 
-      <CommandPalette
-        open={isPaletteOpen}
-        onClose={() => setIsPaletteOpen(false)}
-        tasks={tasks}
-        notes={notes}
-        events={events}
-        contacts={paletteContacts}
-        onOpenTask={openTaskFromPalette}
-        onOpenNote={openNoteFromPalette}
-        onNavigate={(view) => { setCurrentView(view); }}
-        onCreateTask={createTaskFromPalette}
-        onCreateNote={createNoteFromPalette}
-        onCreateEvent={createEventFromPalette}
-        onQuickAction={(actionId) => {
-          const viewMap: Record<string, View> = {
-            'new-finance': 'finance',
-            'new-health': 'health',
-            'new-braindump': 'notes',
-          };
-          const target = viewMap[actionId];
-          if (target) setCurrentView(target);
-        }}
-      />
+      <Suspense fallback={null}>
+        <CommandPalette
+          open={isPaletteOpen}
+          onClose={() => setIsPaletteOpen(false)}
+          tasks={tasks}
+          notes={notes}
+          events={events}
+          contacts={paletteContacts}
+          onOpenTask={openTaskFromPalette}
+          onOpenNote={openNoteFromPalette}
+          onNavigate={(view) => { setCurrentView(view); }}
+          onCreateTask={createTaskFromPalette}
+          onCreateNote={createNoteFromPalette}
+          onCreateEvent={createEventFromPalette}
+          onQuickAction={(actionId) => {
+            const viewMap: Record<string, View> = {
+              'new-finance': 'finance',
+              'new-health': 'health',
+              'new-braindump': 'notes',
+            };
+            const target = viewMap[actionId];
+            if (target) setCurrentView(target);
+          }}
+        />
+      </Suspense>
 
       {isMissionModalOpen && (
-        <MissionModal onClose={() => setIsMissionModalOpen(false)} onSave={addTask} />
+        <Suspense fallback={null}>
+          <MissionModal onClose={() => setIsMissionModalOpen(false)} onSave={addTask} />
+        </Suspense>
       )}
 
-      <ShortcutsDialog isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
+      <Suspense fallback={null}>
+        <ShortcutsDialog isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
+      </Suspense>
 
       {/* Focus Modes — rendered above all content */}
       <Suspense fallback={null}>

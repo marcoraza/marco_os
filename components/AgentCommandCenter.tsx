@@ -15,8 +15,8 @@ import {
   useExecutions,
   useDispatch,
   useConnectionState,
+  useOpenClawActions,
   useTokenUsages,
-  useOpenClaw,
 } from '../contexts/OpenClawContext';
 
 interface AgentCommandCenterProps {
@@ -25,15 +25,12 @@ interface AgentCommandCenterProps {
 }
 
 export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCommandCenterProps) {
-  const agentsData = useAgents();
-  const agents = agentsData?.agents ?? [];
-  const allTasks = useKanban() ?? [];
-  const allExecutions = useExecutions() ?? [];
-  const tokenUsages = useTokenUsages() ?? [];
-  const dispatchHook = useDispatch();
-  const sendDispatch = dispatchHook?.dispatch;
-  const openClaw = useOpenClaw();
-  const dispatchMission = openClaw?.dispatchMission;
+  const { agents } = useAgents();
+  const allTasks = useKanban();
+  const allExecutions = useExecutions();
+  const tokenUsages = useTokenUsages();
+  const { dispatch: sendDispatch } = useDispatch();
+  const { dispatchMission } = useOpenClawActions();
   const { isLive } = useConnectionState();
 
   // Dispatch form
@@ -47,8 +44,8 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
     setIsDispatching(true);
     try {
       // Try API dispatch first (returns bool), fall back to gateway dispatch
-      const ok = dispatchMission ? await dispatchMission(selectedAgent, missionText, missionPriority) : false;
-      if (!ok && sendDispatch) {
+      const ok = await dispatchMission(selectedAgent, missionText, missionPriority);
+      if (!ok) {
         // API not configured or failed — fall back to gateway
         await sendDispatch(selectedAgent, missionText, missionPriority);
       }

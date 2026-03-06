@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Badge, Card, Icon, SectionLabel } from '../ui';
-import { useOpenClaw } from '../../contexts/OpenClawContext';
+import { useConnectionState, useMemory } from '../../contexts/OpenClawContext';
 import { getMemoryForAgent } from '../../data/agentMockData';
 import type { MemoryArtifact } from '../../data/agentMockData';
 // getMemoryForAgent is kept as fallback; primary source is context memoryArtifacts
@@ -24,7 +24,8 @@ function pathToKind(path: string): MemoryArtifact['kind'] {
 }
 
 export default function AgentMemory({ agentId }: AgentMemoryProps) {
-  const { memorySearch, memoryArtifacts, isLive } = useOpenClaw();
+  const { memorySearch, memoryArtifacts } = useMemory();
+  const { isLive } = useConnectionState();
   const [liveArtifacts, setLiveArtifacts] = useState<MemoryArtifact[] | null>(null);
   const [query, setQuery] = useState('');
   const [activeKind, setActiveKind] = useState<MemoryArtifact['kind'] | null>(null);

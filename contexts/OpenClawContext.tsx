@@ -1,20 +1,5 @@
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo, type ReactNode } from 'react';
-import { OpenClawClient } from '../lib/openclaw';
-import { OpenClawHttp } from '../lib/openclawHttp';
-import type {
-  ConnectionState,
-  OpenClawConfig,
-  AgentPresence,
-  AgentRun,
-  HeartbeatTick,
-  CronJob,
-  KanbanBoard,
-  KanbanTask,
-  KanbanStatus,
-} from '../lib/openclawTypes';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { getDefaultConfig } from '../lib/openclawTypes';
-
-// Re-export mock data for fallback
 import {
   agents as mockAgents,
   executions as mockExecutions,
@@ -23,1094 +8,383 @@ import {
   kanbanTasks as mockKanbanTasks,
   tokenUsages as mockTokenUsages,
   memoryArtifacts as mockMemoryArtifacts,
-  type Agent,
-  type Execution,
-  type HeartbeatEvent,
-  type CronJob as MockCronJob,
-  type KanbanTask as MockKanbanTask,
-  type TokenUsage,
-  type MemoryArtifact,
 } from '../data/agentMockData';
+import { useBridgeActions, useBridgePolling } from './openclaw/bridge';
+import { useOpenClawGateway } from './openclaw/gateway';
+import {
+  defaultCrossDomain,
+  type OpenClawContextType,
+  type OpenClawProviderProps,
+} from './openclaw/types';
 
-// ─── CROSS-DOMAIN SUMMARY TYPE ──────────────────────────────────────────────
+export type { CrossDomainSummary } from './openclaw/types';
 
-export interface CrossDomainSummary {
-  dashboard: { total: number; done: number; inProgress: number };
-  finance: { balance: string; monthExpenses: string };
-  health: { energy: number; focus: number; sleep: string };
-  planner: { activeMissions: number };
-  crm: { hotContacts: number; pendingReconnect: number };
-}
+type ConnectionContextValue = Pick<OpenClawContextType, 'connectionState' | 'isLive' | 'connect' | 'disconnect'>;
+type AgentsContextValue = Pick<OpenClawContextType, 'agents' | 'getAgentStatus'>;
+type ExecutionsContextValue = Pick<OpenClawContextType, 'executions' | 'getExecutionsForAgent'>;
+type HeartbeatsContextValue = Pick<OpenClawContextType, 'heartbeats' | 'getHeartbeatsForAgent'>;
+type CronContextValue = Pick<OpenClawContextType, 'cronJobs' | 'getCronJobsForAgent' | 'updateCronJob' | 'createCronJob' | 'deleteCronJob'>;
+type KanbanContextValue = Pick<OpenClawContextType, 'kanbanTasks' | 'getTasksForAgent' | 'updateTaskStatus'>;
+type TokenUsageContextValue = Pick<OpenClawContextType, 'tokenUsages'>;
+type MemoryContextValue = Pick<OpenClawContextType, 'memoryArtifacts' | 'fetchMemoryContent' | 'memorySearch' | 'memoryGet'>;
+type ActionsContextValue = Pick<
+  OpenClawContextType,
+  | 'dispatch'
+  | 'dispatchMission'
+  | 'createCronJobApi'
+  | 'updateCronJobApi'
+  | 'deleteCronJobApi'
+  | 'updateAgentConfig'
+  | 'sendAgentMessage'
+  | 'fetchStandup'
+  | 'fetchActivities'
+  | 'fetchTaskComments'
+  | 'addTaskComment'
+  | 'fetchGitHubIssues'
+>;
+type MetaContextValue = Pick<OpenClawContextType, 'crossDomainSummary' | 'http'>;
 
-const defaultCrossDomain: CrossDomainSummary = {
-  dashboard: { total: 15, done: 3, inProgress: 4 },
-  finance: { balance: 'R$ 12.450', monthExpenses: 'R$ 3.280' },
-  health: { energy: 78, focus: 85, sleep: '7h 20m' },
-  planner: { activeMissions: 3 },
-  crm: { hotContacts: 5, pendingReconnect: 2 },
-};
+const ConnectionContext = createContext<ConnectionContextValue | undefined>(undefined);
+const AgentsContext = createContext<AgentsContextValue | undefined>(undefined);
+const ExecutionsContext = createContext<ExecutionsContextValue | undefined>(undefined);
+const HeartbeatsContext = createContext<HeartbeatsContextValue | undefined>(undefined);
+const CronContext = createContext<CronContextValue | undefined>(undefined);
+const KanbanContext = createContext<KanbanContextValue | undefined>(undefined);
+const TokenUsageContext = createContext<TokenUsageContextValue | undefined>(undefined);
+const MemoryContext = createContext<MemoryContextValue | undefined>(undefined);
+const ActionsContext = createContext<ActionsContextValue | undefined>(undefined);
+const MetaContext = createContext<MetaContextValue | undefined>(undefined);
 
-// ─── CONTEXT TYPE ──────────────────────────────────────────────────────────
-
-interface OpenClawContextType {
-  // Connection
-  connectionState: ConnectionState;
-  isLive: boolean;
-  connect: () => void;
-  disconnect: () => void;
-
-  // Agents (real-time presence or mock fallback)
-  agents: Agent[];
-  getAgentStatus: (agentId: string) => Agent | undefined;
-
-  // Executions (agent runs)
-  executions: Execution[];
-  getExecutionsForAgent: (agentId: string) => Execution[];
-
-  // Heartbeats
-  heartbeats: HeartbeatEvent[];
-  getHeartbeatsForAgent: (agentId: string) => HeartbeatEvent[];
-
-  // Cron Jobs
-  cronJobs: MockCronJob[];
-  getCronJobsForAgent: (agentId: string) => MockCronJob[];
-
-  // Cron Job Actions
-  updateCronJob: (job: MockCronJob) => void;
-  createCronJob: (job: Omit<MockCronJob, 'id'>) => void;
-  deleteCronJob: (jobId: string) => void;
-
-  // Kanban
-  kanbanTasks: MockKanbanTask[];
-  getTasksForAgent: (agentId: string) => MockKanbanTask[];
-  updateTaskStatus: (taskId: string, newStatus: string) => Promise<boolean>;
-
-  // Token Usage
-  tokenUsages: TokenUsage[];
-
-  // Memory Artifacts
-  memoryArtifacts: MemoryArtifact[];
-  fetchMemoryContent: (path: string) => Promise<string>;
-
-  // Cross-Domain
-  crossDomainSummary: CrossDomainSummary;
-
-  // Actions
-  dispatch: (agentId: string, message: string, priority?: 'high' | 'medium' | 'low') => Promise<void>;
-  dispatchMission: (agentId: string, message: string, priority?: 'high' | 'medium' | 'low') => Promise<boolean>;
-  memorySearch: (query: string) => Promise<{ results: Array<{ path: string; snippet: string; score: number }> }>;
-  memoryGet: (path: string) => Promise<{ content: string; path: string }>;
-
-  // Cron API functions
-  createCronJobApi: (job: { name: string; schedule: string; agentId?: string; message?: string; enabled?: boolean }) => Promise<boolean>;
-  updateCronJobApi: (jobId: string, updates: { name?: string; schedule?: string; enabled?: boolean; message?: string }) => Promise<boolean>;
-  deleteCronJobApi: (jobId: string) => Promise<boolean>;
-
-  // Config API
-  updateAgentConfig: (agentId: string, updates: { model?: string }) => Promise<boolean>;
-
-  // HTTP client for direct tool invocations
-  http: OpenClawHttp | null;
-
-  // New Bridge API functions
-  sendAgentMessage: (agentId: string, message: string) => Promise<boolean>;
-  fetchStandup: () => Promise<any>;
-  fetchActivities: (limit?: number) => Promise<any[]>;
-  fetchTaskComments: (taskId: string) => Promise<any[]>;
-  addTaskComment: (taskId: string, text: string) => Promise<boolean>;
-  fetchGitHubIssues: () => Promise<any[]>;
-
-  // Quality Review / Audit / Search / Pipelines / Webhooks
-  reviewTask: (taskId: string, action: string, reviewer?: string) => Promise<boolean>;
-  fetchAuditLog: (limit?: number, type?: string) => Promise<any[]>;
-  globalSearch: (query: string, limit?: number) => Promise<any[]>;
-  fetchPipelines: () => Promise<any[]>;
-  createPipeline: (name: string, steps: any[], trigger?: string) => Promise<any>;
-  runPipeline: (pipelineId: string) => Promise<boolean>;
-  fetchWebhooks: () => Promise<any[]>;
-  createWebhook: (url: string, events: string[], name?: string) => Promise<any>;
-  deleteWebhook: (webhookId: string) => Promise<boolean>;
-}
-
-const OpenClawContext = createContext<OpenClawContextType | undefined>(undefined);
-
-// ─── PROVIDER ──────────────────────────────────────────────────────────────
-
-interface OpenClawProviderProps {
-  children: ReactNode;
-  config?: Partial<OpenClawConfig>;
-  autoConnect?: boolean;
+function useRequiredContext<T>(context: React.Context<T | undefined>, name: string) {
+  const value = useContext(context);
+  if (!value) {
+    throw new Error(`${name} must be used within an OpenClawProvider`);
+  }
+  return value;
 }
 
 export function OpenClawProvider({ children, config: configOverride, autoConnect = true }: OpenClawProviderProps) {
   const config = useMemo(() => ({ ...getDefaultConfig(), ...configOverride }), [configOverride]);
 
-  const clientRef = useRef<OpenClawClient | null>(null);
-  const httpRef = useRef<OpenClawHttp | null>(null);
+  const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'error'>('disconnected');
+  const [liveAgents, setLiveAgents] = useState<typeof mockAgents>([]);
+  const [liveExecutions, setLiveExecutions] = useState<typeof mockExecutions>([]);
+  const [liveHeartbeats, setLiveHeartbeats] = useState<typeof mockHeartbeats>([]);
+  const [liveCronJobs, setLiveCronJobs] = useState<typeof mockCronJobs>([]);
+  const [liveKanbanTasks, setLiveKanbanTasks] = useState<typeof mockKanbanTasks>([]);
+  const [liveTokenUsages, setLiveTokenUsages] = useState<typeof mockTokenUsages>([]);
+  const [liveMemory, setLiveMemory] = useState<typeof mockMemoryArtifacts>([]);
 
-  const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected');
   const isLive = connectionState === 'connected';
 
-  // Live data state (populated when connected)
-  const [liveAgents, setLiveAgents] = useState<Agent[]>([]);
-  const [liveExecutions, setLiveExecutions] = useState<Execution[]>([]);
-  const [liveHeartbeats, setLiveHeartbeats] = useState<HeartbeatEvent[]>([]);
-  const [liveCronJobs, setLiveCronJobs] = useState<MockCronJob[]>([]);
-  const [liveKanbanTasks, setLiveKanbanTasks] = useState<MockKanbanTask[]>([]);
-  const [liveTokenUsages, setLiveTokenUsages] = useState<TokenUsage[]>([]);
-  const [liveMemory, setLiveMemory] = useState<MemoryArtifact[]>([]);
-
-  // Use live data when available, mock data as final fallback
-  const agents = liveAgents.length > 0 ? liveAgents : mockAgents;
-  const executions = liveExecutions.length > 0 ? liveExecutions : mockExecutions;
-  const heartbeats = liveHeartbeats.length > 0 ? liveHeartbeats : mockHeartbeats;
-  const tokenUsages = liveTokenUsages.length > 0 ? liveTokenUsages : mockTokenUsages;
-  // Cron jobs: live gateway > static JSON polling > mock fallback
-  const cronJobs = liveCronJobs.length > 0 ? liveCronJobs : mockCronJobs;
-  // Kanban: live gateway > static JSON polling > mock fallback
-  const kanbanTasks = liveKanbanTasks.length > 0 ? liveKanbanTasks : mockKanbanTasks;
-
-  // ─── INITIALIZE CLIENTS ─────────────────────────────────────────────────
-
-  useEffect(() => {
-    const client = new OpenClawClient(config);
-    const http = new OpenClawHttp(config);
-
-    clientRef.current = client;
-    httpRef.current = http;
-
-    // Track connection state
-    const unsubState = client.onStateChange(setConnectionState);
-
-    // Subscribe to gateway events
-    const unsubPresence = client.on('presence', (payload) => {
-      const presenceData = payload as Record<string, AgentPresence>;
-      const agentList: Agent[] = Object.values(presenceData).map(p => ({
-        id: p.agentId,
-        name: p.name,
-        role: (p.role || 'sub-agent') as Agent['role'],
-        model: p.model,
-        status: p.status,
-        lastHeartbeat: p.lastHeartbeat || '',
-        uptime: '',
-        tags: [],
-        icon: 'smart_toy',
-        responseTime: p.latencyMs,
-      }));
-      if (agentList.length > 0) setLiveAgents(agentList);
-    });
-
-    const unsubTick = client.on('tick', (payload) => {
-      const tick = payload as HeartbeatTick;
-      setLiveHeartbeats(prev => {
-        const filtered = prev.filter(h => h.agentId !== tick.agentId);
-        return [{
-          id: `hb-${tick.agentId}-${Date.now()}`,
-          agentId: tick.agentId,
-          agentName: tick.agentName,
-          ts: tick.ts,
-          latencyMs: tick.latencyMs,
-          status: tick.status,
-          note: tick.note,
-        }, ...filtered].slice(0, 50);
-      });
-    });
-
-    const unsubAgent = client.on('agent', (payload) => {
-      const run = payload as AgentRun;
-      setLiveExecutions(prev => {
-        const existing = prev.findIndex(e => e.id === run.runId);
-        const exec: Execution = {
-          id: run.runId,
-          agentId: run.agentId,
-          agentName: run.agentName,
-          task: run.task,
-          status: run.status,
-          startedAt: run.startedAt,
-          completedAt: run.completedAt,
-          duration: run.duration,
-          output: run.output,
-          error: run.error,
-        };
-        if (existing >= 0) {
-          const next = [...prev];
-          next[existing] = exec;
-          return next;
-        }
-        return [exec, ...prev].slice(0, 50);
-      });
-    });
-
-    if (autoConnect) {
-      client.connect();
-    }
-
-    return () => {
-      unsubState();
-      unsubPresence();
-      unsubTick();
-      unsubAgent();
-      client.disconnect();
-    };
-  }, [config, autoConnect]);
-
-  // ─── FETCH CRON JOBS ON CONNECT ──────────────────────────────────────────
-
-  useEffect(() => {
-    if (!isLive || !clientRef.current) return;
-
-    clientRef.current.cronList()
-      .then((result) => {
-        const jobs = result as CronJob[];
-        if (Array.isArray(jobs)) {
-          setLiveCronJobs(jobs.map(j => ({
-            id: j.id,
-            name: j.name,
-            schedule: j.schedule,
-            lastRun: j.lastRun?.ts || '',
-            nextRun: j.nextRun || '',
-            status: j.lastRun?.status === 'ok' ? 'ok' as const
-              : j.lastRun?.status === 'failed' ? 'failed' as const
-              : j.enabled ? 'ok' as const : 'paused' as const,
-            integration: 'OpenClaw',
-            agentId: j.agentId,
-          })));
-        }
-      })
-      .catch(() => {
-        // Fallback to mock data (already default)
-      });
-  }, [isLive]);
-
-  // ─── CRON JOBS POLLING (same pattern as kanban) ────────────────────────────
-
-  const cronVersionRef = useRef<string>('');
-
-  const parseCronJson = useCallback((raw: string) => {
-    try {
-      const data = JSON.parse(raw) as { jobs: MockCronJob[] };
-      if (!data.jobs?.length) return;
-      setLiveCronJobs(data.jobs);
-    } catch {
-      // Invalid JSON — keep current state
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isLive) return; // gateway handles it
-
-    let cancelled = false;
-
-    const poll = async () => {
-      try {
-        const base = import.meta.env.BASE_URL || '/';
-        const res = await fetch(`${base}data/frank-crons.json`, { cache: 'no-store' });
-        if (!res.ok || cancelled) return;
-        const text = await res.text();
-        if (text !== cronVersionRef.current) {
-          cronVersionRef.current = text;
-          parseCronJson(text);
-        }
-      } catch {
-        // File not available — keep mock data
-      }
-    };
-
-    poll();
-    const interval = setInterval(poll, 5_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [isLive, parseCronJson]);
-
-  // ─── BRIDGE API POLLING (real data from Flask) ─────────────────────────────
-
-  useEffect(() => {
-    let cancelled = false;
-    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
-
-    if (!API_URL) return; // No API configured
-
-    const headers: Record<string, string> = {
-      'Authorization': `Bearer ${API_TOKEN}`,
-    };
-
-    const pollAgents = async () => {
-      try {
-        const res = await fetch(`${API_URL}/agents`, { headers });
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        if (data.ok && data.agents?.length > 0) {
-          setLiveAgents(data.agents);
-        }
-      } catch { /* keep current state */ }
-    };
-
-    const pollRuns = async () => {
-      try {
-        const res = await fetch(`${API_URL}/runs`, { headers });
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        if (data.ok && data.runs) {
-          setLiveExecutions(data.runs.map((r: any) => ({
-            id: r.id,
-            agentId: r.agentId,
-            agentName: r.agentName,
-            task: r.task,
-            status: r.status,
-            startedAt: r.startedAt,
-            completedAt: r.completedAt,
-            duration: r.duration,
-            output: r.output,
-            error: r.error,
-          })));
-        }
-      } catch { /* keep current state */ }
-    };
-
-    const pollCrons = async () => {
-      try {
-        const res = await fetch(`${API_URL}/crons`, { headers });
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        if (data.ok && data.crons?.length > 0) {
-          setLiveCronJobs(data.crons);
-        }
-      } catch { /* keep current state */ }
-    };
-
-    const pollHeartbeats = async () => {
-      try {
-        const res = await fetch(`${API_URL}/heartbeats`, { headers });
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        if (data.ok && data.heartbeats?.length > 0) {
-          setLiveHeartbeats(data.heartbeats);
-        }
-      } catch { /* keep current */ }
-    };
-
-    const pollTokens = async () => {
-      try {
-        const res = await fetch(`${API_URL}/tokens`, { headers });
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        if (data.ok && data.tokens?.length > 0) {
-          setLiveTokenUsages(data.tokens.map((t: any) => ({
-            agentId: t.agentId,
-            model: t.model || 'unknown',
-            totalTokensIn: t.totalIn || 0,
-            totalTokensOut: t.totalOut || 0,
-            todayTokensIn: t.todayIn || 0,
-            todayTokensOut: t.todayOut || 0,
-            estimatedCostUSD: t.estimatedCostUSD || 0,
-            todayCostUSD: t.todayCostUSD || 0,
-            last7Days: t.last7Days || [],
-          })));
-        }
-      } catch { /* keep current */ }
-    };
-
-    const pollMemory = async () => {
-      try {
-        const res = await fetch(`${API_URL}/memory`, { headers });
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        if (data.ok && data.memory?.length > 0) {
-          setLiveMemory(data.memory);
-        }
-      } catch { /* keep current */ }
-    };
-
-    const pollTasks = async () => {
-      try {
-        const res = await fetch(`${API_URL}/tasks`, { headers });
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        if (data.ok && data.tasks?.length > 0) {
-          setLiveKanbanTasks(data.tasks.map((t: any) => ({
-            id: t.id,
-            agentId: t.agentId,
-            title: t.title,
-            status: t.status,
-            priority: t.priority,
-            createdAt: t.createdAt,
-            deadline: t.deadline,
-            tipo: t.tipo,
-            responsavel: t.responsavel,
-            contexto: t.contexto,
-            tags: t.tags || [],
-            notionUrl: t.notionUrl,
-            messages: t.messages || [],
-          })));
-        }
-      } catch { /* keep current */ }
-    };
-
-    const pollAll = () => {
-      pollAgents();
-      pollRuns();
-      pollCrons();
-      pollHeartbeats();
-      pollTokens();
-      pollMemory();
-      pollTasks();
-    };
-
-    // Initial fetch immediately
-    pollAll();
-    // Then every 30 seconds
-    const interval = setInterval(pollAll, 30_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []); // Empty deps — run once on mount
-
-  // ─── CRON JOB ACTIONS ─────────────────────────────────────────────────────
-
-  const updateCronJob = useCallback((job: MockCronJob) => {
-    setLiveCronJobs(prev => {
-      const updated = prev.length > 0 ? [...prev] : [...mockCronJobs];
-      const idx = updated.findIndex(j => j.id === job.id);
-      if (idx >= 0) updated[idx] = job;
-      return updated;
-    });
-  }, []);
-
-  const createCronJob = useCallback((job: Omit<MockCronJob, 'id'>) => {
-    const newJob: MockCronJob = { ...job, id: `cron-${Date.now()}` };
-    setLiveCronJobs(prev => {
-      const base = prev.length > 0 ? prev : [...mockCronJobs];
-      return [...base, newJob];
-    });
-  }, []);
-
-  const deleteCronJob = useCallback((jobId: string) => {
-    setLiveCronJobs(prev => {
-      const base = prev.length > 0 ? prev : [...mockCronJobs];
-      return base.filter(j => j.id !== jobId);
-    });
-  }, []);
-
-  // ─── KANBAN ACTIONS ──────────────────────────────────────────────────────
-
-  const updateTaskStatus = useCallback(async (taskId: string, newStatus: string): Promise<boolean> => {
-    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
-    if (!API_URL) return false;
-    try {
-      const res = await fetch(`${API_URL}/tasks/${taskId}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        // Optimistic update
-        setLiveKanbanTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus as any } : t));
-        return true;
-      }
-      return false;
-    } catch { return false; }
-  }, []);
-
-  // ─── KANBAN SYNC (hybrid: gateway → static JSON polling → mock) ──────────
-
-  const parseBoardJson = useCallback((raw: string) => {
-    try {
-      const board = JSON.parse(raw) as KanbanBoard;
-      if (!board.tasks?.length) return;
-      setLiveKanbanTasks(board.tasks.map(t => ({
-        id: t.id,
-        agentId: t.agent,
-        title: t.title,
-        status: t.status,
-        priority: t.priority,
-        createdAt: t.created,
-        messages: t.messages,
-      })));
-    } catch {
-      // Invalid JSON — keep current state
-    }
-  }, []);
-
-  // When gateway is live, fetch via /tools/invoke
-  useEffect(() => {
-    if (!isLive || !httpRef.current) return;
-    httpRef.current.kanbanGet()
-      .then(({ content }) => parseBoardJson(content))
-      .catch(() => { /* fallback to polling or mock */ });
-  }, [isLive, parseBoardJson]);
-
-  // When gateway is offline, poll static frank-tasks.json every 5s
-  const kanbanVersionRef = useRef<string>('');
-
-  useEffect(() => {
-    if (isLive) return; // gateway handles it
-
-    let cancelled = false;
-
-    const poll = async () => {
-      try {
-        const base = import.meta.env.BASE_URL || '/';
-        const res = await fetch(`${base}data/frank-tasks.json`, { cache: 'no-store' });
-        if (!res.ok || cancelled) return;
-        const text = await res.text();
-        if (text !== kanbanVersionRef.current) {
-          kanbanVersionRef.current = text;
-          parseBoardJson(text);
-        }
-      } catch {
-        // File not available — keep mock data
-      }
-    };
-
-    poll();
-    const interval = setInterval(poll, 5_000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [isLive, parseBoardJson]);
-
-  // ─── HELPERS ─────────────────────────────────────────────────────────────
-
-  const getAgentStatus = useCallback(
-    (agentId: string) => agents.find(a => a.id === agentId),
-    [agents]
-  );
-
-  const getExecutionsForAgent = useCallback(
-    (agentId: string) => executions.filter(e => e.agentId === agentId),
-    [executions]
-  );
-
-  const getHeartbeatsForAgent = useCallback(
-    (agentId: string) => heartbeats.filter(h => h.agentId === agentId),
-    [heartbeats]
-  );
-
-  const getCronJobsForAgent = useCallback(
-    (agentId: string) => cronJobs.filter(j => j.agentId === agentId),
-    [cronJobs]
-  );
-
-  const getTasksForAgent = useCallback(
-    (agentId: string) => kanbanTasks.filter(t => t.agentId === agentId),
-    [kanbanTasks]
-  );
-
-  // ─── ACTIONS ─────────────────────────────────────────────────────────────
-
-  const connect = useCallback(() => {
-    clientRef.current?.connect();
-  }, []);
-
-  const disconnect = useCallback(() => {
-    clientRef.current?.disconnect();
-  }, []);
-
-  const dispatchMission = useCallback(async (agentId: string, message: string, priority?: 'high' | 'medium' | 'low'): Promise<boolean> => {
-    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
-    if (!API_URL) return false;
-    try {
-      const res = await fetch(`${API_URL}/dispatch`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId, message, priority: priority || 'medium' }),
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const dispatch = useCallback(async (agentId: string, message: string, priority?: 'high' | 'medium' | 'low') => {
-    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    // Try API first when available
-    if (API_URL) {
-      await dispatchMission(agentId, message, priority);
-      return;
-    }
-    // Fall back to gateway
-    if (!clientRef.current?.isConnected()) {
-      throw new Error('Não conectado ao OpenClaw');
-    }
-    const prefixedMessage = priority === 'high'
-      ? `[URGENTE] ${message}`
-      : priority === 'low'
-      ? `[BAIXA PRIORIDADE] ${message}`
-      : message;
-    await clientRef.current.send(agentId, prefixedMessage);
-  }, [dispatchMission]);
-
-  const createCronJobApi = useCallback(async (job: { name: string; schedule: string; agentId?: string; message?: string; enabled?: boolean }): Promise<boolean> => {
-    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
-    if (!API_URL) return false;
-    try {
-      const res = await fetch(`${API_URL}/crons`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(job),
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const updateCronJobApi = useCallback(async (jobId: string, updates: { name?: string; schedule?: string; enabled?: boolean; message?: string }): Promise<boolean> => {
-    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
-    if (!API_URL) return false;
-    try {
-      const res = await fetch(`${API_URL}/crons/${jobId}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const deleteCronJobApi = useCallback(async (jobId: string): Promise<boolean> => {
-    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
-    if (!API_URL) return false;
-    try {
-      const res = await fetch(`${API_URL}/crons/${jobId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${API_TOKEN}` },
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setLiveCronJobs(prev => prev.filter(j => j.id !== jobId));
-      }
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const updateAgentConfig = useCallback(async (agentId: string, updates: { model?: string }): Promise<boolean> => {
-    const API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    const API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
-    if (!API_URL) return false;
-    try {
-      const res = await fetch(`${API_URL}/config`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId, ...updates }),
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const memorySearch = useCallback(async (query: string) => {
-    if (!httpRef.current) throw new Error('HTTP client not available');
-    return httpRef.current.memorySearch(query);
-  }, []);
-
-  const memoryGet = useCallback(async (path: string) => {
-    if (!httpRef.current) throw new Error('HTTP client not available');
-    return httpRef.current.memoryGet(path);
-  }, []);
-
-  // ─── NEW BRIDGE API FUNCTIONS ────────────────────────────────────────────
-
-  const sendAgentMessage = useCallback(async (agentId: string, message: string): Promise<boolean> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-      'Content-Type': 'application/json',
-    };
-    if (!bridgeBase) return false;
-    try {
-      const res = await fetch(`${bridgeBase}/chat`, {
-        method: 'POST',
-        headers: bridgeHeaders,
-        body: JSON.stringify({ agentId, message }),
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const fetchStandup = useCallback(async (): Promise<any> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return null;
-    try {
-      const res = await fetch(`${bridgeBase}/standup`, { headers: bridgeHeaders });
-      const data = await res.json();
-      return data.ok ? (data.data ?? data) : null;
-    } catch { return null; }
-  }, []);
-
-  const fetchActivities = useCallback(async (limit = 30): Promise<any[]> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return [];
-    try {
-      const res = await fetch(`${bridgeBase}/activities?limit=${limit}`, { headers: bridgeHeaders });
-      const data = await res.json();
-      const list = data.ok ? (data.activities ?? data.data ?? []) : [];
-      return Array.isArray(list) ? list : [];
-    } catch { return []; }
-  }, []);
-
-  const fetchTaskComments = useCallback(async (taskId: string): Promise<any[]> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return [];
-    try {
-      const res = await fetch(`${bridgeBase}/tasks/${taskId}/comments`, { headers: bridgeHeaders });
-      const data = await res.json();
-      const list = data.ok ? (data.comments ?? data.data ?? []) : [];
-      return Array.isArray(list) ? list : [];
-    } catch { return []; }
-  }, []);
-
-  const addTaskComment = useCallback(async (taskId: string, text: string): Promise<boolean> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-      'Content-Type': 'application/json',
-    };
-    if (!bridgeBase) return false;
-    try {
-      const res = await fetch(`${bridgeBase}/tasks/${taskId}/comments`, {
-        method: 'POST',
-        headers: bridgeHeaders,
-        body: JSON.stringify({ text }),
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const fetchGitHubIssues = useCallback(async (): Promise<any[]> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return [];
-    try {
-      const res = await fetch(`${bridgeBase}/github/issues`, { headers: bridgeHeaders });
-      const data = await res.json();
-      const list = data.ok ? (data.issues ?? data.data ?? []) : [];
-      return Array.isArray(list) ? list : [];
-    } catch { return []; }
-  }, []);
-
-  // ─── QUALITY REVIEW / AUDIT / SEARCH / PIPELINES / WEBHOOKS ─────────────
-
-  const reviewTask = useCallback(async (taskId: string, action: string, reviewer?: string): Promise<boolean> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-      'Content-Type': 'application/json',
-    };
-    if (!bridgeBase) return false;
-    try {
-      const res = await fetch(`${bridgeBase}/tasks/${taskId}/review`, {
-        method: 'PATCH',
-        headers: bridgeHeaders,
-        body: JSON.stringify({ action, reviewer }),
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const fetchAuditLog = useCallback(async (limit = 50, type?: string): Promise<any[]> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return [];
-    try {
-      const params = new URLSearchParams({ limit: String(limit) });
-      if (type) params.set('type', type);
-      const res = await fetch(`${bridgeBase}/audit?${params}`, { headers: bridgeHeaders });
-      const data = await res.json();
-      const list = data.ok ? (data.entries ?? data.data ?? []) : [];
-      return Array.isArray(list) ? list : [];
-    } catch { return []; }
-  }, []);
-
-  const globalSearch = useCallback(async (query: string, limit = 20): Promise<any[]> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return [];
-    try {
-      const params = new URLSearchParams({ q: query, limit: String(limit) });
-      const res = await fetch(`${bridgeBase}/search?${params}`, { headers: bridgeHeaders });
-      const data = await res.json();
-      const list = data.ok ? (data.results ?? data.data ?? []) : [];
-      return Array.isArray(list) ? list : [];
-    } catch { return []; }
-  }, []);
-
-  const fetchPipelines = useCallback(async (): Promise<any[]> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return [];
-    try {
-      const res = await fetch(`${bridgeBase}/pipelines`, { headers: bridgeHeaders });
-      const data = await res.json();
-      const list = data.ok ? (data.pipelines ?? data.data ?? []) : [];
-      return Array.isArray(list) ? list : [];
-    } catch { return []; }
-  }, []);
-
-  const createPipeline = useCallback(async (name: string, steps: any[], trigger?: string): Promise<any> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-      'Content-Type': 'application/json',
-    };
-    if (!bridgeBase) return null;
-    try {
-      const res = await fetch(`${bridgeBase}/pipelines`, {
-        method: 'POST',
-        headers: bridgeHeaders,
-        body: JSON.stringify({ name, steps, trigger }),
-      });
-      const data = await res.json();
-      return data.ok ? (data.pipeline ?? data) : null;
-    } catch { return null; }
-  }, []);
-
-  const runPipeline = useCallback(async (pipelineId: string): Promise<boolean> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-      'Content-Type': 'application/json',
-    };
-    if (!bridgeBase) return false;
-    try {
-      const res = await fetch(`${bridgeBase}/pipelines/${pipelineId}/run`, {
-        method: 'POST',
-        headers: bridgeHeaders,
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  const fetchWebhooks = useCallback(async (): Promise<any[]> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return [];
-    try {
-      const res = await fetch(`${bridgeBase}/webhooks`, { headers: bridgeHeaders });
-      const data = await res.json();
-      const list = data.ok ? (data.webhooks ?? data.data ?? []) : [];
-      return Array.isArray(list) ? list : [];
-    } catch { return []; }
-  }, []);
-
-  const createWebhook = useCallback(async (url: string, events: string[], name?: string): Promise<any> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-      'Content-Type': 'application/json',
-    };
-    if (!bridgeBase) return null;
-    try {
-      const res = await fetch(`${bridgeBase}/webhooks`, {
-        method: 'POST',
-        headers: bridgeHeaders,
-        body: JSON.stringify({ url, events, name }),
-      });
-      const data = await res.json();
-      return data.ok ? (data.webhook ?? data) : null;
-    } catch { return null; }
-  }, []);
-
-  const deleteWebhook = useCallback(async (webhookId: string): Promise<boolean> => {
-    const bridgeBase = import.meta.env.VITE_FORM_API_URL || '';
-    const bridgeHeaders: Record<string, string> = {
-      'Authorization': `Bearer ${import.meta.env.VITE_FORM_API_TOKEN || ''}`,
-    };
-    if (!bridgeBase) return false;
-    try {
-      const res = await fetch(`${bridgeBase}/webhooks/${webhookId}`, {
-        method: 'DELETE',
-        headers: bridgeHeaders,
-      });
-      const data = await res.json();
-      return data.ok || false;
-    } catch { return false; }
-  }, []);
-
-  // ─── FETCH MEMORY CONTENT ────────────────────────────────────────────────
-
-  const fetchMemoryContent = useCallback(async (path: string): Promise<string> => {
-    const _API_URL = import.meta.env.VITE_FORM_API_URL || '';
-    const _API_TOKEN = import.meta.env.VITE_FORM_API_TOKEN || '';
-    if (!_API_URL) return '';
-    try {
-      const res = await fetch(`${_API_URL}/memory/content?path=${encodeURIComponent(path)}`, {
-        headers: { 'Authorization': `Bearer ${_API_TOKEN}` },
-      });
-      const data = await res.json();
-      return data.ok ? data.content : '';
-    } catch {
-      return '';
-    }
-  }, []);
-
-  // ─── CONTEXT VALUE ───────────────────────────────────────────────────────
-
-  const value: OpenClawContextType = {
-    connectionState,
+  const { clientRef, httpRef } = useOpenClawGateway({
+    config,
+    autoConnect,
     isLive,
-    connect,
-    disconnect,
-    agents,
-    getAgentStatus,
-    executions,
-    getExecutionsForAgent,
-    heartbeats,
-    getHeartbeatsForAgent,
-    cronJobs,
-    getCronJobsForAgent,
-    updateCronJob,
-    createCronJob,
-    deleteCronJob,
-    kanbanTasks,
-    getTasksForAgent,
-    updateTaskStatus,
-    tokenUsages,
-    memoryArtifacts: liveMemory.length > 0 ? liveMemory : mockMemoryArtifacts,
-    fetchMemoryContent,
-    crossDomainSummary: defaultCrossDomain,
-    dispatch,
+    setConnectionState,
+    setLiveAgents,
+    setLiveExecutions,
+    setLiveHeartbeats,
+    setLiveCronJobs,
+    setLiveKanbanTasks,
+  });
+
+  useBridgePolling({
+    setLiveAgents,
+    setLiveExecutions,
+    setLiveCronJobs,
+    setLiveHeartbeats,
+    setLiveTokenUsages,
+    setLiveMemory,
+    setLiveKanbanTasks,
+  });
+
+  const {
     dispatchMission,
-    memorySearch,
-    memoryGet,
+    updateTaskStatus,
     createCronJobApi,
     updateCronJobApi,
     deleteCronJobApi,
     updateAgentConfig,
-    http: httpRef.current,
     sendAgentMessage,
     fetchStandup,
     fetchActivities,
     fetchTaskComments,
     addTaskComment,
     fetchGitHubIssues,
-    reviewTask,
-    fetchAuditLog,
-    globalSearch,
-    fetchPipelines,
-    createPipeline,
-    runPipeline,
-    fetchWebhooks,
-    createWebhook,
-    deleteWebhook,
-  };
+    fetchMemoryContent,
+    hasBridge,
+  } = useBridgeActions(setLiveCronJobs, setLiveKanbanTasks);
+
+  const agents = liveAgents.length > 0 ? liveAgents : mockAgents;
+  const executions = liveExecutions.length > 0 ? liveExecutions : mockExecutions;
+  const heartbeats = liveHeartbeats.length > 0 ? liveHeartbeats : mockHeartbeats;
+  const cronJobs = liveCronJobs.length > 0 ? liveCronJobs : mockCronJobs;
+  const kanbanTasks = liveKanbanTasks.length > 0 ? liveKanbanTasks : mockKanbanTasks;
+  const tokenUsages = liveTokenUsages.length > 0 ? liveTokenUsages : mockTokenUsages;
+  const memoryArtifacts = liveMemory.length > 0 ? liveMemory : mockMemoryArtifacts;
+
+  const updateCronJob = useCallback((job: (typeof mockCronJobs)[number]) => {
+    setLiveCronJobs((prev) => {
+      const updated = prev.length > 0 ? [...prev] : [...mockCronJobs];
+      const index = updated.findIndex((item) => item.id === job.id);
+      if (index >= 0) updated[index] = job;
+      return updated;
+    });
+  }, []);
+
+  const createCronJob = useCallback((job: Omit<(typeof mockCronJobs)[number], 'id'>) => {
+    const newJob = { ...job, id: `cron-${Date.now()}` };
+    setLiveCronJobs((prev) => {
+      const base = prev.length > 0 ? prev : [...mockCronJobs];
+      return [...base, newJob];
+    });
+  }, []);
+
+  const deleteCronJob = useCallback((jobId: string) => {
+    setLiveCronJobs((prev) => {
+      const base = prev.length > 0 ? prev : [...mockCronJobs];
+      return base.filter((job) => job.id !== jobId);
+    });
+  }, []);
+
+  const getAgentStatus = useCallback((agentId: string) => agents.find((agent) => agent.id === agentId), [agents]);
+  const getExecutionsForAgent = useCallback((agentId: string) => executions.filter((execution) => execution.agentId === agentId), [executions]);
+  const getHeartbeatsForAgent = useCallback((agentId: string) => heartbeats.filter((heartbeat) => heartbeat.agentId === agentId), [heartbeats]);
+  const getCronJobsForAgent = useCallback((agentId: string) => cronJobs.filter((job) => job.agentId === agentId), [cronJobs]);
+  const getTasksForAgent = useCallback((agentId: string) => kanbanTasks.filter((task) => task.agentId === agentId), [kanbanTasks]);
+
+  const connect = useCallback(() => {
+    clientRef.current?.connect();
+  }, [clientRef]);
+
+  const disconnect = useCallback(() => {
+    clientRef.current?.disconnect();
+  }, [clientRef]);
+
+  const dispatch = useCallback(async (agentId: string, message: string, priority?: 'high' | 'medium' | 'low') => {
+    if (hasBridge) {
+      await dispatchMission(agentId, message, priority);
+      return;
+    }
+    if (!clientRef.current?.isConnected()) {
+      throw new Error('Não conectado ao OpenClaw');
+    }
+    const prefixedMessage = priority === 'high'
+      ? `[URGENTE] ${message}`
+      : priority === 'low'
+        ? `[BAIXA PRIORIDADE] ${message}`
+        : message;
+    await clientRef.current.send(agentId, prefixedMessage);
+  }, [clientRef, dispatchMission, hasBridge]);
+
+  const memorySearch = useCallback(async (query: string) => {
+    if (!httpRef.current) throw new Error('HTTP client not available');
+    return httpRef.current.memorySearch(query);
+  }, [httpRef]);
+
+  const memoryGet = useCallback(async (path: string) => {
+    if (!httpRef.current) throw new Error('HTTP client not available');
+    return httpRef.current.memoryGet(path);
+  }, [httpRef]);
+
+  const connectionValue = useMemo<ConnectionContextValue>(() => ({
+    connectionState,
+    isLive,
+    connect,
+    disconnect,
+  }), [connectionState, isLive, connect, disconnect]);
+
+  const agentsValue = useMemo<AgentsContextValue>(() => ({
+    agents,
+    getAgentStatus,
+  }), [agents, getAgentStatus]);
+
+  const executionsValue = useMemo<ExecutionsContextValue>(() => ({
+    executions,
+    getExecutionsForAgent,
+  }), [executions, getExecutionsForAgent]);
+
+  const heartbeatsValue = useMemo<HeartbeatsContextValue>(() => ({
+    heartbeats,
+    getHeartbeatsForAgent,
+  }), [heartbeats, getHeartbeatsForAgent]);
+
+  const cronValue = useMemo<CronContextValue>(() => ({
+    cronJobs,
+    getCronJobsForAgent,
+    updateCronJob,
+    createCronJob,
+    deleteCronJob,
+  }), [cronJobs, getCronJobsForAgent, updateCronJob, createCronJob, deleteCronJob]);
+
+  const kanbanValue = useMemo<KanbanContextValue>(() => ({
+    kanbanTasks,
+    getTasksForAgent,
+    updateTaskStatus,
+  }), [kanbanTasks, getTasksForAgent, updateTaskStatus]);
+
+  const tokenUsageValue = useMemo<TokenUsageContextValue>(() => ({
+    tokenUsages,
+  }), [tokenUsages]);
+
+  const memoryValue = useMemo<MemoryContextValue>(() => ({
+    memoryArtifacts,
+    fetchMemoryContent,
+    memorySearch,
+    memoryGet,
+  }), [memoryArtifacts, fetchMemoryContent, memorySearch, memoryGet]);
+
+  const actionsValue = useMemo<ActionsContextValue>(() => ({
+    dispatch,
+    dispatchMission,
+    createCronJobApi,
+    updateCronJobApi,
+    deleteCronJobApi,
+    updateAgentConfig,
+    sendAgentMessage,
+    fetchStandup,
+    fetchActivities,
+    fetchTaskComments,
+    addTaskComment,
+    fetchGitHubIssues,
+  }), [
+    dispatch,
+    dispatchMission,
+    createCronJobApi,
+    updateCronJobApi,
+    deleteCronJobApi,
+    updateAgentConfig,
+    sendAgentMessage,
+    fetchStandup,
+    fetchActivities,
+    fetchTaskComments,
+    addTaskComment,
+    fetchGitHubIssues,
+  ]);
+
+  const metaValue = useMemo<MetaContextValue>(() => ({
+    crossDomainSummary: defaultCrossDomain,
+    http: httpRef.current,
+  }), [httpRef]);
 
   return (
-    <OpenClawContext.Provider value={value}>
-      {children}
-    </OpenClawContext.Provider>
+    <ConnectionContext.Provider value={connectionValue}>
+      <AgentsContext.Provider value={agentsValue}>
+        <ExecutionsContext.Provider value={executionsValue}>
+          <HeartbeatsContext.Provider value={heartbeatsValue}>
+            <CronContext.Provider value={cronValue}>
+              <KanbanContext.Provider value={kanbanValue}>
+                <TokenUsageContext.Provider value={tokenUsageValue}>
+                  <MemoryContext.Provider value={memoryValue}>
+                    <ActionsContext.Provider value={actionsValue}>
+                      <MetaContext.Provider value={metaValue}>
+                        {children}
+                      </MetaContext.Provider>
+                    </ActionsContext.Provider>
+                  </MemoryContext.Provider>
+                </TokenUsageContext.Provider>
+              </KanbanContext.Provider>
+            </CronContext.Provider>
+          </HeartbeatsContext.Provider>
+        </ExecutionsContext.Provider>
+      </AgentsContext.Provider>
+    </ConnectionContext.Provider>
   );
 }
 
-// ─── HOOKS ─────────────────────────────────────────────────────────────────
-
 export function useOpenClaw() {
-  const context = useContext(OpenClawContext);
-  if (!context) {
-    throw new Error('useOpenClaw must be used within an OpenClawProvider');
-  }
-  return context;
+  const connection = useRequiredContext(ConnectionContext, 'useOpenClaw');
+  const agents = useRequiredContext(AgentsContext, 'useOpenClaw');
+  const executions = useRequiredContext(ExecutionsContext, 'useOpenClaw');
+  const heartbeats = useRequiredContext(HeartbeatsContext, 'useOpenClaw');
+  const cron = useRequiredContext(CronContext, 'useOpenClaw');
+  const kanban = useRequiredContext(KanbanContext, 'useOpenClaw');
+  const tokenUsages = useRequiredContext(TokenUsageContext, 'useOpenClaw');
+  const memory = useRequiredContext(MemoryContext, 'useOpenClaw');
+  const actions = useRequiredContext(ActionsContext, 'useOpenClaw');
+  const meta = useRequiredContext(MetaContext, 'useOpenClaw');
+
+  return useMemo<OpenClawContextType>(() => ({
+    ...connection,
+    ...agents,
+    ...executions,
+    ...heartbeats,
+    ...cron,
+    ...kanban,
+    ...tokenUsages,
+    ...memory,
+    ...actions,
+    ...meta,
+  }), [connection, agents, executions, heartbeats, cron, kanban, tokenUsages, memory, actions, meta]);
 }
 
-/** Connection state + isLive flag */
 export function useConnectionState() {
-  const { connectionState, isLive, connect, disconnect } = useOpenClaw();
-  return { connectionState, isLive, connect, disconnect };
+  return useRequiredContext(ConnectionContext, 'useConnectionState');
 }
 
-/** All agents with real-time status */
 export function useAgents() {
-  const { agents, getAgentStatus } = useOpenClaw();
-  return { agents, getAgentStatus };
+  return useRequiredContext(AgentsContext, 'useAgents');
 }
 
-/** Executions for a specific agent */
 export function useExecutions(agentId?: string) {
-  const { executions, getExecutionsForAgent } = useOpenClaw();
+  const { executions, getExecutionsForAgent } = useRequiredContext(ExecutionsContext, 'useExecutions');
   if (agentId) return getExecutionsForAgent(agentId);
   return executions;
 }
 
-/** Heartbeats for a specific agent */
 export function useHeartbeats(agentId?: string) {
-  const { heartbeats, getHeartbeatsForAgent } = useOpenClaw();
+  const { heartbeats, getHeartbeatsForAgent } = useRequiredContext(HeartbeatsContext, 'useHeartbeats');
   if (agentId) return getHeartbeatsForAgent(agentId);
   return heartbeats;
 }
 
-/** Cron jobs for a specific agent */
 export function useCronJobs(agentId?: string) {
-  const { cronJobs, getCronJobsForAgent } = useOpenClaw();
+  const { cronJobs, getCronJobsForAgent } = useRequiredContext(CronContext, 'useCronJobs');
   if (agentId) return getCronJobsForAgent(agentId);
   return cronJobs;
 }
 
-/** Cron job mutation actions */
 export function useCronJobActions() {
-  const { updateCronJob, createCronJob, deleteCronJob } = useOpenClaw();
+  const { updateCronJob, createCronJob, deleteCronJob } = useRequiredContext(CronContext, 'useCronJobActions');
   return { updateCronJob, createCronJob, deleteCronJob };
 }
 
-/** Kanban tasks for a specific agent */
 export function useKanban(agentId?: string) {
-  const { kanbanTasks, getTasksForAgent } = useOpenClaw();
+  const { kanbanTasks, getTasksForAgent } = useRequiredContext(KanbanContext, 'useKanban');
   if (agentId) return getTasksForAgent(agentId);
   return kanbanTasks;
 }
 
-/** Dispatch a mission to an agent */
+export function useKanbanActions() {
+  const { updateTaskStatus } = useRequiredContext(KanbanContext, 'useKanbanActions');
+  return { updateTaskStatus };
+}
+
 export function useDispatch() {
-  const { dispatch, isLive } = useOpenClaw();
+  const { dispatch } = useRequiredContext(ActionsContext, 'useDispatch');
+  const { isLive } = useRequiredContext(ConnectionContext, 'useDispatch');
   return { dispatch, isLive };
 }
 
-/** Token usage data */
+export function useOpenClawActions() {
+  return useRequiredContext(ActionsContext, 'useOpenClawActions');
+}
+
+export function useOpenClawMeta() {
+  return useRequiredContext(MetaContext, 'useOpenClawMeta');
+}
+
 export function useTokenUsages() {
-  const { tokenUsages } = useOpenClaw();
+  const { tokenUsages } = useRequiredContext(TokenUsageContext, 'useTokenUsages');
   return tokenUsages;
 }
 
-/** Cross-domain summary */
 export function useCrossDomain() {
-  const { crossDomainSummary } = useOpenClaw();
+  const { crossDomainSummary } = useRequiredContext(MetaContext, 'useCrossDomain');
   return crossDomainSummary;
+}
+
+export function useMemory() {
+  return useRequiredContext(MemoryContext, 'useMemory');
 }

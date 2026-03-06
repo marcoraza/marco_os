@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Badge, Card, Icon, SectionLabel } from '../ui';
 import { cn } from '../../utils/cn';
-import { useOpenClaw } from '../../contexts/OpenClawContext';
+import { useConnectionState, useOpenClawActions, useOpenClawMeta } from '../../contexts/OpenClawContext';
 import { getConfigForAgent } from '../../data/agentMockData';
 import type { AgentConfig as AgentConfigType } from '../../data/agentMockData';
 
@@ -16,7 +16,9 @@ const roleBadge: Record<string, { variant: 'mint' | 'blue' | 'purple'; label: st
 };
 
 export default function AgentConfig({ agentId }: AgentConfigProps) {
-  const { http, isLive, updateAgentConfig } = useOpenClaw();
+  const { http } = useOpenClawMeta();
+  const { isLive } = useConnectionState();
+  const { updateAgentConfig } = useOpenClawActions();
   const [liveConfig, setLiveConfig] = useState<AgentConfigType | null>(null);
   const [loading, setLoading] = useState(false);
   const [editingModel, setEditingModel] = useState(false);
