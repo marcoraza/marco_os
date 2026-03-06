@@ -193,7 +193,7 @@ export function NotificationBell() {
       {/* Bell button */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative p-1.5 rounded-md hover:bg-surface-hover transition-colors"
+        className="relative p-2 rounded-md hover:bg-surface-hover transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
         aria-label="Notificacoes"
       >
         <Icon name="notifications" size="md" className="text-text-secondary" />

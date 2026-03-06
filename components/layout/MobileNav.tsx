@@ -6,6 +6,7 @@ interface MobileNavProps {
   currentView: View;
   onNavigate: (view: View) => void;
   onOpenMissionModal: () => void;
+  onOpenQuickCapture: () => void;
   projects: Project[];
   activeProjectId: string;
   activeTaskCounts: Record<string, number>;
@@ -14,6 +15,7 @@ interface MobileNavProps {
 }
 
 const MORE_ITEMS = [
+  { id: 'quick-capture', icon: 'flash_on', label: 'Captura Rápida' },
   { id: 'learning', icon: 'school',        label: 'Aprendizado' },
   { id: 'planner',  icon: 'event_note',   label: 'Planejador'  },
   { id: 'notes',    icon: 'sticky_note_2', label: 'Notas'    },
@@ -28,6 +30,7 @@ export default function MobileNav({
   currentView,
   onNavigate,
   onOpenMissionModal,
+  onOpenQuickCapture,
   projects,
   activeProjectId,
   activeTaskCounts,
@@ -114,8 +117,15 @@ export default function MobileNav({
           {MORE_ITEMS.map(item => (
             <button
               key={item.id}
-              onClick={() => { onNavigate(item.id as View); setIsMobileMoreOpen(false); }}
-              className={`w-full px-4 py-3 flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:bg-surface-hover transition-colors ${currentView === item.id ? 'text-brand-mint bg-brand-mint/5' : 'text-text-secondary'}`}
+              onClick={() => {
+                if (item.id === 'quick-capture') {
+                  onOpenQuickCapture();
+                } else {
+                  onNavigate(item.id as View);
+                }
+                setIsMobileMoreOpen(false);
+              }}
+              className={`w-full px-4 py-3 flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:bg-surface-hover transition-colors ${(currentView === item.id || item.id === 'quick-capture' && false) ? 'text-brand-mint bg-brand-mint/5' : 'text-text-secondary'}`}
             >
               <Icon name={item.icon} size="sm" />
               {item.label}
@@ -126,11 +136,11 @@ export default function MobileNav({
 
       {/* Main Nav Bar */}
       <div className="h-14 flex items-center justify-around px-2 relative">
-        <button onClick={() => onNavigate('dashboard')} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
+        <button onClick={() => onNavigate('dashboard')} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px] min-h-[48px]">
           <Icon name="dashboard" size="md" className={currentView === 'dashboard' ? 'text-brand-mint' : 'text-text-secondary'} />
           <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'dashboard' ? 'text-brand-mint' : 'text-text-secondary'}`}>Central</span>
         </button>
-        <button onClick={() => onNavigate('finance')} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
+        <button onClick={() => onNavigate('finance')} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px] min-h-[48px]">
           <Icon name="payments" size="md" className={currentView === 'finance' ? 'text-brand-mint' : 'text-text-secondary'} />
           <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'finance' ? 'text-brand-mint' : 'text-text-secondary'}`}>FINANÇAS</span>
         </button>
@@ -138,15 +148,16 @@ export default function MobileNav({
           <button
             onClick={onOpenMissionModal}
             className="size-12 bg-brand-mint rounded-full text-black flex items-center justify-center border-4 border-bg-base shadow-[0_0_15px_rgba(0,255,149,0.3)] active:scale-95 transition-transform"
+            aria-label="Nova missão"
           >
             <Icon name="add" className="font-black text-xl" />
           </button>
         </div>
-        <button onClick={() => onNavigate('health')} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
+        <button onClick={() => onNavigate('health')} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px] min-h-[48px]">
           <Icon name="monitor_heart" size="md" className={currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'} />
           <span className={`text-[8px] font-bold uppercase tracking-wide ${currentView === 'health' ? 'text-brand-mint' : 'text-text-secondary'}`}>SAÚDE</span>
         </button>
-        <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px]">
+        <button onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)} className="flex flex-col items-center gap-0.5 p-2 min-w-[48px] min-h-[48px]">
           <Icon name="more_horiz" size="md" className={isMobileMoreOpen || MORE_VIEW_IDS.includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'} />
           <span className={`text-[8px] font-bold uppercase tracking-wide ${isMobileMoreOpen || MORE_VIEW_IDS.includes(currentView) ? 'text-brand-mint' : 'text-text-secondary'}`}>Mais</span>
         </button>

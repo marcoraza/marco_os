@@ -501,6 +501,7 @@ const AppContent: React.FC = () => {
         currentView={currentView}
         onNavigate={setCurrentView}
         onOpenMissionModal={handleOpenMissionModal}
+        onOpenQuickCapture={handleOpenQuickCapture}
         projects={projects}
         activeProjectId={activeProjectId}
         activeTaskCounts={activeTaskCounts}

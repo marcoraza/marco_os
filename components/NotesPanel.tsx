@@ -294,7 +294,8 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
                 </div>
                 <button
                   onClick={e => { e.stopPropagation(); deleteNote(note.id); }}
-                  className="opacity-0 group-hover:opacity-100 text-text-secondary hover:text-accent-red transition-all shrink-0"
+                  className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-text-secondary hover:text-accent-red transition-all shrink-0 p-1"
+                  aria-label="Excluir nota"
                 >
                   <Icon name="delete" size="sm" />
                 </button>
@@ -313,7 +314,8 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
               <div className="flex items-center gap-2 mb-2 shrink-0">
                 <button
                   onClick={() => setShowListMobile(true)}
-                  className="md:hidden text-text-secondary hover:text-text-primary p-1"
+                  className="md:hidden text-text-secondary hover:text-text-primary p-1 min-h-[40px] min-w-[40px] flex items-center justify-center"
+                  aria-label="Voltar para lista"
                 >
                   <Icon name="arrow_back" size="sm" />
                 </button>
