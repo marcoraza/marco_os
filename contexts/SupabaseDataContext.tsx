@@ -292,7 +292,6 @@ export function SupabaseDataProvider({ children }: { children: ReactNode }) {
 
   void tick // consumed to trigger re-render
 
-  // eslint-disable-next-line @typescript-eslint/comma-dangle
   const makeProvider = <T,>(key: DBKey) =>
     buildProvider<T>(key, cache, errors, isLoading, refetch)
 
