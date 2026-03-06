@@ -1,483 +1,384 @@
-# Marco OS — PRD v2.0
+# Marco OS — PRD Atualizado
 
-**Data:** 04/03/2026
-**Autor:** Marco + Frank
-**Status:** Em construção (documento vivo)
-**Versão anterior:** PRD v2.5 (03/03/2026, Frank + Aria + Uma + Atlas)
-**Changelog:** v2.0 — Merge com PRD v2.5. Adicionado: Design System detalhado, Feature Backlog priorizado, Quick Wins Phase 1.5, UX Standards, Open Questions, Supabase como arquitetura alvo.
-
----
-
-## 1. Briefing
-
-### O que é o Marco OS
-Sistema operacional pessoal que centraliza toda a gestão de vida e negócios num único lugar, integrado com um sistema de multiagentes de IA. O grande diferencial: não é só um dashboard — os agentes agem sobre os dados, executam tarefas, e mantêm tudo atualizado em tempo real.
-
-### De onde viemos
-- Marco, 35 anos, empreendedor em Florianópolis. 11 meses sem receita após queda de R$40k/mês para zero.
-- Infraestrutura construída ao longo de fev-mar/2026: OpenClaw gateway, 3 agentes (Frank/Coder/Researcher), Notion como base de dados, ~20 crons automatizados, Bridge API com 31 endpoints.
-- Frontend React + Tailwind em GitHub Pages, ~6000+ linhas, 50+ componentes.
-- Backend Flask (notion_form_api.py) na VPS em api.clawdia.com.br.
-- Notion com 15+ databases como source of truth.
-- Dados de pesquisa, pipelines de conteúdo, e sistema de agentes 100% operacional.
-- PRD v2.5 definiu a base (DataProvider interface, NotionDataContext, SyncBadge, chat architecture). Muito já foi implementado e superado.
-
-### Onde queremos chegar
-- **Curto prazo (30 dias):** Marco OS 100% funcional — todos os botões funcionam, dados reais, real-time updates, central de comando de verdade.
-- **Médio prazo (90 dias):** Template-ready — qualquer pessoa pode inicializar do zero, preencher wizard de onboarding, e ter seu próprio "OS" funcionando.
-- **Longo prazo (6 meses):** Produto SaaS — Marco OS como plataforma, cada usuário com seu sistema, agentes configuráveis, monetização.
-
-### Quem usa
-- **Hoje:** Apenas Marco (single-user).
-- **Futuro:** Qualquer empreendedor/profissional que quer centralizar gestão de vida e negócios com auxílio de IA. Template inicializável do zero.
-- **TurboClaw:** Projeto separado que vive *dentro* do Marco OS como um projeto ativo. Sem link técnico — só um item no Kanban/Projetos.
+**Data:** 06/03/2026  
+**Autor:** Marco + Codex  
+**Status:** Documento vivo  
+**Documento principal:** este arquivo  
+**Histórico:** `docs/marco-os-prd-v1.md`
 
 ---
 
-## 2. Design System (OBRIGATÓRIO — não alterar)
+## 1. Resumo
 
-### Tema (CSS Custom Properties)
+### O que é
+Marco OS é um sistema operacional pessoal em formato de SPA para centralizar operação diária, planejamento, memória, agentes, finanças, saúde e relacionamento em uma única superfície.
 
-```css
-/* Dark (default) */
---color-bg-base: #0D0D0F;
---color-bg-header: #121212;
---color-bg-surface: #1C1C1C;
---color-bg-surface-hover: #252525;
---color-border-panel: #2A2A2A;
---color-text-primary: #E1E1E1;
---color-text-secondary: #8E8E93;
---color-brand-mint: #00FF95;
---color-brand-flame: #FF5500;
---color-accent-blue: #0A84FF;
---color-accent-red: #FF453A;
---color-accent-orange: #FF9F0A;
---color-accent-purple: #BF5AF2;
+### Posição atual
+O produto já saiu do estágio de protótipo frágil. Hoje ele opera como um sistema pessoal funcional, com qualidade mínima estável, shell mais leve, arquitetura modularizada e fluxos principais utilizáveis no dia a dia.
 
-/* Light */
---color-bg-base: #E8E6E1;
---color-bg-header: #F0EEE9;
---color-bg-surface: #F5F3EF;
---color-text-primary: #1C1917;
---color-text-secondary: #78716C;
---color-brand-mint: #059669;
-```
-
-### Tipografia
-- Font: Inter (300-900 weights)
-- Labels: `text-[8px]` a `text-[10px]`, `font-bold` ou `font-black`, `uppercase`, `tracking-widest`
-- Body: `text-xs` a `text-sm`
-- Monospace para dados: `font-mono`
-- Ícones: Material Symbols Outlined (via Google Fonts CDN), componente `<Icon>`
-
-### Hierarquia Visual (4 níveis)
-- **L1** número principal: `text-[24px] font-black font-mono`
-- **L2** subtítulo/label: `text-[10px] font-bold uppercase tracking-widest text-text-secondary`
-- **L3** corpo: `text-xs text-text-primary`
-- **L4** meta/timestamp: `text-[8px] font-mono text-text-secondary`
-
-### Padrões de Componentes
-- Cards: `bg-surface border border-border-panel rounded-sm`
-- Section labels: `<SectionLabel>` component
-- Status indicators: `<StatusDot>` com `color` e `glow` props
-- Buttons: `bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm text-[9px] font-bold uppercase tracking-widest`
-- Page transitions: Framer Motion `opacity + y` com 0.25s ease
-
-### Regras Absolutas
-- Zero emojis na UI
-- Zero `rounded-lg` ou maior — sempre `rounded-sm`
-- Zero shadows
-- Zero hex no código — usar CSS variables via Tailwind
-- Material Symbols Outlined only (componente `<Icon>`)
-- Labels PT-BR, código/comentários em inglês
-- `npm run build` deve funcionar sempre
-- Mock data fallback sempre presente
+### Objetivo do produto
+Dar ao Marco um cockpit único para:
+- decidir o que exige ação hoje
+- transformar plano em execução
+- operar agentes como extensões de trabalho
+- manter memória pessoal e relacional útil
+- acompanhar finanças, saúde e projetos sem espalhar contexto
 
 ---
 
-## 3. Arquitetura Atual
+## 2. Usuário e Contexto
+
+### Usuário principal
+- Marco
+- uso pessoal e operacional
+- single-user
+- foco em produtividade real, não em colaboração multiusuário neste momento
+
+### Contexto de uso
+- desktop primeiro, mobile funcional
+- uso recorrente ao longo do dia
+- sistema precisa ser rápido de abrir, fácil de navegar e seguro para evoluir sem quebrar
+
+### Regra de produto atual
+Sem overengineering para multi-tenant, auth complexa ou hardening pesado de SaaS enquanto o produto continuar pessoal.
+
+---
+
+## 3. Problema que o produto resolve
+
+Antes do Marco OS, o contexto operacional ficava fragmentado entre notas, tarefas, Notion, dados pessoais, agentes e dashboards isolados.
+
+O produto resolve cinco problemas principais:
+- fragmentação de contexto
+- distância entre planejar e executar
+- pouca memória operacional dos agentes
+- baixa visibilidade do que pede ação hoje
+- dificuldade de manter consistência estrutural enquanto o sistema cresce
+
+---
+
+## 4. Princípios do Produto
+
+- `CLI first -> observability second -> UI third`
+- produto pessoal antes de produto SaaS
+- fluxo real antes de feature cosmética
+- fallback e continuidade antes de integrações pesadas
+- architecture that can evolve without monolith regression
+
+---
+
+## 5. Estado Atual Entregue
+
+### Fundação técnica
+- React 19 + TypeScript + Vite + Tailwind
+- quality gates reais:
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm test`
+  - `npm run build`
+- testes pragmáticos cobrindo helpers, contratos e fluxos centrais
+- stories em `docs/stories/` registrando evolução real
+
+### Arquitetura
+- app shell decomposto e mais leve
+- `OpenClawContext` modularizado internamente por domínio
+- providers e partes pesadas com escopo melhor
+- contratos de dados mais limpos
+- IndexedDB como persistência local principal do app
+- providers de dados convivendo com:
+  - JSON/Notion-style data
+  - Supabase context
+  - bridge/OpenClaw para operação de agentes
+
+### Performance
+- code splitting por feature
+- shell splitting
+- remoção de `recharts`
+- charts leves em SVG/componentes próprios
+- bundle inicial fortemente reduzido em relação ao início do trabalho
+
+### Produto funcional já entregue
+- quick capture integrado ao estado real da aplicação
+- planner com vínculo real entre plano e tarefas
+- notes com busca, favoritos, tags derivadas e links entre notas
+- CRM com fila de follow-up, timeline e inteligência relacional básica
+- agents com mission control, templates, dispatch recente, detalhe operacional e fila de delegação
+- finance com visão diária mais acionável
+- health com check-in persistido, streak e leitura semanal
+- dashboard com briefing executivo e sinais de ação do dia
+
+---
+
+## 6. Arquitetura Atual
 
 ### Stack
-- **Frontend:** React 18 + TypeScript + Tailwind CSS + Vite, hospedado em GitHub Pages
-- **Backend:** Flask (Python), porta 8744, proxy via Nginx + SSL (api.clawdia.com.br)
-- **Agentes:** OpenClaw gateway (porta 18789), 3 agentes: main (Frank, Claude Opus 4.6), coder (GPT-5.3 Codex), researcher (Gemini 2.5 Pro)
-- **Banco de dados:** Notion (15+ DBs), IndexedDB (frontend local), arquivos JSON estáticos (public/data/)
-- **Auth:** Bearer token (notion_form_token.txt)
-- **Deploy:** git push → GitHub Pages (manual via script)
+- Frontend: React 19, TypeScript, Vite, Tailwind CSS, Framer Motion
+- Persistência local: IndexedDB via `idb`
+- Dados externos: Supabase client + datasets Notion-style + bridge API + OpenClaw
+- Testes: `node --test` com `tsx`
+- Lint: ESLint flat config
 
-### Endpoints Bridge API (31 total)
-**Leitura:** agents, runs, crons, heartbeats, tokens, memory, memory/content, config, tasks, standup, activities, github/issues, audit, search, pipelines, webhooks, tasks/comments
-**Escrita:** notion (POST), dispatch (POST), crons (POST/PATCH/DELETE), config (PATCH), tasks (PATCH), tasks/review (PATCH), tasks/comments (POST), pipelines (POST), pipelines/run (POST), webhooks (POST/DELETE), chat (POST)
+### Camadas atuais de dados
+- `App state local`: tarefas, notas, eventos, planos, contatos e outras entidades persistidas localmente
+- `NotionDataContext`: datasets de leitura para áreas do produto que operam sobre dados de pesquisa/knowledge/content
+- `SupabaseDataContext`: provider adicional para dados configurados nesse fluxo
+- `OpenClaw`: operação de agentes, runs, kanban, memória, dispatch e status operacional
 
-### Notion DBs (15)
+### Regra arquitetural prática
+O produto hoje é local-first com integrações oportunistas, não cloud-first obrigatório.
 
-| Database | DB ID | Seção |
-|----------|-------|-------|
-| Research | `30bb72d5-042d-8176-a902-deaef821c5f2` | learning |
-| Deep Dives | `310b72d5-042d-8122-8590-ca967b0ee686` | learning |
-| Criadores | `30cb72d5-042d-81dd-8a48-ec715b1033e3` | learning |
-| Projetos | `30bb72d5-042d-819a-a583-c029400082bc` | planner |
-| Reuniões | `30bb72d5-042d-812f-bd97-ce23f4f9d2cd` | crm |
-| Pessoas | `30bb72d5-042d-8138-ae67-dec4f0315630` | crm |
-| Content | `30bb72d5-042d-81a2-93f3-fcfe40f23bb9` | planner |
-| Brain Dump | `30bb72d5-042d-810b-92cd-ed5924a84410` | notes |
-| Checklists | `30fb72d5-042d-81d2-bc6b-e2515ca8d3e2` | planner |
-| Financas | `318b72d5-042d-8184-95fc-c5b9a65e0249` | finance |
-| Saude | `318b72d5-042d-8179-9398-fc1ed4c6c297` | health |
-| Skills | `318b72d5-042d-810e-9f8e-ca073a1b4587` | learning |
-| Decision Journal | `318b72d5-042d-812b-91a4-f1bde3362a59` | learning |
-
-### Sidebar (9 seções — fixas)
-```
-Central de Comando | Financas | Saude | Aprendizado
-Projetos | Notas | Network | Agentes | Configuracoes
-```
+### Qualidade estrutural já conquistada
+- tipagem corrigida
+- duplicação estrutural removida
+- shell menos acoplado
+- contexts grandes quebrados em módulos internos
+- contratos e mappers menos espalhados em componentes
 
 ---
 
-## 4. Arquitetura Alvo (com Supabase)
+## 7. Superfícies do Produto
 
-### Por que Supabase (e não só Bridge API)
-- **Notion rate limit:** 3 req/s. Dashboard com 10 widgets = throttled.
-- **Latência:** Notion API 200-800ms × N widgets = dashboard lento.
-- **Real-time nativo:** WebSocket subscriptions. Dado muda → frontend atualiza instantâneo.
-- **Sem rate limit prático:** Free tier = 500MB, 50K rows, unlimited API calls.
-- **Row Level Security:** Quando virar multi-user, já está pronto.
-- **Custo:** R$0.
+### 7.1 Dashboard
+Função: cockpit diário.
 
-### Diagrama
+Capacidades atuais:
+- mission control bar
+- briefing executivo local
+- kanban operacional
+- widgets de saúde e atividade
+- agenda lateral
+- quick actions
+- quick capture de tarefa
+- project switcher
 
-```
-┌─────────────────┐     ┌──────────────┐     ┌─────────────┐
-│  Marco OS (SPA) │────▶│  Supabase    │◀────│  Notion     │
-│  GitHub Pages   │     │  (PostgreSQL │     │  (source of │
-│                 │◀────│   + Realtime │     │   truth)    │
-│  - React        │ WS  │   + Auth)    │     │             │
-│  - Tailwind     │     └──────┬───────┘     └──────▲──────┘
-└─────────────────┘            │                     │
-                               │              ┌──────┴──────┐
-                         ┌─────▼─────┐        │ Sync Worker │
-                         │ Bridge API│        │ (cron 5min) │
-                         │ (Flask)   │────────│ Notion→Supa │
-                         │ Port 8744 │        └─────────────┘
-                         └─────┬─────┘
-                               │
-                         ┌─────▼─────┐
-                         │ OpenClaw  │
-                         │ Gateway   │
-                         │ (agents)  │
-                         └───────────┘
-```
+Objetivo da superfície:
+Responder rapidamente: o que importa hoje?
 
-### Camadas de atualização
+### 7.2 Agents
+Função: operação de agentes como força de execução.
 
-| Camada | Frequência | Fonte | Dados |
-|--------|-----------|-------|-------|
-| Real-time (10s) | 10s | Bridge API | Agents, runs, heartbeats, chat, dispatch |
-| Near-real-time (60s) | 60s | Bridge API → Notion | Tasks/Kanban, notifications, audit |
-| Warm cache (5min) | 5min | Sync Worker → Supabase | Finance, saúde, projetos, reuniões |
-| Cold cache (30min) | 30min | Sync Worker → Supabase | Criadores, skills, content, decisions |
+Capacidades atuais:
+- mission control
+- templates de missão
+- dispatch manual
+- histórico recente de dispatch
+- fila de delegação
+- detalhe por agente com resumo operacional
+- execuções, cron jobs, memória, config, dados, chat, revisão, auditoria, pipelines e webhooks
 
-### Tabelas Supabase
+Objetivo da superfície:
+Transformar agentes em operadores utilizáveis, não só observáveis.
 
-tasks, projects, meetings, research, finance, health, contacts, content, creators, decisions, skills, brain_dumps, agent_events, notifications, user_preferences
+### 7.3 Planner
+Função: ponte entre intenção e execução.
 
-### Fluxo de dados
-- **Leitura:** Frontend → Supabase (real-time subscriptions)
-- **Escrita:** Frontend → Bridge API → Notion → Sync Worker → Supabase → Frontend
-- **Agentes:** OpenClaw → Notion → Sync Worker → Supabase → Frontend
-- **Notion permanece source of truth** — Marco edita lá, agentes escrevem lá
+Capacidades atuais:
+- geração e armazenamento de planos
+- retomada do último plano
+- rascunho persistido
+- export para tarefas reais
+- reconciliação entre plano e execução
+- milestones simples derivados
 
-### Credenciais Supabase
-- Projeto: `rznqgjrlbirdzwpskdxy` (região Americas)
-- URL: `https://rznqgjrlbirdzwpskdxy.supabase.co`
-- Keys: `/home/clawd/.openclaw/credentials/supabase.env`
+Objetivo da superfície:
+Reduzir o gap entre pensar o trabalho e colocá-lo em movimento.
 
----
+### 7.4 Notes
+Função: second brain operacional.
 
-## 5. Seções e Features
+Capacidades atuais:
+- editor e lista
+- busca local
+- favoritos
+- filtros por recentes/favoritas
+- tags derivadas de conteúdo
+- wiki-links e backlinks
+- notas relacionadas
 
-### 5.1 Dashboard (Centro de Comando)
-- Morning Brief: reuniões de hoje, projetos ativos, resumo financeiro
-- Mission Control Bar: métricas em tempo real
-- Kanban: tasks do Notion Checklists
-- Agenda: Google Calendar (via gog CLI)
-- Ações Rápidas: briefing diário, triar inbox, health check, sync memória — todos funcionais
-- Notificações: derivadas de audit log + agent events + cron results
-- Predictive Widgets: cálculos sobre dados reais
-- Gamification: XP, streaks, levels baseados em ações reais
-- Activity Heatmap: grid 90 dias (tasks + treinos + conteúdo)
-- Cross-Domain Health Score: 0-100 (tasks 20% + saúde 20% + finanças 20% + projetos 20% + follow-ups 20%)
-- **Project Switcher:** barra inferior — muda contexto do sistema inteiro
-- **Mission Control Mode:** visual vermelho quando métricas críticas (saldo negativo, agente caído, prazo estourado)
-- **Context-Aware:** layout muda por horário (manhã=agenda, tarde=projetos, noite=review)
+Objetivo da superfície:
+Melhorar captura, recuperação e navegação de contexto.
 
-### 5.2 Finanças
-- 6 sub-tabs: Visão Geral, Transações, Débitos, Fluxo de Caixa, Investimentos, Cripto
-- Wizard de configuração opt-in (botão "Configurar" em cada tab)
-- Mock data como fallback inteligente (badge "Dados de exemplo")
-- Scenario Planner: "E se eu cancelar assinatura X?" → projeção N meses
-- Savings Goals: barras de progresso para metas
-- Preenchimento: manual via wizard → agentes assistem → Open Finance (futuro)
+### 7.5 CRM
+Função: memória de relação e follow-up.
 
-### 5.3 Saúde
-- 2 sub-tabs: Registro Diário, Tendências
-- Wizard opt-in
-- Energy Map: input diário 1-5, correlacionar com output (commits, tasks, conteúdo)
-- Após 30 dias: descobrir horários ótimos para deep work
-- Preenchimento: manual → Apple Health (futuro)
+Capacidades atuais:
+- contatos persistidos localmente
+- segmentação relacional
+- score de relação
+- próximo passo sugerido
+- fila de follow-up
+- timeline de interação
+- formulário de reunião
 
-### 5.4 Aprendizado
-- Sub-tabs: Pipeline (Research DB), Análises (Deep Dives), Roster (Criadores), Skills, Chronicle, Knowledge Graph, Content Pipeline, Decision Journal, Exploração
-- Knowledge Graph: mapa visual de conexões research→deep dive→criador→projeto
-- NotionData já funcional para maioria
+Objetivo da superfície:
+Fazer a rede funcionar como radar operacional, não como cadastro passivo.
 
-### 5.5 Planner (expandir — 8-9 abas)
-- Notas migram para dentro do Planner
-- Sub-tabs: Visão Geral, Tarefas, Calendário, Content Calendar, Notas, Brain Dump, Deep Work, Rotina, Metas
-- Deep Work Session: foco + pomodoro + live commit count
+### 7.6 Finance
+Função: cockpit financeiro diário.
 
-### 5.6 Projetos (expandir — 8-9 abas por projeto)
-- Cada projeto: Overview, Kanban, Timeline, Documentação, Equipe, Budget, Métricas, Configurações, Notas
-- Dev Pulse: último commit, PRs abertos, CI status (via `gh` CLI)
-- **Project Switcher** muda contexto global
-- Seções globais: Dashboard, Finanças, Planner, CRM, Agentes
-- Seções contextuais (por projeto): Saúde e Aprendizado podem não aparecer
+Capacidades atuais:
+- abas de visão geral, transações, débitos, cashflow, investimentos e cripto
+- quick actions contextuais
+- memória da última aba
+- fechamento mensal derivado
+- próximos vencimentos
 
-### 5.7 CRM / Network
-- Pessoas, Reuniões, Contatos
-- NotionData já funcional
+Objetivo da superfície:
+Ajudar decisão e atenção financeira do dia.
 
-### 5.8 Agentes (100% funcional)
-- 15 tabs por agente: Kanban, Execuções, Cron Jobs, Heartbeat, Memória, Config, Standup, Atividade, Chat, GitHub, Revisão, Auditoria, Busca, Pipelines, Webhooks
-- Bridge API: 31 endpoints, tudo real
-- Thought Log: painel expandível com raciocínio do agente (tool calls, decisões, erros)
-- Execution Replay: timeline visual de execuções para debugging
-- Futuro: agentes atuam sobre dados pessoais (finance, health, tasks)
+### 7.7 Health
+Função: rotina pessoal e leitura de consistência.
 
-### 5.9 Configurações
-- Painel de jornadas (status por tab)
-- Tema, preferências, integrações
-- API keys management
+Capacidades atuais:
+- check-in diário persistido
+- tendências
+- streak de check-ins
+- resumo semanal
+- dica acionável básica
 
----
+Objetivo da superfície:
+Tornar saúde parte da operação pessoal, não um painel decorativo.
 
-## 6. Project Switcher — Conceito
+### 7.8 Learning
+Função: consolidar aprendizado e decisões.
 
-### Comportamento
-- Barra inferior do Dashboard: lista projetos ativos
-- Clicar alterna contexto global
-- "Pessoal" = modo padrão (todas as seções visíveis)
-- Projetos de negócio = seções filtradas
+Capacidades atuais:
+- revisão semanal orientada por dados
+- decision journal integrado
+- tópicos dominantes
+- cards de conhecimento e recursos
 
-### Implementação
-- Cada projeto tem campo `visibleSections: string[]` no Supabase
-- Context provider: `ActiveProjectContext` com `projectId`, `visibleSections`
-- Sidebar filtra seções baseado no projeto ativo
-- Todos os dados filtram por `projectId` quando aplicável
+Objetivo da superfície:
+Fechar o loop entre aprender, decidir e reusar contexto.
 
-### Perguntas em aberto
-- Finanças são globais ou por projeto? (budget de projeto vs finanças pessoais)
-- Tasks pertencem a um projeto ou podem ser globais?
-- Como o Dashboard agrega em modo "Pessoal"?
+### 7.9 Projects
+Função: torre de controle por projeto.
+
+Capacidades atuais:
+- resumo operacional do projeto ativo
+- contagem de abertas, críticas, concluídas, notas e agenda
+- contexto do projeto ativo influencia navegação e filtros relevantes
+
+Objetivo da superfície:
+Fazer projeto ativo virar unidade real de decisão.
 
 ---
 
-## 7. Workflow de Dados — Preenchimento Inteligente
+## 8. Design e UX
 
-### Princípio: mock → manual → assistido → automático
+### Direção visual atual
+- dark-first
+- baixa ornamentação
+- densidade informacional alta, mas controlada
+- badges, labels e métricas como linguagem principal de leitura
 
-| Fase | Como funciona | Quando |
-|------|--------------|--------|
-| Mock | Dados de exemplo pré-carregados, badge visual | Sempre (fallback) |
-| Manual | Wizard opt-in, botão "Configurar" em cada tab | Usuário decide quando |
-| Assistido | Agente sugere: "Vi que você mencionou gasto X, quer que eu registre?" | Quando tem dados de contexto |
-| Automático | Integração direta: Open Finance, Apple Health, Google Calendar | Quando integração configurada |
+### Regras mantidas
+- `rounded-sm` como padrão
+- Material Symbols via componente `Icon`
+- uso consistente de badges/status dots/section labels
+- sem redesign gratuito em cima da base já estabilizada
 
-### Para Marco (agora)
-- Finance: manual via wizard + agentes auxiliam via Telegram
-- Health: manual + futuro Apple Health
-- Tasks: já funcional via Notion Checklists
-- Calendar: já funcional via calendar.json (gog export)
-- Research/Learning: já funcional via Notion
-
-### Para template/produto (futuro)
-- Wizard de onboarding obrigatório na primeira visita
-- Importação de dados: CSV, APIs, integrações
-- Agente configura wizards baseado no perfil do usuário
+### Critério de UX
+Cada tela deve responder a uma pergunta operacional clara. Quando a tela não responde isso, ela precisa ser simplificada ou reposicionada.
 
 ---
 
-## 8. UX Standards (transversal — aplicar em todas as seções)
+## 9. Non-Goals Atuais
 
-### Loading States (Skeleton)
-```tsx
-<Skeleton className="h-4 w-32" /> // placeholder enquanto carrega
-// bg-border-panel animate-pulse rounded-sm
-```
-
-### Empty States
-Ícone Material Symbols `inbox` (32px) + "Nenhum item encontrado" + botão "Sincronizar" (refetch).
-
-### Error Feedback
-Toast quando fetch falha e cache > 10min.
-
-### Mobile Touch Targets
-Sidebar items mobile: `min-h-[44px]`. Bottom nav = Phase 4.
-
-### SyncBadge
-Toda seção que consome dados externos mostra timestamp de sync: "Sincronizado há 4min" / "Sincronizando..." / "Sem dados". Posição: top-right do header. Style: `text-[8px] font-mono text-text-secondary`.
+Não são prioridade agora:
+- multi-user real
+- permissões complexas
+- billing
+- onboarding de produto SaaS
+- automações enterprise
+- segurança pesada além do razoável para uso pessoal
+- migração completa obrigatória para backend antes de gerar valor de produto
 
 ---
 
-## 9. Feature Backlog — Priorizado
+## 10. Roadmap Atual
 
-### Prioridade ALTA
+### Fase 1 — consolidar produto pessoal operacional
+Status: em andamento avançado.
 
-| Feature | Seção | Descrição | Esforço |
-|---------|-------|-----------|---------|
-| Cross-Domain Health Score | Dashboard | Score 0-100 agregando tasks, saúde, finanças, projetos, follow-ups | 3h |
-| Conversational Analytics | Global (Chat) | "Quanto gastei com assinaturas?" → resposta com mini-chart SVG | 4h |
-| Quick Capture Universal | Global (Cmd+N) | Captura rápida, Frank classifica: Brain Dump / Task / Meeting | 3h |
-| Thought Log | Agentes | Painel expandível com raciocínio real-time do agente | 4h |
-| Smart Morning Brief | Dashboard | brief_builder.py + Google Calendar real | 2h |
-| Google Calendar no Dashboard | Dashboard | Próximos 5 eventos, agenda do dia via `gog cal` | 3h |
+Foco:
+- fechar ciclos semanais e diários
+- tornar agents e planner ainda mais úteis
+- aumentar valor de decisão por dashboard, CRM, finance e health
 
-### Prioridade MÉDIA
+### Fase 2 — features inéditas de alto valor
+Próximos blocos recomendados:
 
-| Feature | Seção | Descrição | Esforço |
-|---------|-------|-----------|---------|
-| Ghost Mode | Global (Cmd+Shift+G) | Tela mínima: 1 saldo, 1 task, 1 timer. ESC pra sair. | 2h |
-| Energy Map | Saúde | Input diário 1-5, heatmap, correlação com output | 3h |
-| Deep Work Session | Planner | Focus mode + pomodoro + live commit count | 3h |
-| Scenario Planner | Finanças | What-if: toggle assinaturas, ver projeção N meses | 3h |
-| Mission Control Mode | Dashboard | Visual vermelho em métricas críticas | 2h |
-| Flow State Detector | Global | Frank detecta padrão de flow → UI reduz informação | 4h |
-| Content Pipeline Visual | Aprendizado | Funil: Ideia → Draft → Revisão → Publicado com métricas | 3h |
-| Activity Heatmap | Dashboard/Saúde | Grid 90 dias, intensidade por atividade | 3h |
-| Execution Replay | Agentes | Timeline visual de agent executions para debugging | 4h |
-| Dev Pulse per Project | Projetos | Último commit, PRs abertos, CI status | 3h |
+1. `Weekly Review Engine 2.0`
+- salvar reviews semanais navegáveis
+- gerar highlights, pendências e foco da próxima semana
+- consolidar aprendizado, tarefas, saúde e finanças
 
-### Prioridade BAIXA (backlog futuro)
+2. `Agent Operations 3.0`
+- histórico operacional por agente mais profundo
+- capacidade/carga por agente
+- padrões reutilizáveis de missão e execução
 
-| Feature | Descrição |
-|---------|-----------|
-| Atomic Notes Bidirecionais | Links automáticos entre notas (estilo Roam/Obsidian) |
-| Knowledge Graph | Mapa visual SVG/Canvas de conexões entre entidades |
-| Second Brain Layer | Decision Journal + Mental Model Library + Outcome Tracking |
-| Savings Goals | Barras de progresso para metas financeiras |
-| Agent Token Meter | Custo diário/semanal/mensal por agente |
-| Stop Button + Checkpoints | Parar agente + checkpoints em ops de risco |
-| MercadoPago Integration | Transações reais na seção Finance |
-| Marco Chronicle Semanal | Relatório estruturado via frank-weekly-curation.sh |
+3. `Planner Execution 3.0`
+- edição bidirecional plano ↔ tarefas
+- reconciliação mais rica
+- execução incremental por blocos
 
----
+4. `Personal Executive Briefing 2.0`
+- briefing diário consolidado no dashboard
+- foco do dia cruzando tasks, finance, health, CRM e agents
+- versão curta e versão detalhada
 
-## 10. Roadmap de Sprints
+5. `Relationship Intelligence 2.0`
+- follow-up assistido
+- agrupamento melhor por contexto
+- histórico relacional mais útil
 
-### Fase 1: Fundação Supabase (S0-S2)
-- **S0:** Setup Supabase (projeto, tabelas, RLS, keys)
-- **S1:** Sync Worker Notion → Supabase (cron Python 5min)
-- **S2:** Frontend Supabase client (substituir NotionDataContext, Realtime subscriptions)
+### Fase 3 — preparação para template futuro
+Só depois do produto pessoal estar maduro.
 
-### Fase 2: Dados Vivos (S3-S5)
-- **S3:** Mock fallback inteligente + badge "Dados de exemplo"
-- **S4:** Tudo clicável (notificações navegam, ações rápidas executam, cards linkam)
-- **S5:** Agentes → dados pessoais (Frank escreve em finance/health/tasks via Notion, sync propaga)
-
-### Fase 3: Features Avançadas (S6-S8)
-- **S6:** Gamification real (XP, streak, levels derivados de ações)
-- **S7:** Predictive Widgets + Cross-Domain Health Score + Morning Brief real
-- **S8:** Project Switcher + contexto por projeto
-
-### Fase 4: Expansão (S9-S11)
-- **S9:** Planner robusto (8-9 abas, Notes migrado, Deep Work)
-- **S10:** Projetos robusto (8-9 abas por projeto, Dev Pulse)
-- **S11:** Integrações externas (Open Finance, Google Calendar API, Apple Health)
-
-### Fase 5: Template (S12-S14)
-- **S12:** Onboarding wizard obrigatório para novos usuários
-- **S13:** Template inicializável (criar instância do zero)
-- **S14:** Auth multi-user (Supabase Auth + RLS por user)
+Foco futuro:
+- onboarding guiado
+- perfis/configuração inicial
+- setup reproduzível
+- abstração gradual do que hoje é muito pessoal
 
 ---
 
-## 11. Stack Definitiva
+## 11. Métricas de Sucesso
 
-| Camada | Tecnologia | Função |
-|--------|-----------|--------|
-| Frontend | React 18 + TypeScript + Tailwind + Vite | SPA |
-| Hosting | GitHub Pages → Vercel (quando produto) | Deploy |
-| Backend API | Flask (notion_form_api.py) | Bridge agentes + Notion |
-| Real-time DB | Supabase (PostgreSQL + Realtime) | Dados + subscriptions |
-| Source of truth | Notion (15+ DBs) | Edição humana + agentes |
-| Sync | Python cron (Notion → Supabase, 5min) | Propagação |
-| Agentes | OpenClaw (main/coder/researcher) | Execução |
-| Auth | Bearer token → Supabase Auth (futuro) | Autenticação |
-| SSL/Proxy | Nginx + Certbot | HTTPS |
-| Domain | api.clawdia.com.br | API backend |
+### Produto
+- abrir o sistema e identificar rapidamente o foco do dia
+- transformar um plano em tarefas sem retrabalho manual excessivo
+- operar agentes com menos atrito entre visão e ação
+- reencontrar informação útil em notes e CRM com pouca fricção
 
----
+### Engenharia
+- `main` permanece verde
+- novas features entram sem monolito voltar a crescer sem controle
+- contexts e providers seguem moduláveis
+- regressões principais são detectadas pelos gates atuais
 
-## 12. Decisões de Design
-
-| Decisão | Escolha | Motivo |
-|---------|---------|--------|
-| Notion como source of truth | Manter | Marco já usa, agentes já escrevem lá |
-| Supabase como camada real-time | Adicionar | Polling limitado, WS melhor, rate limit Notion |
-| Mock data como fallback | Manter sempre | Nunca perder visão da UI |
-| Wizard opt-in | Botão "Configurar" | Não bloquear uso |
-| Project Switcher | Contexto global | Projetos = entidades de primeiro nível |
-| Notes dentro do Planner | Migrar | Simplificar sidebar |
-| Bridge API continua | Sim | Ações de agentes não passam por Supabase |
-| 9 seções sidebar | Fixas | Não adicionar mais seções |
-| DataProvider abstraction | Não mais | Supabase client resolve direto |
+### Uso pessoal
+- o sistema reduz troca de contexto real
+- o produto vira ponto de entrada da operação diária
+- menos informação fica perdida fora do Marco OS
 
 ---
 
-## 13. Credenciais
+## 12. Decisões de Produto Já Tomadas
 
-| Serviço | Status | Localização |
-|---------|--------|------------|
-| Supabase URL | ✅ | credentials/supabase.env |
-| Supabase anon key | ✅ | credentials/supabase.env |
-| Supabase service_role | ✅ | credentials/supabase.env |
-| Notion token | ✅ | credentials/notion_token.txt |
-| OpenClaw gateway | ✅ | openclaw.json |
-| Google Calendar/Drive | ✅ | gog CLI |
-| GitHub | ✅ | gh CLI |
-| Bridge API token | ✅ | credentials/notion_form_token.txt |
+- o produto continua pessoal-first
+- qualidade mínima é obrigatória
+- stories continuam sendo a unidade de evolução
+- arquitetura deve favorecer continuidade, não recomeço
+- integrações são bem-vindas quando aumentam valor real, não apenas complexidade
 
 ---
 
-## 14. Métricas de Sucesso
+## 13. Referências Internas
 
-| Métrica | Meta |
-|---------|------|
-| Tempo de carregamento Dashboard | <2s |
-| Delay atualização Notion → UI | <5min (warm), <60s (tasks) |
-| Botões funcionais | 100% |
-| Seções com dados reais | >80% |
-| Uptime Bridge API | >99% |
-| Build errors | 0 |
-
----
-
-## 15. Open Questions
-
-| # | Pergunta | Owner |
-|---|----------|-------|
-| 1 | Finanças: categorias finais para transações? | Marco |
-| 2 | Saúde: Apple Health/Strava ou só manual por agora? | Marco |
-| 3 | Mobile: quais 5 seções no bottom nav? | Marco |
-| 4 | Project Switcher: finanças globais ou por projeto? | Marco |
-| 5 | Project Switcher: tasks globais ou por projeto? | Marco |
-| 6 | Dashboard em modo "Pessoal": agrega tudo de todos os projetos? | Marco |
-| 7 | Content DB: quais statuses para o pipeline? | Marco |
-
----
-
-**Próximos passos:**
-1. ~~Marco cria projeto Supabase e passa keys~~ ✅
-2. Frank executa S0 (setup tabelas Supabase)
-3. Sprints sequenciais conforme roadmap
+- PRD histórico: `docs/marco-os-prd-v1.md`
+- stories de evolução: `docs/stories/`
+- constitution: `.aios-core/constitution.md`
+- setup técnico: `README.md`
