@@ -10,7 +10,7 @@ import { useSectionSetup } from '../hooks/useSectionSetup';
 import { plannerJourneyConfig } from '../lib/journeyConfigs/planner';
 import { useSupabaseData } from '../contexts/SupabaseDataContext';
 import { showToast } from './ui';
-import { buildPlanExportTasks, getPlannerResumeTarget, summarizePlanExecution } from '../lib/plannerWorkflows';
+import { buildPlanExportTasks, getPlanExportCandidates, getPlannerResumeTarget, summarizePlanDrift, summarizePlanExecution } from '../lib/plannerWorkflows';
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface PlannerProps {
@@ -21,6 +21,7 @@ interface PlannerProps {
 }
 
 const PLANNER_DRAFT_KEY = 'planner-draft';
+const PLANNER_RESUME_REQUEST_KEY = 'planner-resume-requested';
 
 // ─── Task status mapping ─────────────────────────────────────────────────────
 type TaskColumn = 'Aberto' | 'Em progresso' | 'Revisão' | 'Concluído';
@@ -819,13 +820,18 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, tasks, add
 
   const handleExportKanban = async () => {
     if (!activePlan) return;
-    const exportedTasks = addTasks(buildPlanExportTasks(activePlan, projectId));
+    const exportCandidates = getPlanExportCandidates(activePlan, tasks, projectId);
+    if (exportCandidates.length === 0) {
+      showToast('Nenhuma nova tarefa para exportar');
+      return;
+    }
+    const exportedTasks = addTasks(buildPlanExportTasks({ ...activePlan, suggestedTasks: exportCandidates }, projectId));
     const now = new Date().toISOString();
     const updated = {
       ...activePlan,
       exported: true,
       exportedAt: now,
-      exportedTaskIds: exportedTasks.map((task) => task.id),
+      exportedTaskIds: [...(activePlan.exportedTaskIds ?? []), ...exportedTasks.map((task) => task.id)],
       lastOpenedAt: now,
       updatedAt: now,
     };
@@ -845,7 +851,7 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, tasks, add
     setSteps([]);
   };
 
-  const handleLoadPlan = (plan: StoredPlan) => {
+  const handleLoadPlan = useCallback((plan: StoredPlan) => {
     const updatedPlan = { ...plan, lastOpenedAt: new Date().toISOString() };
     setActivePlan(updatedPlan);
     setSteps((plan.steps ?? []).map(s => ({ ...s })));
@@ -855,7 +861,14 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, tasks, add
     setShowHistory(false);
     void persistPlan(updatedPlan);
     showToast('Plano carregado');
-  };
+  }, [activeProjectId]);
+
+  useEffect(() => {
+    if (!resumePlan) return;
+    if (localStorage.getItem(PLANNER_RESUME_REQUEST_KEY) !== '1') return;
+    localStorage.removeItem(PLANNER_RESUME_REQUEST_KEY);
+    handleLoadPlan(resumePlan);
+  }, [handleLoadPlan, resumePlan]);
 
   const handleDeletePlan = async (id: string) => {
     await deletePlan(id);
@@ -913,6 +926,8 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, tasks, add
   const safeSteps = steps ?? [];
   const stepsProgress = safeSteps.length > 0 ? Math.round((safeSteps.filter(s => s.done).length / safeSteps.length) * 100) : 0;
   const planExecution = activePlan ? summarizePlanExecution(activePlan, tasks) : { total: 0, done: 0, inProgress: 0, open: 0 };
+  const planDrift = activePlan ? summarizePlanDrift(activePlan, tasks) : { missing: [], extra: [] };
+  const exportCandidates = activePlan ? getPlanExportCandidates(activePlan, tasks, projectId) : [];
 
   const TABS = [
     { id: 'planos' as const, label: 'Planos', icon: 'auto_awesome' },
@@ -1276,6 +1291,36 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, tasks, add
                   </div>
                 </div>
 
+                {(planDrift.missing.length > 0 || planDrift.extra.length > 0) && (
+                  <div className="bg-surface border border-border-panel rounded-sm p-4 space-y-3">
+                    <SectionLabel>Reconciliação</SectionLabel>
+                    {planDrift.missing.length > 0 && (
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-accent-orange">Ainda não exportadas</p>
+                        <div className="mt-2 space-y-1.5">
+                          {planDrift.missing.slice(0, 3).map((task) => (
+                            <div key={task.title} className="rounded-sm border border-border-panel bg-bg-base px-3 py-2 text-[10px] text-text-primary">
+                              {task.title}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {planDrift.extra.length > 0 && (
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-accent-blue">Extras no projeto</p>
+                        <div className="mt-2 space-y-1.5">
+                          {planDrift.extra.slice(0, 3).map((task) => (
+                            <div key={task.id} className="rounded-sm border border-border-panel bg-bg-base px-3 py-2 text-[10px] text-text-primary">
+                              {task.title}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="bg-surface border border-border-panel rounded-sm p-4">
                   <div className="flex items-center justify-between gap-3">
                     <SectionLabel>Execução Vinculada</SectionLabel>
@@ -1309,21 +1354,25 @@ const Planner: React.FC<PlannerProps> = ({ projects, activeProjectId, tasks, add
                       ? `Ultima exportacao em ${new Date(activePlan.exportedAt ?? activePlan.updatedAt).toLocaleString('pt-BR')}.`
                       : 'Este plano ainda nao foi exportado para a fila de tarefas.'}
                   </p>
+                  <p className="mt-1 text-[10px] text-text-secondary">
+                    {exportCandidates.length > 0
+                      ? `${exportCandidates.length} tarefa${exportCandidates.length !== 1 ? 's' : ''} nova${exportCandidates.length !== 1 ? 's' : ''} pronta${exportCandidates.length !== 1 ? 's' : ''} para exportar.`
+                      : 'Plano reconciliado com a fila atual.'}
+                  </p>
                 </div>
 
                 <div className="flex gap-3">
                   <button
                     onClick={() => void handleExportKanban()}
-                    disabled={activePlan.exported}
                     className={cn(
                       'flex-1 flex items-center justify-center gap-2 py-2.5 rounded font-medium text-sm transition-all min-h-[44px]',
-                      activePlan.exported
+                      exportCandidates.length === 0
                         ? 'bg-brand-mint/20 text-brand-mint cursor-default'
                         : 'bg-brand-mint text-black hover:opacity-90'
                     )}
                   >
-                    <Icon name={activePlan.exported ? 'check_circle' : 'view_kanban'} size="sm" />
-                    {activePlan.exported ? 'Enviado para Kanban' : 'Enviar para Kanban'}
+                    <Icon name={exportCandidates.length === 0 ? 'check_circle' : 'view_kanban'} size="sm" />
+                    {exportCandidates.length === 0 ? 'Fila conciliada' : activePlan.exported ? 'Exportar novas tarefas' : 'Enviar para Kanban'}
                   </button>
                   <button
                     disabled

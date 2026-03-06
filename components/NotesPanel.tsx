@@ -128,7 +128,10 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [listMode, setListMode] = useState<NoteListMode>('all');
+  const [listMode, setListMode] = useState<NoteListMode>(() => {
+    if (typeof window === 'undefined') return 'all';
+    return (localStorage.getItem('notes-list-mode') as NoteListMode) || 'all';
+  });
   const [showListMobile, setShowListMobile] = useState(true);
   const [previewMode, setPreviewMode] = useState(false);
   const [isBrainDumpFormOpen, setIsBrainDumpFormOpen] = useState(false);
@@ -222,6 +225,10 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
     const timer = window.setTimeout(() => setSaveState('idle'), 1200);
     return () => window.clearTimeout(timer);
   }, [saveState]);
+
+  React.useEffect(() => {
+    localStorage.setItem('notes-list-mode', listMode);
+  }, [listMode]);
 
   const deleteNote = (id: string) => {
     setNotes(prev => (prev ?? []).filter(n => n.id !== id));

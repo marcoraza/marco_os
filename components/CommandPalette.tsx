@@ -4,6 +4,7 @@ import type { Task, View } from '../lib/appTypes';
 import type { StoredEvent, StoredNote, StoredContact } from '../data/models';
 import { Icon, SectionLabel, showToast } from './ui';
 import { cn } from '../utils/cn';
+import { rankPaletteNotes } from '../lib/notesWorkflows';
 
 type PaletteItem =
   | { kind: 'nav'; id: string; title: string; subtitle?: string; icon: string; view: View }
@@ -102,7 +103,8 @@ export default function CommandPalette(props: CommandPaletteProps) {
         projectId: t.projectId,
       }));
 
-    const noteItems: PaletteItem[] = (q ? notes.filter(n => (n.title + ' ' + n.body).toLowerCase().includes(q)) : notes)
+    const searchableNotes = rankPaletteNotes(notes);
+    const noteItems: PaletteItem[] = (q ? searchableNotes.filter(n => (n.title + ' ' + n.body).toLowerCase().includes(q)) : searchableNotes)
       .slice(0, 4)
       .map(n => ({
         kind: 'note',
@@ -144,6 +146,9 @@ export default function CommandPalette(props: CommandPaletteProps) {
       { kind: 'action' as const, id: 'new-finance', title: 'Nova entrada financeira', subtitle: 'Registrar receita ou despesa', icon: 'payments' },
       { kind: 'action' as const, id: 'new-health', title: 'Novo registro de saude', subtitle: 'Treino, peso, habito, sono ou humor', icon: 'monitor_heart' },
       { kind: 'action' as const, id: 'new-braindump', title: 'Nova nota rapida', subtitle: 'Brain dump para ideias e reflexoes', icon: 'sticky_note_2' },
+      { kind: 'action' as const, id: 'resume-plan', title: 'Retomar ultimo plano', subtitle: 'Abrir o planejamento mais recente', icon: 'history' },
+      { kind: 'action' as const, id: 'focus-next-task', title: 'Focar proxima tarefa', subtitle: 'Abrir a tarefa prioritaria do dashboard', icon: 'track_changes' },
+      { kind: 'action' as const, id: 'open-starred-notes', title: 'Abrir notas favoritas', subtitle: 'Ir para notas com foco nas favoritas', icon: 'star' },
     ].filter(a => !q || a.title.toLowerCase().includes(q) || a.subtitle.toLowerCase().includes(q));
 
     return [...create, ...(q ? [] : navItems), ...(q ? [] : quickActions), ...taskItems, ...noteItems, ...eventItems, ...contactItems, ...(q ? quickActions : []), ...(q ? navItems : [])];

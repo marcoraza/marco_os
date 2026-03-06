@@ -524,6 +524,31 @@ const AppContent: React.FC = () => {
           onCreateNote={createNoteFromPalette}
           onCreateEvent={createEventFromPalette}
           onQuickAction={(actionId) => {
+            if (actionId === 'resume-plan') {
+              localStorage.setItem('planner-resume-requested', '1');
+              setCurrentView('planner');
+              return;
+            }
+            if (actionId === 'open-starred-notes') {
+              localStorage.setItem('notes-list-mode', 'starred');
+              setCurrentView('notes');
+              return;
+            }
+            if (actionId === 'focus-next-task') {
+              const nextTask = [...tasks]
+                .filter((task) => task.status !== 'done')
+                .sort((left, right) => {
+                  const priorityRank: Record<Task['priority'], number> = { high: 0, medium: 1, low: 2 };
+                  return priorityRank[left.priority] - priorityRank[right.priority];
+                })[0];
+              if (nextTask) {
+                setSelectedTaskId(nextTask.id);
+                setCurrentView('mission-detail');
+                return;
+              }
+              showToast('Nenhuma tarefa pendente');
+              return;
+            }
             const viewMap: Record<string, View> = {
               'new-finance': 'finance',
               'new-health': 'health',

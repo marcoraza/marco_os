@@ -11,7 +11,7 @@ function todayKey(): string {
 }
 
 export function MissionControlBar() {
-  const { reunioes, projetos, saude } = useNotionData();
+  const { reunioes, projetos, saude, checklist } = useNotionData();
   const finance = useFinanceData();
 
   const reunioesItems = useMemo(
@@ -25,6 +25,10 @@ export function MissionControlBar() {
   const saudeItems = useMemo(
     () => extractProviderItems<Record<string, unknown>>(saude.items),
     [saude.items]
+  );
+  const checklistItems = useMemo(
+    () => extractProviderItems<Record<string, unknown>>(checklist.items),
+    [checklist.items]
   );
 
   // Reuniões hoje
@@ -56,6 +60,17 @@ export function MissionControlBar() {
     ? formatRelative((treinos[0]['Data'] ?? treinos[0]['data']) as string)
     : 'Sem dados';
 
+  const tarefasCriticas = checklistItems.filter((item) => {
+    const prioridade = String(item['Prioridade'] ?? item['prioridade'] ?? '').toLowerCase();
+    const status = String(item['Status'] ?? item['status'] ?? '').toLowerCase();
+    return (prioridade.includes('alta') || prioridade === 'p0' || prioridade === 'high') && !status.includes('conclu');
+  }).length;
+
+  const tarefasHoje = checklistItems.filter((item) => {
+    const prazo = (item['Prazo'] ?? item['prazo']) as string | undefined;
+    return prazo?.slice(0, 10) === today;
+  }).length;
+
   const metrics = [
     {
       label: 'reuniões hoje',
@@ -72,6 +87,18 @@ export function MissionControlBar() {
       label: 'último treino',
       value: saude.isLoading ? '...' : ultimoTreino,
       icon: 'fitness_center',
+    },
+    {
+      label: 'tarefas hoje',
+      value: checklist.isLoading ? '...' : tarefasHoje.toString(),
+      icon: 'today',
+      color: tarefasHoje > 0 ? 'text-accent-orange' : undefined,
+    },
+    {
+      label: 'prioridade alta',
+      value: checklist.isLoading ? '...' : tarefasCriticas.toString(),
+      icon: 'priority_high',
+      color: tarefasCriticas > 0 ? 'text-accent-red' : undefined,
     },
   ];
 

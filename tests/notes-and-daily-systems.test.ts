@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { extractNoteTags, filterNotes, getRelatedNotes } from '../lib/notesWorkflows';
+import { extractNoteTags, filterNotes, getRelatedNotes, rankPaletteNotes } from '../lib/notesWorkflows';
 import { calculateHealthCheckinStreak, getUpcomingFinanceEntries, summarizeFinanceMonth, summarizeWeeklyHealth } from '../lib/dailySystems';
 
 test('extractNoteTags merges explicit and inline tags', () => {
@@ -33,6 +33,15 @@ test('getRelatedNotes resolves wiki links and backlinks', () => {
 
   const related = getRelatedNotes(notes, notes[0]);
   assert.deepEqual(related.map((note) => note.id), ['2']);
+});
+
+test('rankPaletteNotes prioritizes starred notes before recency', () => {
+  const ranked = rankPaletteNotes([
+    { id: '1', title: 'Recent normal', body: '', createdAt: '', updatedAt: '2026-03-06T10:00:00.000Z', starred: false },
+    { id: '2', title: 'Older starred', body: '', createdAt: '', updatedAt: '2026-03-05T10:00:00.000Z', starred: true },
+  ]);
+
+  assert.deepEqual(ranked.map((note) => note.id), ['2', '1']);
 });
 
 test('summarizeFinanceMonth and upcoming entries use real dates', () => {

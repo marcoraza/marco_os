@@ -41,3 +41,12 @@ export function getRelatedNotes(notes: StoredNote[], selectedNote: StoredNote): 
     return outgoing.has(title) || backlinks.includes(selectedNote.title.toLowerCase());
   });
 }
+
+export function rankPaletteNotes(notes: StoredNote[]): StoredNote[] {
+  return [...notes].sort((left, right) => {
+    if (Boolean(left.starred) !== Boolean(right.starred)) {
+      return left.starred ? -1 : 1;
+    }
+    return right.updatedAt.localeCompare(left.updatedAt);
+  });
+}

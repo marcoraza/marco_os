@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPlanExportTasks, getPlannerResumeTarget, summarizePlanExecution } from '../lib/plannerWorkflows';
+import { buildPlanExportTasks, getPlanExportCandidates, getPlannerResumeTarget, summarizePlanDrift, summarizePlanExecution } from '../lib/plannerWorkflows';
 import type { StoredPlan } from '../data/models';
 
 const basePlan: StoredPlan = {
@@ -61,4 +61,29 @@ test('summarizePlanExecution links exported task ids to runtime task progress', 
     inProgress: 1,
     open: 0,
   });
+});
+
+test('getPlanExportCandidates only returns suggested tasks not already linked', () => {
+  const candidates = getPlanExportCandidates(
+    { ...basePlan, exportedTaskIds: [101] },
+    [
+      { id: 101, title: 'Mapear escopo', tag: 'PLANEJAMENTO', projectId: 'pessoal', status: 'done', priority: 'high', deadline: '2026-03-08', assignee: 'MA', dependencies: 0 },
+    ],
+    'pessoal'
+  );
+
+  assert.deepEqual(candidates.map((task) => task.title), ['Executar MVP']);
+});
+
+test('summarizePlanDrift reports missing and extra tasks around the linked plan', () => {
+  const drift = summarizePlanDrift(
+    { ...basePlan, exportedTaskIds: [101] },
+    [
+      { id: 101, title: 'Mapear escopo', tag: 'PLANEJAMENTO', projectId: 'pessoal', status: 'done', priority: 'high', deadline: '2026-03-08', assignee: 'MA', dependencies: 0 },
+      { id: 999, title: 'Task improvisada', tag: 'OPS', projectId: 'pessoal', status: 'assigned', priority: 'low', deadline: '2026-03-11', assignee: 'MA', dependencies: 0 },
+    ]
+  );
+
+  assert.deepEqual(drift.missing.map((task) => task.title), ['Executar MVP']);
+  assert.deepEqual(drift.extra.map((task) => task.title), ['Task improvisada']);
 });

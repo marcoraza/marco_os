@@ -59,6 +59,21 @@ const missionTemplates: MissionTemplate[] = [
   },
 ];
 
+const roleTemplateMap: Record<string, MissionTemplate[]> = {
+  coordinator: [
+    missionTemplates[0],
+    { id: 'weekly-orchestration', label: 'Orquestrar', mission: 'Reordene prioridades do sistema, redistribua carga entre agentes e reporte gargalos.', priority: 'high' },
+  ],
+  'sub-agent': [
+    missionTemplates[1],
+    { id: 'ship-scope', label: 'Executar', mission: 'Pegue a próxima entrega do backlog, implemente a mudança e registre evidências do resultado.', priority: 'high' },
+  ],
+  integration: [
+    missionTemplates[2],
+    { id: 'sync-audit', label: 'Sync Audit', mission: 'Audite integrações e sincronizações recentes, destacando dados faltantes e inconsistências.', priority: 'medium' },
+  ],
+};
+
 export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCommandCenterProps) {
   const { agents } = useAgents();
   const allTasks = useKanban();
@@ -202,6 +217,8 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
     medium: { bg: 'bg-accent-orange/10', border: 'border-accent-orange/30', text: 'text-accent-orange', label: 'Média' },
     low: { bg: 'bg-accent-blue/10', border: 'border-accent-blue/30', text: 'text-accent-blue', label: 'Baixa' },
   };
+  const selectedAgentRole = agents.find((agent) => agent.id === selectedAgent)?.role ?? 'sub-agent';
+  const visibleTemplates = roleTemplateMap[selectedAgentRole] ?? missionTemplates;
 
   const applyTemplate = (template: MissionTemplate) => {
     setMissionText(template.mission);
@@ -260,7 +277,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
             <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">NOVA MISSÃO</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {missionTemplates.map((template) => (
+            {visibleTemplates.map((template) => (
               <button
                 key={template.id}
                 onClick={() => applyTemplate(template)}

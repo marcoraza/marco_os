@@ -15,6 +15,22 @@ export function buildPlanExportTasks(
   }));
 }
 
+export function getPlanExportCandidates(
+  plan: Pick<StoredPlan, 'suggestedTasks' | 'exportedTaskIds'>,
+  tasks: Task[],
+  projectId: string,
+) {
+  const exportedIds = new Set(plan.exportedTaskIds ?? []);
+  const existingTitles = new Set(
+    tasks
+      .filter((task) => task.projectId === projectId)
+      .filter((task) => exportedIds.has(task.id))
+      .map((task) => task.title)
+  );
+
+  return (plan.suggestedTasks ?? []).filter((task) => !existingTitles.has(task.title));
+}
+
 export function getPlannerResumeTarget(history: StoredPlan[]): StoredPlan | null {
   if (history.length === 0) return null;
   return [...history].sort((left, right) => {
@@ -48,4 +64,20 @@ export function summarizePlanExecution(
     },
     { total: 0, done: 0, inProgress: 0, open: 0 }
   );
+}
+
+export function summarizePlanDrift(
+  plan: Pick<StoredPlan, 'projectId' | 'suggestedTasks' | 'exportedTaskIds'>,
+  tasks: Task[],
+) {
+  const plannedTitles = new Set((plan.suggestedTasks ?? []).map((task) => task.title));
+  const exportedIds = new Set(plan.exportedTaskIds ?? []);
+  const linkedTasks = tasks.filter((task) => exportedIds.has(task.id));
+  const missing = (plan.suggestedTasks ?? []).filter((task) => !linkedTasks.some((linked) => linked.title === task.title));
+  const extra = tasks.filter((task) => task.projectId === plan.projectId && !plannedTitles.has(task.title) && !exportedIds.has(task.id));
+
+  return {
+    missing,
+    extra,
+  };
 }
