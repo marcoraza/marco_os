@@ -1,5 +1,5 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
-import { Badge, Icon, SectionLabel, StatusDot, Skeleton } from './ui';
+import { Badge, Icon, SectionLabel, StatusDot, Skeleton, EmptyState } from './ui';
 import { TabNav } from './ui/TabNav';
 import type { Tab } from './ui/TabNav';
 import { cn } from '../utils/cn';
@@ -66,13 +66,13 @@ export default function AgentDetailView({ agentId, onBack }: AgentDetailViewProp
 
   if (!agent) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
-        <Icon name="error_outline" className="text-4xl text-text-secondary/30" />
-        <p className="text-sm font-bold text-text-secondary">Agente não encontrado</p>
-        <button onClick={onBack} className="px-4 py-2 text-xs font-bold uppercase tracking-wide text-brand-mint hover:text-text-primary transition-colors">
-          Voltar
-        </button>
-      </div>
+      <EmptyState
+        icon="error_outline"
+        title="Agente nao encontrado"
+        description="Volte para Mission Control e selecione um agente disponivel."
+        action={{ label: 'Voltar', onClick: onBack }}
+        className="h-full"
+      />
     );
   }
 

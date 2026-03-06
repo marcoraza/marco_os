@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Icon, Card, SectionLabel, FormModal, JourneyOverlay, JourneyTriggerButton, DataBadge, Badge } from './ui';
+import { Icon, Card, SectionLabel, FormModal, JourneyOverlay, JourneyTriggerButton, DataBadge, Badge, EmptyState } from './ui';
 import type { Project, Task } from '../lib/appTypes';
 import type { StoredPlan, StoredPlanStep, StoredContentEntry, StoredProjectEntry } from '../data/models';
 import type { ChecklistItem } from '../lib/dataProvider';
@@ -655,15 +655,21 @@ const TasksTab: React.FC<TasksTabProps> = ({ projects, openForm, onOpenForm, onC
         </div>
       ) : tasks.length === 0 ? (
         <div className="bg-surface border border-border-panel rounded-sm p-8 text-center">
-          <Icon name="task_alt" size="lg" className="text-text-secondary/40 mx-auto mb-2" />
-          <p className="text-sm text-text-secondary">Nenhuma tarefa encontrada</p>
-          <p className="text-xs text-text-secondary/60 mt-1">Conecte o Supabase ou adicione tarefas via Notion</p>
+          <EmptyState
+            icon="task_alt"
+            title="Nenhuma tarefa encontrada"
+            description="Conecte o Supabase ou adicione tarefas via Notion."
+            className="py-2"
+          />
         </div>
       ) : filteredTasks.length === 0 ? (
         <div className="bg-surface border border-border-panel rounded-sm p-8 text-center">
-          <Icon name="filter_alt_off" size="lg" className="text-text-secondary/40 mx-auto mb-2" />
-          <p className="text-sm text-text-secondary">Nenhuma tarefa bate com os filtros</p>
-          <p className="text-xs text-text-secondary/60 mt-1">Ajuste pessoa, prioridade ou status para ampliar a fila.</p>
+          <EmptyState
+            icon="filter_alt_off"
+            title="Nenhuma tarefa bate com os filtros"
+            description="Ajuste pessoa, prioridade ou status para ampliar a fila."
+            className="py-2"
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

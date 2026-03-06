@@ -7,13 +7,17 @@ interface MissionModalProps {
   onSave: (mission: any) => void;
 }
 
+export function isMissionTitleValid(title: string) {
+  return title.trim().length > 0;
+}
+
 const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState('normal');
   const [energy, setEnergy] = useState('medium');
   const [points, setPoints] = useState(3);
   const [showValidation, setShowValidation] = useState(false);
-  const isValid = title.trim().length > 0;
+  const isValid = isMissionTitleValid(title);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

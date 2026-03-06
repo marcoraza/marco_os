@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import type { StoredNote } from '../data/models';
-import { Icon, Card, SectionLabel, FormModal, showToast, JourneyOverlay, JourneyTriggerButton, DataBadge } from './ui';
+import { Icon, Card, SectionLabel, FormModal, showToast, JourneyOverlay, JourneyTriggerButton, DataBadge, EmptyState } from './ui';
 import { cn } from '../utils/cn';
 import { braindumpFields } from '../lib/formConfigs';
 import { syncToNotion } from '../lib/notionSync';
@@ -151,7 +151,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
     setNotes(prev => [note, ...prev]);
     setSelectedId(id);
     setPreviewMode(false);
-    showToast('Nota criada!');
+          showToast('Nota criada!');
     syncToNotion('create-brain-dump', data);
   };
 
@@ -267,11 +267,12 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
           showListMobile ? 'w-full' : 'hidden md:block'
         )}>
           {projectNotes.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Icon name="note_stack" size="lg" className="text-text-secondary/30 mb-2" />
-              <p className="text-[10px] font-bold text-text-secondary/40 uppercase tracking-widest">Nenhuma nota</p>
-              <p className="text-[8px] text-text-secondary/25 mt-1">Crie sua primeira nota acima</p>
-            </div>
+            <EmptyState
+              icon="note_stack"
+              title="Nenhuma nota"
+              description="Crie sua primeira nota ou use o brain dump para capturar rapido."
+              className="py-12"
+            />
           )}
           {projectNotes.map(note => (
             <Card
@@ -384,11 +385,12 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
               )}
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <Icon name="edit_note" size="lg" className="text-text-secondary/20 mb-2" />
-              <p className="text-[10px] text-text-secondary/30 font-bold uppercase tracking-widest">Selecione uma nota</p>
-              <p className="mt-2 text-[10px] text-text-secondary/40">Crie uma nota nova ou abra um brain dump para capturar rapido.</p>
-            </div>
+            <EmptyState
+              icon="edit_note"
+              title="Selecione uma nota"
+              description="Crie uma nota nova ou abra um brain dump para capturar rapido."
+              className="flex-1"
+            />
           )}
         </div>
       </div>

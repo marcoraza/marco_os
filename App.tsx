@@ -39,7 +39,6 @@ import {
   checklistItemToTask,
   projetoItemToProject,
   buildProjectIdMap,
-  syncTaskStatus,
 } from './utils/taskMappings';
 
 // Layout components
@@ -249,11 +248,12 @@ const AppContent: React.FC = () => {
       return;
     }
     
+    const { syncTaskStatus } = await import('./utils/taskMappings');
     const success = await syncTaskStatus(notionId, newStatus, apiBase, apiToken || '');
     if (success) {
       showToast('Status atualizado');
     } else {
-      showToast('Erro ao sincronizar');
+      showToast('Erro ao sincronizar', 'error');
     }
   }, [notionIdMap]);
   
