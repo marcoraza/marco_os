@@ -11,7 +11,7 @@ interface ToastItem {
 let toastIdCounter = 0;
 let globalShowToast: ((message: string) => void) | null = null;
 
-export function showToast(message: string) {
+export function showToast(message: string, _variant?: 'success' | 'error' | 'info') {
   globalShowToast?.(message);
 }
 

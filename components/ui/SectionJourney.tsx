@@ -249,7 +249,7 @@ export function SectionJourney({
           <FormRange
             key={field.name}
             label={field.required ? `${field.label} *` : field.label}
-            value={(val as number) ?? field.defaultValue ?? field.min ?? 0}
+            value={Number(val ?? field.defaultValue ?? field.min ?? 0)}
             onChange={(v) => updateValue(field.name, v)}
             min={field.min ?? 0}
             max={field.max ?? 100}

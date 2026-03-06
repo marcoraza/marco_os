@@ -262,7 +262,7 @@ export function FormModal({ title, fields, onSubmit, onClose, isOpen, initialVal
           <div key={field.name} className={cn(field.span === 1 ? '' : 'col-span-2')}>
             <FormRange
               label={labelWithRequired}
-              value={(value as number) ?? field.defaultValue ?? field.min ?? 0}
+              value={Number(value ?? field.defaultValue ?? field.min ?? 0)}
               onChange={(v) => updateValue(field.name, v)}
               min={field.min ?? 0}
               max={field.max ?? 100}

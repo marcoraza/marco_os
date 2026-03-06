@@ -28,7 +28,7 @@ const cardVariants = {
   exit: { opacity: 0, scale: 0.96, y: -8 },
 };
 
-const transition = { duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] };
+const transition = { duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] as const };
 
 // ─── Save to IndexedDB notes store ───────────────────────────────────────────
 async function saveCapture(content: string, type: CaptureType): Promise<void> {

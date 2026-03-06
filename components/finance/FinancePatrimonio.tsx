@@ -1,8 +1,6 @@
 import React from 'react';
-import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-} from 'recharts';
 import { Icon, SectionLabel } from '../ui';
+import { MiniLineAreaChart } from '../ui/LightweightCharts';
 import { MetricDelta } from '../ui/MetricDelta';
 import { netWorthMonthly } from './data';
 import { formatBRL } from './utils';
@@ -48,16 +46,6 @@ const monthsToGoal = avgDelta > 0 ? Math.ceil((GOAL - netWorth) / avgDelta) : nu
 const chartData = netWorthMonthly.map((v, i) => ({ month: MONTHS[i], value: v }));
 
 // ── Sub-components ───────────────────────────────────────────────────────────
-
-function BrlTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="bg-surface border border-border-panel rounded-sm px-3 py-2 text-xs font-mono">
-      <p className="text-text-secondary mb-0.5">{label}</p>
-      <p className="text-brand-mint font-bold">{formatBRL(payload[0].value)}</p>
-    </div>
-  );
-}
 
 interface AssetRowProps {
   name: string;
@@ -121,17 +109,13 @@ export default function FinancePatrimonio() {
 
         {/* Sparkline mini */}
         <div className="w-full sm:w-48 h-16 shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="var(--color-brand-mint)"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <MiniLineAreaChart
+            data={chartData}
+            xKey="month"
+            compact
+            showGrid={false}
+            series={[{ key: 'value', label: 'Patrimônio', color: '#00FF95', fillOpacity: 0.12 }]}
+          />
         </div>
       </div>
 
@@ -139,33 +123,11 @@ export default function FinancePatrimonio() {
       <div className="bg-surface border border-border-panel rounded-sm p-4">
         <SectionLabel className="text-text-secondary tracking-[0.1em] mb-3">EVOLUÇÃO 12 MESES</SectionLabel>
         <div className="h-48">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-panel)" vertical={false} />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 10, fill: 'var(--color-text-secondary)', fontFamily: 'monospace' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 10, fill: 'var(--color-text-secondary)', fontFamily: 'monospace' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
-                width={36}
-              />
-              <Tooltip content={<BrlTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="var(--color-brand-mint)"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: 'var(--color-brand-mint)' }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <MiniLineAreaChart
+            data={chartData}
+            xKey="month"
+            series={[{ key: 'value', label: 'Patrimônio', color: '#00FF95', fillOpacity: 0.16 }]}
+          />
         </div>
       </div>
 

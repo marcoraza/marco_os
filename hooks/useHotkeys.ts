@@ -54,7 +54,7 @@ export function useHotkeys(hotkeys: HotkeyDef[]) {
 
 export function useGoKeys(navigate: (view: string) => void) {
   const gBufferRef = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

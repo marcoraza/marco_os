@@ -1,15 +1,11 @@
 import React, { Suspense, lazy } from 'react';
 import type { Task } from '../../lib/appTypes';
 import { Icon, Card } from '../ui';
+import { MiniBarChart, MiniLineAreaChart } from '../ui/LightweightCharts';
 import { cn } from '../../utils/cn';
 import { useGamification } from '../../hooks/useGamification';
 
 const PredictiveWidgets = lazy(() => import('./PredictiveWidgets').then(m => ({ default: m.PredictiveWidgets })));
-import {
-  BarChart, Bar, Cell, AreaChart, Area,
-  XAxis, YAxis, Tooltip, ResponsiveContainer,
-} from 'recharts';
-import { chartTooltipStyle } from './utils';
 
 interface Achievement {
   id: string;
@@ -190,41 +186,29 @@ export default function GamificationBar({
             <Card className="flex-1 p-3">
               <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary block mb-2">Tarefas por Status</span>
               <div style={{ width: '100%', height: 90 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={statusChartData} barCategoryGap="20%">
-                    <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
-                    <YAxis hide />
-                    <Tooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} contentStyle={chartTooltipStyle.contentStyle} itemStyle={chartTooltipStyle.itemStyle} labelStyle={chartTooltipStyle.labelStyle} />
-                    <Bar dataKey="count" radius={[3, 3, 0, 0]} isAnimationActive={true}>
-                      {statusChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+                <MiniBarChart
+                  data={statusChartData.map((entry) => ({
+                    label: entry.name,
+                    value: entry.count,
+                    color: entry.fill,
+                  }))}
+                />
               </div>
             </Card>
 
             <Card className="flex-1 p-3">
               <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary block mb-2">Atividade Semanal</span>
               <div style={{ width: '100%', height: 90 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={weeklyActivityData}>
-                    <defs>
-                      <linearGradient id="mintGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#00FF95" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#00FF95" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="day" tick={{ fontSize: 8, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
-                    <YAxis hide />
-                    <Tooltip cursor={{ stroke: '#00FF95', strokeWidth: 1, strokeDasharray: '3 3' }} contentStyle={chartTooltipStyle.contentStyle} itemStyle={chartTooltipStyle.itemStyle} labelStyle={chartTooltipStyle.labelStyle} />
-                    <Area type="monotone" dataKey="tasks" stroke="#00FF95" strokeWidth={2} fill="url(#mintGradient)"
-                      dot={{ r: 3, fill: '#00FF95', stroke: 'var(--color-bg-surface)', strokeWidth: 2 }}
-                      activeDot={{ r: 4, fill: '#00FF95', stroke: 'var(--color-bg-surface)', strokeWidth: 2 }}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <MiniLineAreaChart
+                  data={weeklyActivityData}
+                  xKey="day"
+                  compact
+                  showDots
+                  showGrid={false}
+                  series={[
+                    { key: 'tasks', label: 'Tarefas', color: '#00FF95', fillOpacity: 0.22 },
+                  ]}
+                />
               </div>
             </Card>
           </div>

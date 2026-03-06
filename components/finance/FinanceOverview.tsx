@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Icon, Card, SectionLabel, DataBadge } from '../ui';
+import { MiniDonutChart, MiniLineAreaChart } from '../ui/LightweightCharts';
 import { detailedTransactions, pieData, PIE_COLORS, cashflowData } from './data';
 import { formatBRL } from './utils';
 import { loadFinanceEntries } from '../../data/repository';
@@ -14,7 +14,6 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
   const [entries, setEntries] = useState<StoredFinanceEntry[]>([]);
   useEffect(() => { loadFinanceEntries().then(setEntries); }, [refreshKey]);
 
-  // Derive metrics from real data when available
   const now = new Date();
   const currentMonth = now.toISOString().slice(0, 7);
   const monthEntries = entries.filter(e => e.data.startsWith(currentMonth));
@@ -30,7 +29,7 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
   const pieTotal = usedPieData.reduce((acc, d) => acc + d.value, 0);
 
   const usedTransactions = hasRealData
-    ? entries.slice(0, 5).map((e, i) => ({
+    ? entries.slice(0, 5).map(e => ({
         id: e.id,
         title: e.name,
         merchant: e.categoria,
@@ -42,15 +41,13 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
         status: 'completed' as const,
       }))
     : detailedTransactions.slice(0, 5);
+
   return (
     <div className="flex flex-col gap-4 animate-in fade-in duration-300 h-full overflow-hidden">
-
-      {/* Data badge */}
       <div className="flex justify-end shrink-0">
         <DataBadge isReal={hasRealData} lastSync={hasRealData ? new Date().toISOString() : null} />
       </div>
 
-      {/* ROW 1: Metrics + Revenue Goal */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 shrink-0">
         <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Card className="p-4 relative overflow-hidden group hover:border-brand-mint/30 transition-colors flex flex-col justify-center">
@@ -81,7 +78,7 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
               <span className="text-xs text-text-secondary font-medium mb-1">/ R$ 50.000</span>
             </div>
             <div className="w-full h-2 bg-header-bg rounded-full overflow-hidden border border-border-panel mb-2">
-              <div className="h-full bg-brand-mint rounded-full relative" style={{width: '25%'}}>
+              <div className="h-full bg-brand-mint rounded-full relative" style={{ width: '25%' }}>
                 <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/50"></div>
               </div>
             </div>
@@ -92,29 +89,17 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
         </div>
       </div>
 
-      {/* ROW 1.5: Recharts — Pie + Area */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
-        {/* Donut: Monthly Expenses by Category */}
         <div className="bg-header-bg border border-border-panel p-4 rounded">
           <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2"><span className="w-1 h-3 bg-accent-blue"></span> GASTOS POR CATEGORIA</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" stroke="none">
-                {pieData.map((_, i) => (<Cell key={i} fill={PIE_COLORS[i]} />))}
-              </Pie>
-              <Tooltip
-                contentStyle={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-panel)', borderRadius: 4, fontSize: 10 }}
-                itemStyle={{ color: 'var(--color-text-primary)' }}
-                formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, '']}
-              />
-              <text x="50%" y="46%" textAnchor="middle" dominantBaseline="central" fill="var(--color-text-primary)" style={{ fontSize: 14, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }}>
-                R$ {pieTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-              </text>
-              <text x="50%" y="58%" textAnchor="middle" dominantBaseline="central" fill="var(--color-text-secondary)" style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.1em' }}>
-                Total
-              </text>
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-[200px]">
+            <MiniDonutChart
+              data={pieData}
+              colors={PIE_COLORS}
+              centerLabel={`R$ ${pieTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+              centerSubLabel="Total"
+            />
+          </div>
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
             {pieData.map((item, i) => (
               <div key={i} className="flex items-center gap-1.5">
@@ -125,36 +110,25 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
           </div>
         </div>
 
-        {/* Area: Cash Flow (6 months) */}
         <div className="bg-header-bg border border-border-panel p-4 rounded">
           <h3 className="text-[9px] font-black text-text-secondary uppercase tracking-widest mb-3 flex items-center gap-2"><span className="w-1 h-3 bg-brand-mint"></span> FLUXO DE CAIXA (6 MESES)</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={cashflowData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
-              <defs>
-                <linearGradient id="rcIncomeGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#00FF95" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="#00FF95" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="rcExpenseGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#FF453A" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="#FF453A" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="month" tick={{ fontSize: 9, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 9, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v / 1000}k`} />
-              <Tooltip
-                contentStyle={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border-panel)', borderRadius: 4, fontSize: 10 }}
-                itemStyle={{ color: 'var(--color-text-primary)' }}
-                formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, '']}
-              />
-              <Area type="monotone" dataKey="income" stroke="#00FF95" strokeWidth={2} fill="url(#rcIncomeGrad)" name="Receita" />
-              <Area type="monotone" dataKey="expenses" stroke="#FF453A" strokeWidth={2} fill="url(#rcExpenseGrad)" name="Despesas" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="h-[200px]">
+            <MiniLineAreaChart
+              data={cashflowData}
+              xKey="month"
+              series={[
+                { key: 'income', label: 'Receita', color: '#00FF95', fillOpacity: 0.18 },
+                { key: 'expenses', label: 'Despesas', color: '#FF453A', fillOpacity: 0.12 },
+              ]}
+            />
+          </div>
+          <div className="mt-2 flex items-center justify-center gap-4 text-[9px] uppercase tracking-[0.1em] text-text-secondary">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-brand-mint" />Receita</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-accent-red" />Despesas</span>
+          </div>
         </div>
       </div>
 
-      {/* ROW 2: Chart + Feed */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
         <div className="lg:col-span-8 flex flex-col h-full min-h-0">
           <Card className="p-4 flex flex-col h-full">
@@ -169,7 +143,7 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
               </div>
             </div>
             <div className="relative w-full flex-grow rounded-md border border-border-panel overflow-hidden bg-bg-base" style={{ backgroundImage: 'linear-gradient(to right, var(--color-border-panel) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border-panel) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
-              <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, var(--color-border-panel) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border-panel) 1px, transparent 1px)', backgroundSize: '40px 40px'}}></div>
+              <div className="absolute inset-0 opacity-30 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, var(--color-border-panel) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border-panel) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
               <div className="absolute left-0 top-0 bottom-6 w-10 flex flex-col justify-between text-[9px] text-text-secondary font-mono px-1 py-2 border-r border-border-panel bg-surface/50">
                 <span>15k</span><span>10k</span><span>5k</span><span>0</span>
               </div>
@@ -220,7 +194,6 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
         </div>
       </div>
 
-      {/* ROW 3: Categories + Payments */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
         <div className="lg:col-span-8 flex flex-col h-full min-h-0">
           <Card className="p-4 flex flex-col h-full">
@@ -238,7 +211,7 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
                     <div className="flex items-center gap-2"><div className={`p-1 rounded-sm bg-surface-hover ${cat.color} border border-border-panel`}><Icon name={cat.icon} className="text-[10px]" /></div><span className="text-[10px] font-semibold text-text-secondary">{cat.label}</span></div>
                     <div className="text-right"><span className="block text-[10px] font-bold font-mono text-text-primary">{cat.value}</span></div>
                   </div>
-                  <div className="w-full bg-header-bg border border-border-panel rounded-sm h-1.5"><div className={`${cat.barColor} h-full rounded-sm relative`} style={{width: `${cat.percent}%`}}></div></div>
+                  <div className="w-full bg-header-bg border border-border-panel rounded-sm h-1.5"><div className={`${cat.barColor} h-full rounded-sm relative`} style={{ width: `${cat.percent}%` }}></div></div>
                 </div>
               ))}
             </div>
@@ -271,7 +244,6 @@ export default function FinanceOverview({ refreshKey = 0 }: FinanceOverviewProps
           </Card>
         </div>
       </div>
-
     </div>
   );
 }

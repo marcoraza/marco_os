@@ -4,7 +4,11 @@ import { initialWatchlistTokens, initialPortfolioAssets, stakingAssets, rates } 
 import { formatCurrency } from './utils';
 import type { CurrencyDisplay } from './types';
 
-export default function FinanceCrypto() {
+interface FinanceCryptoProps {
+  refreshKey?: number;
+}
+
+export default function FinanceCrypto(_: FinanceCryptoProps) {
   const [displayCurrency, setDisplayCurrency] = useState<CurrencyDisplay>('USD');
   const [stakingDisplayCurrency, setStakingDisplayCurrency] = useState<CurrencyDisplay>('USD');
 

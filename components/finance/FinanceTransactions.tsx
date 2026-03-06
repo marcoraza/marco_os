@@ -3,7 +3,11 @@ import { Icon, Badge, Card } from '../ui';
 import { detailedTransactions } from './data';
 import { formatBRL } from './utils';
 
-export default function FinanceTransactions() {
+interface FinanceTransactionsProps {
+  refreshKey?: number;
+}
+
+export default function FinanceTransactions(_: FinanceTransactionsProps) {
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300">
       <Card className="flex justify-between items-center p-4">

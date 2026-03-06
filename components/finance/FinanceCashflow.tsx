@@ -6,6 +6,7 @@ import { formatBRL } from './utils';
 interface FinanceCashflowProps {
   onOpenIncomeModal: () => void;
   onOpenExpenseModal: () => void;
+  refreshKey?: number;
 }
 
 export default function FinanceCashflow({ onOpenIncomeModal, onOpenExpenseModal }: FinanceCashflowProps) {

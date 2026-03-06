@@ -1,6 +1,10 @@
 import React from 'react';
 import { Icon, Badge, Card } from '../ui';
 
+interface FinanceDebtsProps {
+  refreshKey?: number;
+}
+
 interface DebtCardData {
   icon: string;
   title: string;
@@ -46,7 +50,7 @@ function DebtCard({ debt }: { debt: DebtCardData }) {
   );
 }
 
-export default function FinanceDebts() {
+export default function FinanceDebts(_: FinanceDebtsProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-300 h-full overflow-hidden">
       {/* Left Col: Stats + Debts Grid */}

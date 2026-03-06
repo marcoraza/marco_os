@@ -1,23 +1,27 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import type { Task, Project } from '../lib/appTypes';
 import type { StoredEvent } from '../data/models';
-import {
-  DashboardHeader,
-  KanbanBoard,
-  FocusMode,
-  GamificationBar,
-  DashboardRightSidebar,
-  KANBAN_COLUMNS,
-  MissionControlBar,
-  MorningBriefCard,
-  HealthScoreWidget,
-  ActivityHeatmapWidget,
-} from './dashboard/index';
+import DashboardHeader from './dashboard/DashboardHeader';
+import KanbanBoard from './dashboard/KanbanBoard';
+import FocusMode from './dashboard/FocusMode';
+import DashboardRightSidebar from './dashboard/DashboardRightSidebar';
+import { KANBAN_COLUMNS } from './dashboard/types';
+import { MissionControlBar } from './dashboard/MissionControlBar';
+import { MorningBriefCard } from './dashboard/MorningBriefCard';
 import CalendarWidget from './dashboard/CalendarWidget';
-import { useQuickActions } from '../hooks/useQuickActions';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
-const PredictiveWidgets = lazy(() => import('./dashboard/PredictiveWidgets').then(m => ({ default: m.PredictiveWidgets })));
+const GamificationBar = lazy(() => import('./dashboard/GamificationBar'));
+const HealthScoreWidget = lazy(() => import('./dashboard/HealthScoreWidget').then(m => ({ default: m.HealthScoreWidget })));
+const ActivityHeatmapWidget = lazy(() => import('./dashboard/ActivityHeatmapWidget').then(m => ({ default: m.ActivityHeatmapWidget })));
+
+function InlineFallback({ label = 'Carregando...' }: { label?: string }) {
+  return (
+    <div className="min-h-[96px] rounded-md border border-border-panel bg-surface flex items-center justify-center text-[10px] font-mono text-text-secondary animate-pulse">
+      {label}
+    </div>
+  );
+}
 
 interface DashboardProps {
   tasks: Task[];
@@ -37,17 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const activeProject = projects.find(p => p.id === activeProjectId);
   const { isMobile } = useBreakpoint();
-
-  // Mobile right sidebar panel state
   const [showMobileRightPanel, setShowMobileRightPanel] = useState(false);
-
-  // Quick actions hook
-  const quickActions = useQuickActions({
-    onNavigate,
-    onOpenNovaTarefa: () => { if (onNavigate) onNavigate('planner'); },
-  });
-
-  // State
   const [quickCapture, setQuickCapture] = useState('');
   const [missionView, setMissionView] = useState<'hoje' | 'semana' | 'mes'>('hoje');
   const [focusMode, setFocusMode] = useState(false);
@@ -57,7 +51,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [activeColumn, setActiveColumn] = useState<Task['status']>('assigned');
   const [collapsedCols, setCollapsedCols] = useState<Set<Task['status']>>(new Set());
 
-  // Handlers
   const handleQuickCaptureKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && quickCapture.trim()) {
       setTasks(prev => [...prev, {
@@ -98,7 +91,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     const id = parseInt(e.dataTransfer.getData('taskId'));
     if (!isNaN(id)) {
       setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
-      // Sync status to Notion via Bridge API
       if (onTaskStatusSync) {
         void onTaskStatusSync(id, newStatus);
       }
@@ -109,7 +101,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status } : t));
   };
 
-  // Derived state
   const contextTasks = tasks.filter(t => t.projectId === activeProjectId);
   const availableTags = Array.from(new Set(tasks.map(t => t.tag))).sort();
 
@@ -130,7 +121,6 @@ const Dashboard: React.FC<DashboardProps> = ({
       return (prio[a.priority] ?? 2) - (prio[b.priority] ?? 2);
     })[0] || null;
 
-  // Gamification
   const completedTasks = tasks.filter(t => t.status === 'done').length;
   const xpTasks = completedTasks * 50 + tasks.filter(t => t.priority === 'high' && t.status === 'done').length * 30;
   const totalXP = xpTasks + (12 * 15);
@@ -139,23 +129,23 @@ const Dashboard: React.FC<DashboardProps> = ({
   const xpToNext = 500;
 
   const achievements = [
-    { id: 'first-blood', icon: 'military_tech',          label: 'First Blood',    desc: 'Completou a 1a tarefa',       unlocked: completedTasks >= 1 },
-    { id: 'streak-7',    icon: 'local_fire_department',   label: 'Semana de Fogo', desc: '7 dias sem perder prazo',     unlocked: true },
-    { id: 'centurion',   icon: 'shield',                  label: 'CENTURIÃO',      desc: '100 tasks completadas',       unlocked: completedTasks >= 5 },
-    { id: 'multitask',   icon: 'hub',                     label: 'Multitarefa',    desc: '3+ tasks em andamento',       unlocked: contextTasks.filter(t => t.status === 'in-progress').length >= 2 },
-    { id: 'clean-slate', icon: 'auto_awesome',            label: 'Tela Limpa',     desc: 'Zero no backlog',             unlocked: contextTasks.filter(t => t.status === 'assigned').length === 0 },
-    { id: 'early-bird',  icon: 'wb_sunny',                label: 'Early Bird',     desc: 'Tarefa antes do prazo',       unlocked: true },
+    { id: 'first-blood', icon: 'military_tech', label: 'First Blood', desc: 'Completou a 1a tarefa', unlocked: completedTasks >= 1 },
+    { id: 'streak-7', icon: 'local_fire_department', label: 'Semana de Fogo', desc: '7 dias sem perder prazo', unlocked: true },
+    { id: 'centurion', icon: 'shield', label: 'CENTURIÃO', desc: '100 tasks completadas', unlocked: completedTasks >= 5 },
+    { id: 'multitask', icon: 'hub', label: 'Multitarefa', desc: '3+ tasks em andamento', unlocked: contextTasks.filter(t => t.status === 'in-progress').length >= 2 },
+    { id: 'clean-slate', icon: 'auto_awesome', label: 'Tela Limpa', desc: 'Zero no backlog', unlocked: contextTasks.filter(t => t.status === 'assigned').length === 0 },
+    { id: 'early-bird', icon: 'wb_sunny', label: 'Early Bird', desc: 'Tarefa antes do prazo', unlocked: true },
   ];
 
   const statusChartData = useMemo(() => {
-    const statusMap: Record<Task['status'], number> = { 'assigned': 0, 'started': 0, 'in-progress': 0, 'standby': 0, 'done': 0 };
+    const statusMap: Record<Task['status'], number> = { assigned: 0, started: 0, 'in-progress': 0, standby: 0, done: 0 };
     contextTasks.forEach(t => { statusMap[t.status]++; });
     return [
-      { name: 'Atrib.',  count: statusMap['assigned'],    fill: '#64748b' },
-      { name: 'Inic.',   count: statusMap['started'],     fill: '#0A84FF' },
-      { name: 'Andam.',  count: statusMap['in-progress'], fill: '#FF9F0A' },
-      { name: 'Stand.',  count: statusMap['standby'],     fill: '#EAB308' },
-      { name: 'Done',    count: statusMap['done'],        fill: '#00FF95' },
+      { name: 'Atrib.', count: statusMap.assigned, fill: '#64748b' },
+      { name: 'Inic.', count: statusMap.started, fill: '#0A84FF' },
+      { name: 'Andam.', count: statusMap['in-progress'], fill: '#FF9F0A' },
+      { name: 'Stand.', count: statusMap.standby, fill: '#EAB308' },
+      { name: 'Done', count: statusMap.done, fill: '#00FF95' },
     ];
   }, [contextTasks]);
 
@@ -167,8 +157,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="flex flex-row h-full overflow-hidden">
       <div className="flex-grow flex flex-col min-w-0 overflow-hidden">
-
-        {/* MissionControlBar — compact metrics strip */}
         <MissionControlBar />
 
         <DashboardHeader
@@ -202,22 +190,21 @@ const Dashboard: React.FC<DashboardProps> = ({
           onDrop={handleDrop}
         />
 
-        {/* Sprint B — below Kanban, compact */}
         <div className="px-4 py-2 flex flex-col gap-2">
           <div className={isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-2 gap-2'}>
-            <HealthScoreWidget />
-            <ActivityHeatmapWidget />
+            <Suspense fallback={<InlineFallback label="Health score..." />}>
+              <HealthScoreWidget />
+            </Suspense>
+            <Suspense fallback={<InlineFallback label="Heatmap..." />}>
+              <ActivityHeatmapWidget />
+            </Suspense>
           </div>
-          {/* S10: Calendar Widget — visible on mobile (right sidebar hidden) */}
           {isMobile && (
-            <CalendarWidget
-              onConnectCalendar={() => { if (onNavigate) onNavigate('settings'); }}
-            />
+            <CalendarWidget onConnectCalendar={() => { if (onNavigate) onNavigate('settings'); }} />
           )}
           <MorningBriefCard />
         </div>
 
-        {/* Mobile — "..." button to toggle right panel */}
         {isMobile && (
           <div className="px-4 py-2">
             <button
@@ -254,32 +241,32 @@ const Dashboard: React.FC<DashboardProps> = ({
           />
         )}
 
-        {/* Gamification bar: horizontal scroll on mobile */}
         <div className={isMobile ? 'overflow-x-auto' : ''}>
-          <GamificationBar
-            level={level}
-            xpInLevel={xpInLevel}
-            xpToNext={xpToNext}
-            totalXP={totalXP}
-            completedTasks={completedTasks}
-            focusMode={focusMode}
-            onToggleFocusMode={() => setFocusMode(v => !v)}
-            focusTask={focusTask}
-            missionView={missionView}
-            onToggleMissionView={() => {
-              if (missionView === 'hoje') setMissionView('semana');
-              else if (missionView === 'semana') setMissionView('mes');
-              else setMissionView('hoje');
-            }}
-            achievements={achievements}
-            unlockedCount={achievements.filter(a => a.unlocked).length}
-            statusChartData={statusChartData}
-            weeklyActivityData={weeklyActivityData}
-          />
+          <Suspense fallback={<InlineFallback label="Gamification..." />}>
+            <GamificationBar
+              level={level}
+              xpInLevel={xpInLevel}
+              xpToNext={xpToNext}
+              totalXP={totalXP}
+              completedTasks={completedTasks}
+              focusMode={focusMode}
+              onToggleFocusMode={() => setFocusMode(v => !v)}
+              focusTask={focusTask}
+              missionView={missionView}
+              onToggleMissionView={() => {
+                if (missionView === 'hoje') setMissionView('semana');
+                else if (missionView === 'semana') setMissionView('mes');
+                else setMissionView('hoje');
+              }}
+              achievements={achievements}
+              unlockedCount={achievements.filter(a => a.unlocked).length}
+              statusChartData={statusChartData}
+              weeklyActivityData={weeklyActivityData}
+            />
+          </Suspense>
         </div>
       </div>
 
-      {/* Right sidebar: hidden on mobile */}
       {!isMobile && (
         <DashboardRightSidebar
           criticalMission={criticalMission}

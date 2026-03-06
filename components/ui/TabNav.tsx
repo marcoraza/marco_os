@@ -12,6 +12,8 @@ interface TabNavProps {
   activeTab: string;
   onTabChange: (id: string) => void;
   accentColor?: 'mint' | 'orange' | 'purple' | 'blue';
+  completedTabs?: string[];
+  onRedoJourney?: (tabId: string) => void;
   className?: string;
 }
 

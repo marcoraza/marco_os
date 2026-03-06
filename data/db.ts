@@ -1,5 +1,18 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { StoredAgent, StoredAgentRun, StoredContact, StoredContentEntry, StoredEvent, StoredFinanceEntry, StoredHealthEntry, StoredNote, StoredPlan, StoredProject, StoredProjectEntry, StoredReuniao, StoredSkill, StoredTask } from './models';
+import type { ChatMessage } from './types/chat';
+
+export type { ChatMessage } from './types/chat';
+
+export interface ChatSession {
+  id: string;
+  agentId: string;
+  sectionId: string;
+  openClawSessionId: string | null;
+  messages: ChatMessage[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface MarcoOSDbSchema extends DBSchema {
   projects: {
@@ -67,15 +80,19 @@ interface MarcoOSDbSchema extends DBSchema {
     key: string;
     value: StoredProjectEntry;
   };
+  chat_sessions: {
+    key: string;
+    value: ChatSession;
+  };
 }
 
 let dbPromise: Promise<IDBPDatabase<MarcoOSDbSchema>> | null = null;
 
 // Force nuke & rebuild if DB is stuck from a bad migration
-const DB_RESET_KEY = 'marco-os-db-reset-v6';
+const DB_RESET_KEY = 'marco-os-db-reset-v7';
 async function ensureCleanDb() {
   if (!localStorage.getItem(DB_RESET_KEY)) {
-    console.warn('[Marco OS] Forcing DB reset to v5…');
+    console.warn('[Marco OS] Forcing DB reset to v7…');
     try {
       const delReq = indexedDB.deleteDatabase('marco-os');
       await new Promise<void>((resolve, reject) => {
@@ -139,6 +156,10 @@ export function getDb() {
           if (oldVersion < 6) {
             db.createObjectStore('contentEntries', { keyPath: 'id' });
             db.createObjectStore('projetosEntries', { keyPath: 'id' });
+          }
+
+          if (oldVersion < 7) {
+            db.createObjectStore('chat_sessions', { keyPath: 'id' });
           }
         },
       })

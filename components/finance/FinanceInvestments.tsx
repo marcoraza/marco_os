@@ -6,6 +6,7 @@ import type { AssetAllocation } from './types';
 interface FinanceInvestmentsProps {
   onOpenInvestModal: () => void;
   onSelectInvestment: (asset: AssetAllocation) => void;
+  refreshKey?: number;
 }
 
 export default function FinanceInvestments({ onOpenInvestModal, onSelectInvestment }: FinanceInvestmentsProps) {
