@@ -6,6 +6,7 @@ import { reunioesFields } from '../lib/formConfigs';
 import { syncToNotion } from '../lib/notionSync';
 import { useSectionSetup } from '../hooks/useSectionSetup';
 import { crmJourneyConfig } from '../lib/journeyConfigs/crm';
+import { buildRelationshipNextStep, inferRelationshipSegment, scoreRelationship } from '../lib/productSignals';
 
 /* ─── Seed data (migrated from old hardcoded array) ─────────────────────────── */
 const SEED_CONTACTS: StoredContact[] = [
@@ -89,6 +90,7 @@ const CRM: React.FC = () => {
   const [selectedContact, setSelectedContact] = useState<StoredContact | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string>('Todos');
+  const [activeSegment, setActiveSegment] = useState<'Todos' | 'cliente' | 'parceiro' | 'investidor' | 'pessoal' | 'geral'>('Todos');
 
   /* Modal state */
   const [showModal, setShowModal] = useState(false);
@@ -144,10 +146,26 @@ const CRM: React.FC = () => {
   const filteredContacts = (contacts ?? []).filter(c => {
     const q = searchQuery.toLowerCase();
     const tags = c.tags ?? [];
+    const segment = inferRelationshipSegment(c);
     const matchesSearch = !q || (c.name ?? '').toLowerCase().includes(q) || (c.company ?? '').toLowerCase().includes(q) || tags.some(t => t.toLowerCase().includes(q));
     const matchesTag = activeTag === 'Todos' || tags.includes(activeTag);
-    return matchesSearch && matchesTag;
+    const matchesSegment = activeSegment === 'Todos' || segment === activeSegment;
+    return matchesSearch && matchesTag && matchesSegment;
   });
+  const contactInsights = new Map(contacts.map((contact) => {
+    const segment = inferRelationshipSegment(contact);
+    const score = scoreRelationship(contact);
+    return [contact.id, {
+      segment,
+      score,
+      nextStep: buildRelationshipNextStep(contact, segment),
+    }];
+  }));
+  const dueFollowUps = contacts.filter((contact) => contact.nextFollowUp && contact.nextFollowUp <= new Date().toISOString().slice(0, 10)).length;
+  const averageScore = contacts.length > 0
+    ? Math.round([...contactInsights.values()].reduce((sum, item) => sum + item.score, 0) / contacts.length)
+    : 0;
+  const segmentOptions = ['Todos', 'cliente', 'parceiro', 'investidor', 'pessoal', 'geral'] as const;
 
   /* ─── Helpers ───────────────────────────────────────────────────────────── */
   function generateInitials(name: string) {
@@ -335,6 +353,20 @@ const CRM: React.FC = () => {
               </button>
             ))}
           </div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            <span className="text-[9px] font-bold text-text-secondary uppercase self-center mr-2 whitespace-nowrap tracking-[0.1em]">Segmento:</span>
+            {segmentOptions.map(segment => (
+              <button
+                key={segment}
+                onClick={() => setActiveSegment(segment)}
+                className={`px-3 py-1 text-[10px] font-bold uppercase rounded-sm whitespace-nowrap transition-colors ${
+                  activeSegment === segment ? 'bg-brand-mint text-bg-base' : 'bg-border-panel hover:bg-surface-hover text-text-primary'
+                }`}
+              >
+                {segment}
+              </button>
+            ))}
+          </div>
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -357,6 +389,9 @@ const CRM: React.FC = () => {
                   contact.status === 'warm' && contact.lastContact.includes('45') ? 'border-l-4 border-l-accent-red rounded-l-none' : ''
                 }`}
               >
+                {(() => {
+                  const insight = contactInsights.get(contact.id);
+                  return (
                 <div className="flex justify-between items-start">
                   <div className="flex gap-4">
                     <div className="relative">
@@ -387,7 +422,11 @@ const CRM: React.FC = () => {
                         {(contact.tags ?? []).map(tag => (
                           <Badge key={tag} variant="neutral">{tag}</Badge>
                         ))}
+                        {insight && <Badge variant="blue">{insight.segment}</Badge>}
                       </div>
+                      {insight && (
+                        <p className="mt-2 text-[10px] text-text-secondary">{insight.nextStep}</p>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
@@ -400,8 +439,13 @@ const CRM: React.FC = () => {
                     ) : (
                       <span className="text-xs text-text-primary font-medium">{contact.lastContact}</span>
                     )}
+                    {insight && (
+                      <p className="mt-2 text-[10px] font-black text-accent-blue">{insight.score}/100</p>
+                    )}
                   </div>
                 </div>
+                  );
+                })()}
               </Card>
             ))}
 
@@ -423,6 +467,7 @@ const CRM: React.FC = () => {
                     time: contact.nextFollowUp ?? contact.lastContact,
                     img: contact.image,
                     initials: contact.initials,
+                    id: contact.id,
                   })),
                 ].map((contact, i) => (
                   <div key={i} className="flex items-center justify-between group">
@@ -438,7 +483,16 @@ const CRM: React.FC = () => {
                       </div>
                     </div>
                     {/* Enhanced touch target for mobile */}
-                    <button className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-border-panel hover:bg-accent-blue hover:text-text-primary text-text-secondary flex items-center justify-center transition-colors">
+                    <button
+                      onClick={() => {
+                        const full = contacts.find((item) => item.id === contact.id);
+                        if (full) {
+                          setSelectedContact(full);
+                          showToast('Follow-up aberto');
+                        }
+                      }}
+                      className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-border-panel hover:bg-accent-blue hover:text-text-primary text-text-secondary flex items-center justify-center transition-colors"
+                    >
                       <Icon name="send" size="sm" />
                     </button>
                   </div>
@@ -457,12 +511,12 @@ const CRM: React.FC = () => {
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-accent-blue/10 border border-accent-blue/20 p-4 rounded-sm text-center">
-                <h4 className="text-xl font-black text-accent-blue">84%</h4>
+                <h4 className="text-xl font-black text-accent-blue">{averageScore}%</h4>
                 <p className="text-[9px] font-black uppercase text-text-secondary mt-1 tracking-[0.1em]">SAÚDE DA REDE</p>
               </div>
               <Card className="p-4 text-center">
-                <h4 className="text-xl font-black text-text-primary">12</h4>
-                <p className="text-[9px] font-black uppercase text-text-secondary mt-1 tracking-[0.1em]">Novos / Semana</p>
+                <h4 className="text-xl font-black text-text-primary">{dueFollowUps}</h4>
+                <p className="text-[9px] font-black uppercase text-text-secondary mt-1 tracking-[0.1em]">Follow-ups vencidos</p>
               </Card>
             </div>
 
@@ -532,12 +586,16 @@ const CRM: React.FC = () => {
                       {(selectedContact.tags ?? []).map(tag => (
                          <Badge key={tag} variant="blue">{tag}</Badge>
                       ))}
+                      <Badge variant="neutral">{contactInsights.get(selectedContact.id)?.segment ?? 'geral'}</Badge>
                     </div>
                     {selectedContact.nextFollowUp && (
                       <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-accent-orange">
                         Próximo follow-up: {selectedContact.nextFollowUp}
                       </p>
                     )}
+                    <p className="mt-2 text-[10px] text-text-secondary">
+                      {contactInsights.get(selectedContact.id)?.nextStep}
+                    </p>
                   </div>
                 </div>
 

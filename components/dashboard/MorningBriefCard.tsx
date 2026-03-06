@@ -3,17 +3,10 @@ import React, { useState, useMemo } from 'react';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { Icon } from '@/components/ui/Icon';
 import { useNotionData } from '@/contexts/NotionDataContext';
-
+import { useFinanceData } from '@/hooks/useFinanceData';
+import { extractProviderItems } from '@/lib/providerData';
+import { buildExecutiveBriefing } from '@/lib/productSignals';
 import { cn } from '@/utils/cn';
-
-// Safe extractor for raw JSON format: {_meta, items}
-function extractItems<T>(raw: unknown): T[] {
-  if (!raw) return [];
-  if (Array.isArray(raw) && raw.length > 0 && (raw[0] as Record<string, unknown>)?._meta) {
-    return ((raw[0] as Record<string, unknown>).items ?? []) as T[];
-  }
-  return Array.isArray(raw) ? (raw as T[]) : [];
-}
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
@@ -25,15 +18,28 @@ function formatTime(): string {
 
 export function MorningBriefCard() {
   const [expanded, setExpanded] = useState(false);
-  const { reunioes, projetos } = useNotionData();
+  const { reunioes, projetos, checklist, saude, pessoas } = useNotionData();
+  const finance = useFinanceData();
 
   const reunioesItems = useMemo(
-    () => extractItems<Record<string, unknown>>(reunioes.items),
+    () => extractProviderItems<Record<string, unknown>>(reunioes.items),
     [reunioes.items]
   );
   const projetosItems = useMemo(
-    () => extractItems<Record<string, unknown>>(projetos.items),
+    () => extractProviderItems<Record<string, unknown>>(projetos.items),
     [projetos.items]
+  );
+  const checklistItems = useMemo(
+    () => extractProviderItems<Record<string, unknown>>(checklist.items),
+    [checklist.items]
+  );
+  const saudeItems = useMemo(
+    () => extractProviderItems<Record<string, unknown>>(saude.items),
+    [saude.items]
+  );
+  const pessoasItems = useMemo(
+    () => extractProviderItems<Record<string, unknown>>(pessoas.items),
+    [pessoas.items]
   );
 
   const today = todayKey();
@@ -48,16 +54,40 @@ export function MorningBriefCard() {
     return status && status !== 'Pausado' && status !== 'Concluído' && status !== 'Concluido';
   });
 
+  const tarefasHoje = checklistItems.filter((item) => {
+    const prazo = (item['Prazo'] ?? item['prazo']) as string | undefined;
+    return prazo?.slice(0, 10) === today;
+  }).length;
+
+  const prioridadesAltas = checklistItems.filter((item) => {
+    const prioridade = String(item['Prioridade'] ?? item['prioridade'] ?? '').toLowerCase();
+    const status = String(item['Status'] ?? item['status'] ?? '').toLowerCase();
+    return (prioridade.includes('alta') || prioridade === 'p0' || prioridade === 'high') && !status.includes('conclu');
+  }).length;
+
+  const checkinsRecentes = saudeItems.filter((item) => {
+    const data = (item['Data'] ?? item['data']) as string | undefined;
+    return data?.slice(0, 10) === today;
+  }).length;
+
+  const followUpsPendentes = pessoasItems.filter((item) => {
+    const acao = String(item['Próxima ação'] ?? item['proxima_acao'] ?? '').trim();
+    return acao.length > 0;
+  }).length;
+
+  const briefing = useMemo(() => buildExecutiveBriefing({
+    meetingsToday: reunioesHoje.length,
+    tasksDueToday: tarefasHoje,
+    urgentTasks: prioridadesAltas,
+    activeProjects: projetosAtivos.length,
+    pendingFollowUps: followUpsPendentes,
+    balance: finance.saldo,
+    healthCheckins: checkinsRecentes,
+  }), [checkinsRecentes, finance.saldo, followUpsPendentes, prioridadesAltas, projetosAtivos.length, reunioesHoje.length, tarefasHoje]);
+
   const summaryText = useMemo(() => {
-    const parts: string[] = [];
-    if (reunioesHoje.length > 0) {
-      parts.push(`${reunioesHoje.length} reunião(ões) hoje`);
-    }
-    if (projetosAtivos.length > 0) {
-      parts.push(`${projetosAtivos.length} projeto(s) ativo(s)`);
-    }
-    return parts.length > 0 ? parts.join(' · ') : 'Sem eventos para hoje';
-  }, [reunioesHoje, projetosAtivos]);
+    return briefing.summary;
+  }, [briefing.summary]);
 
   return (
     <div className="bg-surface border border-brand-mint/20 rounded-sm">
@@ -143,8 +173,45 @@ export function MorningBriefCard() {
               </ul>
             </div>
           )}
-
-
+          <div>
+            <span className="text-[8px] font-bold uppercase tracking-widest text-text-secondary block mb-1">
+              Foco Executivo
+            </span>
+            <ul className="flex flex-col gap-1">
+              {briefing.priorities.length > 0 ? (
+                briefing.priorities.map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-xs text-text-primary">
+                    <Icon name="subdirectory_arrow_right" size="xs" className="text-brand-mint" />
+                    <span>{item}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="flex items-center gap-2 text-xs text-text-secondary">
+                  <Icon name="check_circle" size="xs" className="text-brand-mint" />
+                  <span>Sem pressão operacional fora do normal.</span>
+                </li>
+              )}
+            </ul>
+          </div>
+          <div className="grid grid-cols-3 gap-2 pt-1">
+            <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2 py-2">
+              <p className="text-[7px] font-black uppercase tracking-widest text-text-secondary">Hoje</p>
+              <p className="mt-1 text-[11px] font-black font-mono text-accent-orange">{tarefasHoje}</p>
+            </div>
+            <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2 py-2">
+              <p className="text-[7px] font-black uppercase tracking-widest text-text-secondary">Follow-up</p>
+              <p className="mt-1 text-[11px] font-black font-mono text-accent-blue">{followUpsPendentes}</p>
+            </div>
+            <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2 py-2">
+              <p className="text-[7px] font-black uppercase tracking-widest text-text-secondary">Caixa</p>
+              <p className={cn(
+                'mt-1 text-[11px] font-black font-mono',
+                briefing.balanceTone === 'positive' ? 'text-brand-mint' : briefing.balanceTone === 'negative' ? 'text-accent-red' : 'text-text-primary'
+              )}>
+                {finance.isLoading ? '...' : finance.saldo >= 0 ? 'OK' : 'ATN'}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 // components/learning/DecisionJournalView.tsx
 // Decision Journal from Notion DB — Sprint D
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNotionData } from '@/contexts/NotionDataContext';
 import { formatRelative } from '@/utils/dateUtils';
 import { NotionCard } from '@/components/ui/NotionCard';
@@ -9,6 +9,7 @@ import { PipelineBadge } from '@/components/ui/PipelineBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { cn } from '@/utils/cn';
+import { extractProviderItems } from '@/lib/providerData';
 
 // ─── Raw item shape ────────────────────────────────────────────────────────────
 
@@ -26,33 +27,43 @@ interface RawDecisionItem {
   decisao_tomada?: string | null;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function extractItems<T>(raw: unknown): T[] {
-  if (!raw) return [];
-  if (Array.isArray(raw) && raw.length > 0 && (raw[0] as Record<string, unknown>)?._meta) {
-    return ((raw[0] as Record<string, unknown>).items ?? []) as T[];
-  }
-  if (!Array.isArray(raw)) {
-    const obj = raw as Record<string, unknown>;
-    if (obj?.items && Array.isArray(obj.items)) return obj.items as T[];
-  }
-  return Array.isArray(raw) ? (raw as T[]) : [];
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function DecisionJournalView({ className }: { className?: string }) {
+export function DecisionJournalView({
+  className,
+  searchQuery = '',
+  limit,
+  title = 'Decisões',
+}: {
+  className?: string;
+  searchQuery?: string;
+  limit?: number;
+  title?: string;
+}) {
   const { decisions } = useNotionData();
 
-  const items = extractItems<RawDecisionItem>(decisions.items);
+  const items = extractProviderItems<RawDecisionItem>(decisions.items);
 
-  // Sort by date descending
-  const sorted = [...items].sort((a, b) => {
-    const da = new Date(a.data || a._created_time).getTime();
-    const db = new Date(b.data || b._created_time).getTime();
-    return db - da;
-  });
+  const sorted = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return [...items]
+      .filter((item) => {
+        if (!query) return true;
+        return [
+          item.Name,
+          item.Titulo,
+          item.contexto,
+          item.decisao_tomada,
+          ...(item.tags ?? []),
+        ].some((value) => value?.toLowerCase().includes(query));
+      })
+      .sort((a, b) => {
+        const da = new Date(a.data || a._created_time).getTime();
+        const db = new Date(b.data || b._created_time).getTime();
+        return db - da;
+      })
+      .slice(0, limit);
+  }, [items, limit, searchQuery]);
 
   if (sorted.length === 0) {
     return (
@@ -67,7 +78,7 @@ export function DecisionJournalView({ className }: { className?: string }) {
 
   return (
     <div className={cn('space-y-3', className)}>
-      <SectionLabel>Decisões ({sorted.length})</SectionLabel>
+      <SectionLabel>{title} ({sorted.length})</SectionLabel>
 
       <div className="space-y-2">
         {sorted.map(item => {

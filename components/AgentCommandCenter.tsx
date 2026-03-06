@@ -18,6 +18,7 @@ import {
   useOpenClawActions,
   useTokenUsages,
 } from '../contexts/OpenClawContext';
+import { summarizeDelegationQueue, type DelegationQueueItem } from '../lib/productSignals';
 
 interface AgentCommandCenterProps {
   onAgentClick: (agentId: string) => void;
@@ -37,6 +38,8 @@ interface RecentDispatch {
   priority: 'high' | 'medium' | 'low';
   createdAt: string;
 }
+
+const DELEGATION_QUEUE_KEY = 'agent-delegation-queue';
 
 const missionTemplates: MissionTemplate[] = [
   {
@@ -92,6 +95,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
   const [agentQuery, setAgentQuery] = useState('');
   const [agentFilter, setAgentFilter] = useState<'all' | 'online' | 'busy'>('all');
   const [recentDispatches, setRecentDispatches] = useState<RecentDispatch[]>([]);
+  const [delegationQueue, setDelegationQueue] = useState<DelegationQueueItem[]>([]);
 
   useEffect(() => {
     try {
@@ -107,8 +111,67 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
   }, []);
 
   useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(DELEGATION_QUEUE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as DelegationQueueItem[];
+      if (Array.isArray(parsed)) {
+        setDelegationQueue(parsed.slice(0, 12));
+      }
+    } catch {
+      // Keep queue empty if local state is invalid.
+    }
+  }, []);
+
+  useEffect(() => {
     window.localStorage.setItem('agent-recent-dispatches', JSON.stringify(recentDispatches.slice(0, 5)));
   }, [recentDispatches]);
+
+  useEffect(() => {
+    window.localStorage.setItem(DELEGATION_QUEUE_KEY, JSON.stringify(delegationQueue.slice(0, 12)));
+  }, [delegationQueue]);
+
+  const updateDelegationItem = (itemId: string, updater: (item: DelegationQueueItem) => DelegationQueueItem) => {
+    setDelegationQueue((current) => current.map((item) => item.id === itemId ? updater(item) : item));
+  };
+
+  const queueMission = () => {
+    if (!missionText.trim()) return;
+    const queuedItem: DelegationQueueItem = {
+      id: crypto.randomUUID(),
+      agentId: selectedAgent,
+      mission: missionText.trim(),
+      priority: missionPriority,
+      status: 'pending',
+      createdAt: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setDelegationQueue((current) => [queuedItem, ...current].slice(0, 12));
+    setDispatchFeedback({ type: 'success', message: 'Missão adicionada à fila de delegação.' });
+    showToast('Missão adicionada à fila', 'info');
+  };
+
+  const dispatchQueueItem = async (item: DelegationQueueItem) => {
+    setSelectedAgent(item.agentId);
+    setMissionPriority(item.priority);
+    setMissionText(item.mission);
+    setDispatchFeedback(null);
+    try {
+      const ok = await dispatchMission(item.agentId, item.mission, item.priority);
+      if (!ok) {
+        await sendDispatch(item.agentId, item.mission, item.priority);
+      }
+      updateDelegationItem(item.id, (current) => ({ ...current, status: 'sent' }));
+      setRecentDispatches((current) => [
+        { agentId: item.agentId, mission: item.mission, priority: item.priority, createdAt: item.createdAt },
+        ...current,
+      ].slice(0, 5));
+      setDispatchFeedback({ type: 'success', message: 'Missão da fila enviada com sucesso.' });
+      showToast('Missão da fila enviada');
+    } catch {
+      updateDelegationItem(item.id, (current) => ({ ...current, status: 'failed' }));
+      setDispatchFeedback({ type: 'error', message: 'Falha ao enviar missão da fila.' });
+    }
+  };
 
   const handleDispatch = async () => {
     if (!missionText.trim()) return;
@@ -219,6 +282,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
   };
   const selectedAgentRole = agents.find((agent) => agent.id === selectedAgent)?.role ?? 'sub-agent';
   const visibleTemplates = roleTemplateMap[selectedAgentRole] ?? missionTemplates;
+  const delegationSummary = useMemo(() => summarizeDelegationQueue(delegationQueue), [delegationQueue]);
 
   const applyTemplate = (template: MissionTemplate) => {
     setMissionText(template.mission);
@@ -334,6 +398,19 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
               <Icon name={isDispatching ? 'autorenew' : 'rocket_launch'} size="xs" />
               {isDispatching ? 'Enviando...' : 'Dispatch'}
             </button>
+            <button
+              onClick={queueMission}
+              disabled={!missionText.trim()}
+              className={cn(
+                'px-3 py-2 rounded-sm font-bold uppercase tracking-wider text-[9px] transition-all flex items-center gap-1.5 shrink-0',
+                missionText.trim()
+                  ? 'bg-accent-blue/10 border border-accent-blue/30 text-accent-blue hover:bg-accent-blue/20'
+                  : 'bg-surface/50 border border-border-panel text-text-secondary/40 cursor-not-allowed'
+              )}
+            >
+              <Icon name="playlist_add" size="xs" />
+              Fila
+            </button>
           </div>
           {dispatchFeedback && (
             <div
@@ -382,6 +459,79 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
               </div>
             </div>
           )}
+          <div className="space-y-2 rounded-sm border border-border-panel/70 bg-bg-base px-3 py-2">
+            <div className="flex items-center justify-between gap-3 text-[8px] font-black uppercase tracking-widest text-text-secondary">
+              <div className="flex items-center gap-2">
+                <Icon name="queue" size="xs" />
+                <span>Fila de Delegação</span>
+              </div>
+              <span>{delegationSummary.pending} pendente(s)</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="rounded-sm border border-border-panel/60 px-2 py-1.5">
+                <p className="text-[7px] uppercase tracking-widest text-text-secondary">Pend.</p>
+                <p className="mt-1 text-[10px] font-black font-mono text-accent-blue">{delegationSummary.pending}</p>
+              </div>
+              <div className="rounded-sm border border-border-panel/60 px-2 py-1.5">
+                <p className="text-[7px] uppercase tracking-widest text-text-secondary">Env.</p>
+                <p className="mt-1 text-[10px] font-black font-mono text-brand-mint">{delegationSummary.sent}</p>
+              </div>
+              <div className="rounded-sm border border-border-panel/60 px-2 py-1.5">
+                <p className="text-[7px] uppercase tracking-widest text-text-secondary">Done</p>
+                <p className="mt-1 text-[10px] font-black font-mono text-brand-mint">{delegationSummary.done}</p>
+              </div>
+              <div className="rounded-sm border border-border-panel/60 px-2 py-1.5">
+                <p className="text-[7px] uppercase tracking-widest text-text-secondary">Fail</p>
+                <p className="mt-1 text-[10px] font-black font-mono text-accent-red">{delegationSummary.failed}</p>
+              </div>
+            </div>
+            {delegationQueue.length === 0 ? (
+              <p className="text-[10px] text-text-secondary">Nenhuma missão na fila.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {delegationQueue.slice(0, 4).map((item) => {
+                  const targetAgent = agents.find((agent) => agent.id === item.agentId);
+                  return (
+                    <div key={item.id} className="rounded-sm border border-border-panel/60 px-2.5 py-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-[10px] font-medium text-text-primary">{item.mission}</p>
+                          <p className="mt-0.5 text-[8px] font-mono text-text-secondary">
+                            {targetAgent?.name ?? item.agentId} · {item.createdAt}
+                          </p>
+                        </div>
+                        <Badge variant={item.priority === 'high' ? 'red' : item.priority === 'medium' ? 'orange' : 'blue'} size="xs">
+                          {item.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        {item.status === 'pending' && (
+                          <button
+                            onClick={() => void dispatchQueueItem(item)}
+                            className="rounded-sm border border-brand-mint/30 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-brand-mint hover:bg-brand-mint/10 transition-colors"
+                          >
+                            Enviar
+                          </button>
+                        )}
+                        <button
+                          onClick={() => updateDelegationItem(item.id, (current) => ({ ...current, status: 'done' }))}
+                          className="rounded-sm border border-border-panel px-2 py-1 text-[8px] font-black uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors"
+                        >
+                          Done
+                        </button>
+                        <button
+                          onClick={() => updateDelegationItem(item.id, (current) => ({ ...current, status: 'failed' }))}
+                          className="rounded-sm border border-border-panel px-2 py-1 text-[8px] font-black uppercase tracking-widest text-text-secondary hover:text-accent-red transition-colors"
+                        >
+                          Falhou
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

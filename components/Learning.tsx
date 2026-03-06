@@ -1,7 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Icon, Badge, SectionLabel, TabNav, EmptyState, JourneyOverlay, JourneyTriggerButton, DataBadge } from './ui';
 import { useTabSetup } from '../hooks/useTabSetup';
 import { learningCurriculumJourney, learningKnowledgeJourney, learningResourcesJourney } from '../lib/journeyConfigs/learning';
+import { useNotionData } from '../contexts/NotionDataContext';
+import { extractProviderItems } from '../lib/providerData';
+import { buildWeeklyReview } from '../lib/productSignals';
+import { DecisionJournalView } from './learning/DecisionJournalView';
 
 const knowledgeCards = [
   { id: 1, category: 'IA', categoryVariant: 'purple' as const, date: '22 Out', status: 'PENDENTE', statusVariant: 'orange' as const,
@@ -25,6 +29,7 @@ const Learning: React.FC = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [showJourney, setShowJourney] = useState(false);
   const triggerRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
+  const { brain_dump, decisions, checklist, saude } = useNotionData();
 
   const curriculumSetup = useTabSetup('learning', 'curriculum');
   const knowledgeSetup = useTabSetup('learning', 'knowledge');
@@ -52,6 +57,41 @@ const Learning: React.FC = () => {
   const completedTabs = LEARNING_TAB_IDS.filter(
     id => localStorage.getItem(`section_setup_done_learning_${id}`) === '1'
   );
+  const decisionItems = useMemo(
+    () => extractProviderItems<Record<string, unknown>>(decisions.items),
+    [decisions.items]
+  );
+  const brainDumpItems = useMemo(
+    () => extractProviderItems<Record<string, unknown>>(brain_dump.items),
+    [brain_dump.items]
+  );
+  const checklistItems = useMemo(
+    () => extractProviderItems<Record<string, unknown>>(checklist.items),
+    [checklist.items]
+  );
+  const saudeItems = useMemo(
+    () => extractProviderItems<Record<string, unknown>>(saude.items),
+    [saude.items]
+  );
+  const weekAgo = useMemo(() => new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10), []);
+  const weeklyReview = useMemo(() => buildWeeklyReview({
+    pendingKnowledge: knowledgeCards.filter((card) => card.status === 'PENDENTE').length,
+    decisionsThisWeek: decisionItems.filter((item) => String(item.data ?? item._created_time ?? '') >= weekAgo).length,
+    tasksDoneThisWeek: checklistItems.filter((item) => {
+      const status = String(item.Status ?? item.status ?? '').toLowerCase();
+      const when = String(item.Prazo ?? item.prazo ?? '');
+      return status.includes('conclu') && when >= weekAgo;
+    }).length,
+    healthCheckinsThisWeek: saudeItems.filter((item) => String(item.Data ?? item.data ?? '') >= weekAgo).length,
+    tags: [
+      ...knowledgeCards.map((card) => card.category),
+      ...decisionItems.flatMap((item) => Array.isArray(item.tags) ? item.tags.map(String) : []),
+      ...brainDumpItems.flatMap((item) => {
+        const text = String(item.Tags ?? item.tags ?? item.Conteúdo ?? item.conteudo ?? '');
+        return [...text.matchAll(/#([\p{L}\p{N}-]+)/gu)].map((match) => match[1]);
+      }),
+    ],
+  }), [brainDumpItems, checklistItems, decisionItems, saudeItems, weekAgo]);
 
   return (
     <>
@@ -312,6 +352,12 @@ const Learning: React.FC = () => {
                         </div>
                       </div>
                     ))}
+                    <DecisionJournalView
+                      className="pt-2"
+                      searchQuery={knowledgeSearch}
+                      limit={5}
+                      title="Decision Journal"
+                    />
                     {knowledgeCards.filter(card => {
                       if (showPendingOnly && card.status !== 'PENDENTE') return false;
                       if (!knowledgeSearch) return true;
@@ -527,24 +573,37 @@ const Learning: React.FC = () => {
                                 <img alt="Frank AI Assistant Avatar" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzUSaEyIBK7c_NID_WUbZ9obih2J4F_cKzpBbQ5De0b7x9fvQvVDMIglFx2Jdw3OKT-myK5TBlzlwLI-gr_PF1BjhzEanr9UP7cL5w39n0ZUS0E1qOGI1S0Uzom6qGFF_GSkOVGRBOgfok1EEzo29ofe-ge5VO0UuKbNHDI7XG-QxNAjdfneF76v2jlrFGheTUzfxNvbMjgxP8LT8eTtksKTnTHz47EuuYdZ0rbIqSceHWNHrq4jShZSmuikcdb5AsigX0bmpICg"/>
                             </div>
                             <div className="bg-header-bg/80 p-3 rounded-sm rounded-tl-none border border-border-panel/50 backdrop-blur-sm">
-                                <p className="text-sm text-text-primary italic">"Olá, aqui é o Frank. Você tem <span className="text-accent-purple font-bold">2 anotações pendentes</span> marcadas como importantes essa semana. Revise agora para consolidar o aprendizado."</p>
+                                <p className="text-sm text-text-primary italic">"Foco da semana: <span className="text-accent-purple font-bold">{weeklyReview.headline}</span>. Use a revisão para fechar aprendizado e próxima ação."</p>
                             </div>
                         </div>
-                        <button className="w-full bg-accent-purple hover:bg-accent-purple/90 text-white font-medium py-3 px-4 rounded-sm transition-all shadow-lg shadow-accent-purple/20 flex items-center justify-center gap-2 group">
+                        <button
+                          onClick={() => setShowPendingOnly(true)}
+                          className="w-full bg-accent-purple hover:bg-accent-purple/90 text-white font-medium py-3 px-4 rounded-sm transition-all shadow-lg shadow-accent-purple/20 flex items-center justify-center gap-2 group"
+                        >
                             <span>Iniciar Revisão</span>
                             <Icon name="arrow_forward" className="text-lg group-hover:translate-x-1 transition-transform" />
                         </button>
+                        {weeklyReview.focus.length > 0 && (
+                          <div className="mt-4 space-y-1.5">
+                            {weeklyReview.focus.map((item) => (
+                              <div key={item} className="flex items-center gap-2 text-[11px] text-text-secondary">
+                                <Icon name="subdirectory_arrow_right" size="xs" className="text-accent-purple" />
+                                <span>{item}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="bg-surface rounded-sm p-4 border border-border-panel text-center">
-                        <span className="block text-lg font-bold text-text-primary mb-1">12</span>
-                        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Lidos hoje</span>
+                        <span className="block text-lg font-bold text-text-primary mb-1">{weeklyReview.focus.length}</span>
+                        <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Frentes abertas</span>
                     </div>
                     <div className="bg-surface rounded-sm p-4 border border-border-panel text-center">
-                        <span className="block text-lg font-bold text-brand-mint mb-1">85%</span>
+                        <span className="block text-lg font-bold text-brand-mint mb-1">{weeklyReview.retention}%</span>
                         <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">RETENÇÃO</span>
                     </div>
                 </div>
@@ -553,11 +612,20 @@ const Learning: React.FC = () => {
                 <div className="bg-surface rounded-sm p-6 border border-border-panel">
                     <SectionLabel className="mb-4 text-text-secondary">TOP TÓPICOS</SectionLabel>
                     <div className="flex flex-wrap gap-2">
-                        <a className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel" href="#">#inteligencia-artificial</a>
-                        <a className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel" href="#">#produtividade</a>
-                        <a className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel" href="#">#saas</a>
-                        <a className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel" href="#">#marketing</a>
-                        <a className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel" href="#">#ux-design</a>
+                        {weeklyReview.topTags.map(({ tag, count }) => (
+                          <button
+                            key={tag}
+                            onClick={() => setKnowledgeSearch(tag)}
+                            className="px-3 py-1 bg-header-bg hover:bg-surface-hover text-text-primary rounded-sm text-xs font-medium transition-colors border border-border-panel"
+                          >
+                            #{tag} <span className="text-text-secondary">{count}</span>
+                          </button>
+                        ))}
+                        {weeklyReview.topTags.length === 0 && (
+                          <span className="px-3 py-1 bg-header-bg text-text-secondary rounded-sm text-xs font-medium border border-border-panel">
+                            Sem tags relevantes
+                          </span>
+                        )}
                     </div>
                 </div>
               </div>
