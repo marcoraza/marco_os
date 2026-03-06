@@ -26,3 +26,23 @@ dist-ssr
 .env
 .v01-snapshot
 .env.production
+
+# Local AI/workspace tooling
+.aios-core/
+.antigravity/
+.claude/
+.codex/
+.cursor/
+.gemini/
+.github/
+AGENTS.md
+
+# Local scratch docs and duplicate artifacts
+* 2.*
+FIXES 2.md
+docs/FINAL-implementation-plan.md
+docs/architect-review-forms-v2.md
+docs/implementation-plan-ui-features.md
+docs/marco-os-ui-design-decisions.md
+docs/spec-section-journeys-v1.md
+docs/ux-review-section-journeys-v1.md
