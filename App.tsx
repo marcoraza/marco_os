@@ -40,6 +40,7 @@ import {
   projetoItemToProject,
   buildProjectIdMap,
 } from './utils/taskMappings';
+import { createQuickCaptureNote, createQuickCaptureTask } from './data/domainFactories';
 
 // Layout components
 import AppHeader from './components/layout/AppHeader';
@@ -354,9 +355,22 @@ const AppContent: React.FC = () => {
     return acc;
   }, {} as Record<string, number>), [projects, tasks]);
   const handleOpenPalette = useCallback(() => setIsPaletteOpen(true), []);
+  const handleOpenQuickCapture = useCallback(() => setQuickCaptureOpen(true), []);
   const handleOpenMissionModal = useCallback(() => setIsMissionModalOpen(true), []);
   const handleNavigateDashboard = useCallback(() => setCurrentView('dashboard'), []);
   const handleOpenAddAgent = useCallback(() => setIsAddAgentOpen(true), []);
+  const handleQuickCaptureSave = useCallback(({ type, content }: { type: 'Nota' | 'Tarefa' | 'Ideia' | 'Decisão'; content: string }) => {
+    if (type === 'Tarefa') {
+      const task = createQuickCaptureTask(content, activeProjectId);
+      setTasks((prev) => [task, ...prev]);
+      setCurrentView('dashboard');
+      return;
+    }
+
+    const note = createQuickCaptureNote(content, type, activeProjectId);
+    setNotes((prev) => [note, ...prev]);
+    setCurrentView('notes');
+  }, [activeProjectId, setNotes, setTasks]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -383,6 +397,7 @@ const AppContent: React.FC = () => {
         isLive={isLive}
         onNavigateHome={handleNavigateDashboard}
         onOpenPalette={handleOpenPalette}
+        onOpenQuickCapture={handleOpenQuickCapture}
         onOpenMissionModal={handleOpenMissionModal}
       />
 
@@ -550,6 +565,7 @@ const AppContent: React.FC = () => {
         <QuickCaptureModal
           open={quickCaptureOpen}
           onClose={() => setQuickCaptureOpen(false)}
+          onSaveCapture={handleQuickCaptureSave}
         />
       </Suspense>
 

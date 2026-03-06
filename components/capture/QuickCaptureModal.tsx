@@ -3,17 +3,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Icon, FilterPills, SectionLabel } from '../ui';
 import { showToast } from '../ui';
 import { cn } from '../../utils/cn';
-import { getDb } from '../../data/db';
+import type { QuickCaptureType } from '../../data/domainFactories';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type CaptureType = 'Nota' | 'Tarefa' | 'Ideia' | 'Decisão';
-
 interface QuickCaptureModalProps {
   open: boolean;
   onClose: () => void;
+  onSaveCapture: (capture: { type: QuickCaptureType; content: string }) => void;
 }
 
-const CAPTURE_TYPES: CaptureType[] = ['Nota', 'Tarefa', 'Ideia', 'Decisão'];
+const CAPTURE_TYPES: QuickCaptureType[] = ['Nota', 'Tarefa', 'Ideia', 'Decisão'];
+const TYPE_HINTS: Record<QuickCaptureType, string> = {
+  Nota: 'Vai para Notas como registro rapido.',
+  Tarefa: 'Entra no dashboard como missao nova.',
+  Ideia: 'Vai para Notas com prefixo de ideia.',
+  'Decisão': 'Vai para Notas com prefixo de decisao.',
+};
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 const backdropVariants = {
@@ -30,33 +35,10 @@ const cardVariants = {
 
 const transition = { duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] as const };
 
-// ─── Save to IndexedDB notes store ───────────────────────────────────────────
-async function saveCapture(content: string, type: CaptureType): Promise<void> {
-  try {
-    const db = await getDb();
-    const now = new Date().toISOString();
-    const id = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
-      ? crypto.randomUUID()
-      : `capture-${Date.now()}`;
-
-    await db.put('notes', {
-      id,
-      title: `[${type}] ${content.slice(0, 60)}`,
-      body: content,
-      createdAt: now,
-      updatedAt: now,
-      projectId: 'pessoal',
-    });
-  } catch (err) {
-    console.error('[QuickCapture] failed to save:', err);
-    throw err;
-  }
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
-export const QuickCaptureModal: React.FC<QuickCaptureModalProps> = ({ open, onClose }) => {
+export const QuickCaptureModal: React.FC<QuickCaptureModalProps> = ({ open, onClose, onSaveCapture }) => {
   const [text, setText] = useState('');
-  const [activeType, setActiveType] = useState<CaptureType>('Nota');
+  const [activeType, setActiveType] = useState<QuickCaptureType>('Nota');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-focus textarea when opened
@@ -90,14 +72,14 @@ export const QuickCaptureModal: React.FC<QuickCaptureModalProps> = ({ open, onCl
     if (!trimmed) return;
 
     try {
-      await saveCapture(trimmed, activeType);
-      showToast('Salvo');
+      onSaveCapture({ type: activeType, content: trimmed });
+      showToast(activeType === 'Tarefa' ? 'Tarefa capturada' : 'Nota capturada');
       setText('');
       onClose();
     } catch {
-      showToast('Erro ao salvar');
+      showToast('Erro ao salvar', 'error');
     }
-  }, [text, activeType, onClose]);
+  }, [text, activeType, onClose, onSaveCapture]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -175,7 +157,7 @@ export const QuickCaptureModal: React.FC<QuickCaptureModalProps> = ({ open, onCl
                 <FilterPills
                   pills={typePills}
                   activeId={activeType}
-                  onSelect={id => setActiveType(id as CaptureType)}
+                  onSelect={id => setActiveType(id as QuickCaptureType)}
                 />
 
                 {/* Actions */}
@@ -198,6 +180,10 @@ export const QuickCaptureModal: React.FC<QuickCaptureModalProps> = ({ open, onCl
                     Salvar
                   </button>
                 </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 text-[9px] text-text-secondary">
+                <span>{TYPE_HINTS[activeType]}</span>
+                <span className="font-mono">{text.trim().length} chars</span>
               </div>
             </motion.div>
           </div>

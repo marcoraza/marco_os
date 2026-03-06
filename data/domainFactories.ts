@@ -2,6 +2,8 @@ import type { StoredEvent, StoredNote } from './models';
 import type { Project, Task } from '../lib/appTypes';
 import type { Agent } from '../types/agents';
 
+export type QuickCaptureType = 'Nota' | 'Tarefa' | 'Ideia' | 'Decisão';
+
 export function createProject(name: string, color: string): Project {
   return {
     id: `proj-${Date.now()}`,
@@ -42,6 +44,27 @@ export function createPaletteNote(title: string, projectId: string, now = new Da
     updatedAt: now,
     projectId,
   };
+}
+
+export function createQuickCaptureNote(
+  content: string,
+  type: Exclude<QuickCaptureType, 'Tarefa'>,
+  projectId: string,
+  now = new Date().toISOString(),
+): StoredNote {
+  const cleanContent = content.trim();
+  return {
+    id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `note-${Date.now()}`,
+    title: `[${type}] ${cleanContent.slice(0, 60)}`,
+    body: cleanContent,
+    createdAt: now,
+    updatedAt: now,
+    projectId,
+  };
+}
+
+export function createQuickCaptureTask(content: string, projectId: string): Task {
+  return createTaskFromInput({ title: content.trim(), tag: 'CAPTURA' }, projectId);
 }
 
 export function createPaletteEvent(title: string, projectId: string, now = new Date().toISOString()): StoredEvent {

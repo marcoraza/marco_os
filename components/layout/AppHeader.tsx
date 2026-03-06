@@ -13,6 +13,7 @@ interface AppHeaderProps {
   isLive: boolean;
   onNavigateHome: () => void;
   onOpenPalette: () => void;
+  onOpenQuickCapture: () => void;
   onOpenMissionModal: () => void;
 }
 
@@ -38,6 +39,7 @@ function AppHeader({
   isLive,
   onNavigateHome,
   onOpenPalette,
+  onOpenQuickCapture,
   onOpenMissionModal,
 }: AppHeaderProps) {
   const [currentTime, setCurrentTime] = useState(() => new Date());
@@ -113,6 +115,13 @@ function AppHeader({
           <span className="text-[9px] font-black text-text-primary truncate">{activeAgent?.name ?? '—'}</span>
         </div>
         <NotificationBell />
+        <button
+          onClick={onOpenQuickCapture}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-sm text-[9px] font-bold uppercase tracking-widest hover:bg-accent-blue/20 transition-all"
+        >
+          <Icon name="flash_on" size="xs" />
+          <span>Captura</span>
+        </button>
         <button
           onClick={onOpenMissionModal}
           className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all"

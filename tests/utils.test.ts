@@ -3,7 +3,15 @@ import assert from 'node:assert/strict';
 import { cn } from '../utils/cn';
 import { calculateHealthScore, getScoreColor } from '../utils/scoreUtils';
 import { formatRelative, getDayKey, groupByWeek } from '../utils/dateUtils';
-import { createPaletteEvent, createPaletteNote, createPaletteTask, createProject, mergeLiveAgent } from '../data/domainFactories';
+import {
+  createPaletteEvent,
+  createPaletteNote,
+  createPaletteTask,
+  createProject,
+  createQuickCaptureNote,
+  createQuickCaptureTask,
+  mergeLiveAgent,
+} from '../data/domainFactories';
 
 test('cn joins only truthy classes', () => {
   assert.equal(cn('base', undefined, false, 'active', null, 'done'), 'base active done');
@@ -64,6 +72,14 @@ test('domainFactories create stable app entities', () => {
   const event = createPaletteEvent('Review', 'pessoal', '2026-03-06T10:00:00.000Z');
   assert.equal(event.title, 'Review');
   assert.equal(event.date, '2026-03-06');
+
+  const captureTask = createQuickCaptureTask('Fechar pendencias', 'pessoal');
+  assert.equal(captureTask.tag, 'CAPTURA');
+  assert.equal(captureTask.projectId, 'pessoal');
+
+  const captureNote = createQuickCaptureNote('Alinhar proposta com time', 'Ideia', 'pessoal', '2026-03-06T10:00:00.000Z');
+  assert.equal(captureNote.title, '[Ideia] Alinhar proposta com time');
+  assert.equal(captureNote.body, 'Alinhar proposta com time');
 });
 
 test('mergeLiveAgent preserves fallback values when live payload is partial', () => {
