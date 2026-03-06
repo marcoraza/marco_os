@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot } from '../ui';
 import { cn } from '../../utils/cn';
 import { executionBadge } from '../../data/agentMockData';
@@ -13,6 +13,7 @@ export default function AgentExecutions({ agentId }: AgentExecutionsProps) {
   const { agents } = useAgents();
   const agent = agents.find(a => a.id === agentId);
   const executions = useExecutions(agent?.role === 'coordinator' ? undefined : agentId);
+  const [statusFilter, setStatusFilter] = useState<ExecutionStatus | 'all'>('all');
 
   const stats = useMemo(() => {
     const counts = { running: 0, completed: 0, failed: 0, pending: 0 };
@@ -21,6 +22,16 @@ export default function AgentExecutions({ agentId }: AgentExecutionsProps) {
     }
     return counts;
   }, [executions]);
+
+  const filteredExecutions = useMemo(() => {
+    if (statusFilter === 'all') return executions;
+    return executions.filter((execution) => execution.status === statusFilter);
+  }, [executions, statusFilter]);
+
+  const latestFailure = useMemo(
+    () => executions.find((execution) => execution.status === 'failed'),
+    [executions]
+  );
 
   if (executions.length === 0) {
     return (
@@ -43,7 +54,7 @@ export default function AgentExecutions({ agentId }: AgentExecutionsProps) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Left: Execution Log */}
         <div className="xl:col-span-2 space-y-2">
-          {executions.map((exec) => {
+          {filteredExecutions.map((exec) => {
             const badge = executionBadge[exec.status];
             return (
               <Card key={exec.id} className="p-4 space-y-3">
@@ -118,17 +129,45 @@ export default function AgentExecutions({ agentId }: AgentExecutionsProps) {
                 <span className="text-xs font-mono text-text-primary">{stats.failed}</span>
               </div>
             </div>
+            {latestFailure && (
+              <div className="rounded-sm border border-accent-red/20 bg-accent-red/5 px-2.5 py-2">
+                <div className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-accent-red">
+                  <Icon name="error" size="xs" />
+                  <span>Última falha</span>
+                </div>
+                <p className="mt-1 text-[10px] text-text-primary">{latestFailure.task}</p>
+                <p className="mt-0.5 text-[8px] font-mono text-text-secondary">{latestFailure.startedAt}</p>
+              </div>
+            )}
           </Card>
 
           <Card className="p-4 space-y-2">
             <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">Filtros</span>
             <div className="flex flex-wrap gap-1.5">
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded border transition-colors',
+                  statusFilter === 'all'
+                    ? 'border-brand-mint/30 bg-brand-mint/10 text-brand-mint'
+                    : 'border-border-panel bg-bg-base text-text-secondary hover:text-brand-mint hover:border-brand-mint/30'
+                )}
+              >
+                <Icon name="dashboard" size="xs" />
+                <span className="text-[8px] font-black uppercase tracking-widest">Todos</span>
+              </button>
               {(Object.keys(executionBadge) as ExecutionStatus[]).map((status) => {
                 const b = executionBadge[status];
                 return (
                   <button
                     key={status}
-                    className="flex items-center gap-1 px-2 py-1 rounded border border-border-panel bg-bg-base text-text-secondary hover:text-brand-mint hover:border-brand-mint/30 transition-colors"
+                    onClick={() => setStatusFilter(status)}
+                    className={cn(
+                      'flex items-center gap-1 px-2 py-1 rounded border transition-colors',
+                      statusFilter === status
+                        ? 'border-brand-mint/30 bg-brand-mint/10 text-brand-mint'
+                        : 'border-border-panel bg-bg-base text-text-secondary hover:text-brand-mint hover:border-brand-mint/30'
+                    )}
                   >
                     <Icon name={b.icon} size="xs" />
                     <span className="text-[8px] font-black uppercase tracking-widest">{b.label}</span>
@@ -139,6 +178,15 @@ export default function AgentExecutions({ agentId }: AgentExecutionsProps) {
           </Card>
         </div>
       </div>
+
+      {filteredExecutions.length === 0 && (
+        <Card className="p-4">
+          <div className="flex items-center gap-2 text-text-secondary">
+            <Icon name="filter_alt_off" size="sm" />
+            <span className="text-[10px]">Nenhuma execução corresponde ao filtro atual.</span>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

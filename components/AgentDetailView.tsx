@@ -4,7 +4,7 @@ import { TabNav } from './ui/TabNav';
 import type { Tab } from './ui/TabNav';
 import { cn } from '../utils/cn';
 import { getTokenUsageForAgent, statusDot, formatTokens } from '../data/agentMockData';
-import { useAgents } from '../contexts/OpenClawContext';
+import { useAgents, useExecutions } from '../contexts/OpenClawContext';
 import AgentKanban from './agents/AgentKanban';
 import AgentExecutions from './agents/AgentExecutions';
 import AgentCronJobs from './agents/AgentCronJobs';
@@ -63,6 +63,23 @@ export default function AgentDetailView({ agentId, onBack }: AgentDetailViewProp
   const { agents, getAgentStatus } = useAgents();
   const agent = useMemo(() => getAgentStatus(agentId), [agentId, getAgentStatus]);
   const tokenUsage = useMemo(() => getTokenUsageForAgent(agentId), [agentId]);
+  const agentExecutions = useExecutions(agentId);
+  const executionSummary = useMemo(() => {
+    return agentExecutions.reduce(
+      (summary, execution) => {
+        summary.total += 1;
+        if (execution.status === 'completed') summary.completed += 1;
+        if (execution.status === 'failed') summary.failed += 1;
+        if (execution.status === 'running') summary.running += 1;
+        return summary;
+      },
+      { total: 0, completed: 0, failed: 0, running: 0 }
+    );
+  }, [agentExecutions]);
+  const latestFailure = useMemo(
+    () => agentExecutions.find((execution) => execution.status === 'failed'),
+    [agentExecutions]
+  );
 
   if (!agent) {
     return (
@@ -165,6 +182,34 @@ export default function AgentDetailView({ agentId, onBack }: AgentDetailViewProp
           <p className="mt-1 text-[11px] text-text-primary">
             {statusMessage}
           </p>
+          <div className="mt-3 grid grid-cols-2 gap-2 xl:grid-cols-4">
+            <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2.5 py-2">
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Execuções</p>
+              <p className="mt-1 text-sm font-black font-mono text-text-primary">{executionSummary.total}</p>
+            </div>
+            <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2.5 py-2">
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Rodando</p>
+              <p className="mt-1 text-sm font-black font-mono text-accent-blue">{executionSummary.running}</p>
+            </div>
+            <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2.5 py-2">
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Concluídas</p>
+              <p className="mt-1 text-sm font-black font-mono text-brand-mint">{executionSummary.completed}</p>
+            </div>
+            <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2.5 py-2">
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary">Falhas</p>
+              <p className="mt-1 text-sm font-black font-mono text-accent-red">{executionSummary.failed}</p>
+            </div>
+          </div>
+          {latestFailure && (
+            <div className="mt-3 rounded-sm border border-accent-red/20 bg-accent-red/5 px-3 py-2">
+              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-accent-red">
+                <Icon name="error" size="xs" />
+                <span>Última falha</span>
+              </div>
+              <p className="mt-1 text-[10px] text-text-primary">{latestFailure.task}</p>
+              <p className="mt-0.5 text-[8px] font-mono text-text-secondary">{latestFailure.startedAt}</p>
+            </div>
+          )}
           <div className="mt-3 flex flex-wrap gap-2">
             {[
               { id: suggestedTab, label: 'Foco sugerido', icon: 'bolt' },

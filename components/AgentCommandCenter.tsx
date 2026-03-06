@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot, showToast } from './ui';
 import { cn } from '../utils/cn';
 import {
@@ -24,6 +24,41 @@ interface AgentCommandCenterProps {
   onNavigate: (view: View) => void;
 }
 
+interface MissionTemplate {
+  id: string;
+  label: string;
+  mission: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+interface RecentDispatch {
+  agentId: string;
+  mission: string;
+  priority: 'high' | 'medium' | 'low';
+  createdAt: string;
+}
+
+const missionTemplates: MissionTemplate[] = [
+  {
+    id: 'daily-triage',
+    label: 'Triagem',
+    mission: 'Faça a triagem das pendencias recentes, destaque bloqueios e proponha as proximas acoes.',
+    priority: 'medium',
+  },
+  {
+    id: 'ship-fix',
+    label: 'Ship Fix',
+    mission: 'Identifique a causa raiz, implemente a correcao e valide com lint, typecheck, test e build.',
+    priority: 'high',
+  },
+  {
+    id: 'health-check',
+    label: 'Health Check',
+    mission: 'Revise o estado atual do dominio, reporte riscos operacionais e sugira a proxima intervencao.',
+    priority: 'low',
+  },
+];
+
 export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCommandCenterProps) {
   const { agents } = useAgents();
   const allTasks = useKanban();
@@ -41,6 +76,24 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
   const [dispatchFeedback, setDispatchFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [agentQuery, setAgentQuery] = useState('');
   const [agentFilter, setAgentFilter] = useState<'all' | 'online' | 'busy'>('all');
+  const [recentDispatches, setRecentDispatches] = useState<RecentDispatch[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem('agent-recent-dispatches');
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as RecentDispatch[];
+      if (Array.isArray(parsed)) {
+        setRecentDispatches(parsed.slice(0, 5));
+      }
+    } catch {
+      // Ignore invalid local state and keep the panel usable.
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem('agent-recent-dispatches', JSON.stringify(recentDispatches.slice(0, 5)));
+  }, [recentDispatches]);
 
   const handleDispatch = async () => {
     if (!missionText.trim()) return;
@@ -54,6 +107,11 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
         await sendDispatch(selectedAgent, missionText, missionPriority);
       }
       const agentName = agents.find(agent => agent.id === selectedAgent)?.name ?? 'agente';
+      const createdAt = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      setRecentDispatches((current) => [
+        { agentId: selectedAgent, mission: missionText.trim(), priority: missionPriority, createdAt },
+        ...current,
+      ].slice(0, 5));
       setMissionText('');
       setDispatchFeedback({ type: 'success', message: `Missao enviada para ${agentName}.` });
       showToast(`Missao enviada para ${agentName}`);
@@ -131,6 +189,12 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
     low: { bg: 'bg-accent-blue/10', border: 'border-accent-blue/30', text: 'text-accent-blue', label: 'Baixa' },
   };
 
+  const applyTemplate = (template: MissionTemplate) => {
+    setMissionText(template.mission);
+    setMissionPriority(template.priority);
+    setDispatchFeedback(null);
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* ─── HEADER ─── */}
@@ -180,6 +244,17 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
           <div className="flex items-center gap-2">
             <Icon name="send" size="xs" className="text-brand-mint" />
             <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">NOVA MISSÃO</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {missionTemplates.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => applyTemplate(template)}
+                className="rounded-sm border border-border-panel bg-bg-base px-2.5 py-1.5 text-[8px] font-black uppercase tracking-widest text-text-secondary hover:border-brand-mint/30 hover:text-brand-mint transition-colors"
+              >
+                {template.label}
+              </button>
+            ))}
           </div>
           <div className="flex items-stretch gap-2">
             <input
@@ -239,6 +314,41 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
               )}
             >
               {dispatchFeedback.message}
+            </div>
+          )}
+          {recentDispatches.length > 0 && (
+            <div className="space-y-2 rounded-sm border border-border-panel/70 bg-bg-base px-3 py-2">
+              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-text-secondary">
+                <Icon name="history" size="xs" />
+                <span>Envios Recentes</span>
+              </div>
+              <div className="space-y-1.5">
+                {recentDispatches.map((dispatch, index) => {
+                  const targetAgent = agents.find((agent) => agent.id === dispatch.agentId);
+                  return (
+                    <button
+                      key={`${dispatch.agentId}-${dispatch.createdAt}-${index}`}
+                      onClick={() => {
+                        setSelectedAgent(dispatch.agentId);
+                        setMissionText(dispatch.mission);
+                        setMissionPriority(dispatch.priority);
+                        setDispatchFeedback(null);
+                      }}
+                      className="flex w-full items-center justify-between gap-3 rounded-sm border border-border-panel/60 px-2.5 py-2 text-left hover:border-brand-mint/20 hover:bg-brand-mint/[0.03] transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-[10px] font-medium text-text-primary">{dispatch.mission}</p>
+                        <p className="mt-0.5 text-[8px] font-mono text-text-secondary">
+                          {targetAgent?.name ?? dispatch.agentId} · {dispatch.createdAt}
+                        </p>
+                      </div>
+                      <Badge variant={dispatch.priority === 'high' ? 'red' : dispatch.priority === 'medium' ? 'orange' : 'blue'} size="xs">
+                        {priorityColors[dispatch.priority].label}
+                      </Badge>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
