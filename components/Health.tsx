@@ -37,11 +37,18 @@ const Health: React.FC = () => {
     } catch { /* ignore */ }
     return { meditation: true, sugar: false, hydration: true };
   });
+  const [dailyNotes, setDailyNotes] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved).notes ?? '';
+    } catch { /* ignore */ }
+    return '';
+  });
 
   // Auto-save metrics + habits to localStorage
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify({ metrics, habits, date: todayKey }));
-  }, [metrics, habits, storageKey, todayKey]);
+    localStorage.setItem(storageKey, JSON.stringify({ metrics, habits, notes: dailyNotes, date: todayKey }));
+  }, [metrics, habits, dailyNotes, storageKey, todayKey]);
 
   const handleSliderChange = (key: keyof typeof metrics, value: number) => {
     setMetrics((prev: typeof metrics) => ({ ...prev, [key]: value }));
@@ -100,6 +107,24 @@ const Health: React.FC = () => {
     syncToNotion('create-health-entry', data);
     triggerRefresh();
   };
+
+  const handleSaveDailyLog = useCallback(async () => {
+    const now = new Date().toISOString();
+    const average = Math.round((metrics.energy + metrics.sleep + metrics.focus + metrics.recovery + metrics.mood) / 5);
+    const entry: StoredHealthEntry = {
+      id: crypto.randomUUID(),
+      name: 'Check-in diario',
+      tipo: 'humor',
+      valor: average,
+      data: todayKey,
+      notas: dailyNotes || `Habitos: meditacao=${habits.meditation ? 'ok' : 'off'}, acucar=${habits.sugar ? 'ok' : 'off'}, hidratacao=${habits.hydration ? 'ok' : 'off'}`,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await putHealthEntry(entry);
+    showToast('Check-in diario salvo');
+    triggerRefresh();
+  }, [dailyNotes, habits, metrics, todayKey, triggerRefresh]);
 
   const tabs = [
     { id: 'daily', label: 'Registro Diario' },
@@ -216,6 +241,8 @@ const Health: React.FC = () => {
                     <div className="space-y-6">
                       <SectionLabel className="text-xs border-b border-border-panel pb-2">OBSERVAÇÕES</SectionLabel>
                       <textarea 
+                        value={dailyNotes}
+                        onChange={(e) => setDailyNotes(e.target.value)}
                         className="w-full h-[142px] bg-header-bg border border-border-panel border rounded-none py-3 px-4 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-accent-orange focus:border-accent-orange placeholder:text-text-secondary/30 resize-none custom-scrollbar text-text-primary" 
                         placeholder="Notas sobre o desempenho físico ou mental de hoje..."
                       ></textarea>
@@ -223,7 +250,12 @@ const Health: React.FC = () => {
                   </div>
 
                   <div className="flex justify-end pt-4">
-                    <button className="px-10 py-4 bg-accent-orange text-black text-[11px] font-black uppercase tracking-widest hover:brightness-110 transition-all">Salvar Registro</button>
+                    <button
+                      onClick={() => void handleSaveDailyLog()}
+                      className="px-10 py-4 bg-accent-orange text-black text-[11px] font-black uppercase tracking-widest hover:brightness-110 transition-all"
+                    >
+                      Salvar Registro
+                    </button>
                   </div>
                 </section>
               </div>

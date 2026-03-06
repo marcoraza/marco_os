@@ -88,6 +88,11 @@ export default function AgentDetailView({ agentId, onBack }: AgentDetailViewProp
     : isOnline
       ? 'Sem missao ativa no momento.'
       : 'Agente offline. Conexao aguardando retomada.';
+  const suggestedTab = agent.role === 'integration'
+    ? 'dados'
+    : agent.status === 'busy'
+      ? 'kanban'
+      : 'execucoes';
 
   return (
     <div className="flex flex-col h-full overflow-hidden animate-in fade-in duration-200" key={agentId}>
@@ -160,6 +165,22 @@ export default function AgentDetailView({ agentId, onBack }: AgentDetailViewProp
           <p className="mt-1 text-[11px] text-text-primary">
             {statusMessage}
           </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[
+              { id: suggestedTab, label: 'Foco sugerido', icon: 'bolt' },
+              { id: 'cron-jobs', label: 'Cron Jobs', icon: 'schedule' },
+              { id: 'dados', label: 'Dados', icon: 'database' },
+            ].map((action) => (
+              <button
+                key={`${action.id}-${action.label}`}
+                onClick={() => setActiveTab(action.id)}
+                className="flex items-center gap-1.5 rounded-sm border border-border-panel px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-widest text-text-secondary hover:text-brand-mint hover:border-brand-mint/20 transition-colors"
+              >
+                <Icon name={action.icon} size="xs" />
+                {action.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

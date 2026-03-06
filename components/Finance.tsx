@@ -1,4 +1,4 @@
-import React, { useState, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { TabNav, Icon, FormModal, SectionJourney, showToast } from './ui';
 import { financeTabs } from './finance/data';
 import { getAccentColor } from './finance/utils';
@@ -45,7 +45,10 @@ const journeyMap: Record<string, import('../lib/journeyTypes').JourneyConfig> = 
 };
 
 const Finance: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<FinanceTab>('overview');
+  const [activeTab, setActiveTab] = useState<FinanceTab>(() => {
+    if (typeof window === 'undefined') return 'overview';
+    return (localStorage.getItem('finance-last-tab') as FinanceTab) || 'overview';
+  });
   const [isIncomeModalOpen, setIsIncomeModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
@@ -108,6 +111,10 @@ const Finance: React.FC = () => {
     triggerRefresh();
   }, [activeSetup, triggerRefresh]);
 
+  useEffect(() => {
+    localStorage.setItem('finance-last-tab', activeTab);
+  }, [activeTab]);
+
   // If active tab hasn't done its journey, show the journey
   if (!activeSetup.isSetupDone) {
     const journeyConfig = journeyMap[activeTab];
@@ -137,6 +144,33 @@ const Finance: React.FC = () => {
             onRedoJourney={handleRedoJourney}
           />
           </div>
+          {activeTab === 'cashflow' && (
+            <>
+              <button
+                onClick={() => setIsIncomeModalOpen(true)}
+                className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1 shrink-0"
+              >
+                <Icon name="arrow_downward" size="xs" />
+                Receita
+              </button>
+              <button
+                onClick={() => setIsExpenseModalOpen(true)}
+                className="bg-accent-red/10 border border-accent-red/30 text-accent-red rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-accent-red/20 transition-all flex items-center gap-1 shrink-0"
+              >
+                <Icon name="arrow_upward" size="xs" />
+                Gasto
+              </button>
+            </>
+          )}
+          {activeTab === 'investments' && (
+            <button
+              onClick={() => setIsInvestModalOpen(true)}
+              className="bg-accent-blue/10 border border-accent-blue/30 text-accent-blue rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-accent-blue/20 transition-all flex items-center gap-1 shrink-0"
+            >
+              <Icon name="trending_up" size="xs" />
+              Investir
+            </button>
+          )}
           <button
             onClick={() => setIsFormOpen(true)}
             className="bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm px-2 py-1 text-[9px] font-bold uppercase tracking-widest hover:bg-brand-mint/20 transition-all flex items-center gap-1 shrink-0"

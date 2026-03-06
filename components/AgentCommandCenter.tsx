@@ -39,6 +39,8 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
   const [isDispatching, setIsDispatching] = useState(false);
   const [missionPriority, setMissionPriority] = useState<'high' | 'medium' | 'low'>('medium');
   const [dispatchFeedback, setDispatchFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [agentQuery, setAgentQuery] = useState('');
+  const [agentFilter, setAgentFilter] = useState<'all' | 'online' | 'busy'>('all');
 
   const handleDispatch = async () => {
     if (!missionText.trim()) return;
@@ -86,6 +88,16 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
     }
     return workload;
   }, [agents, allTasks]);
+
+  const filteredAgents = useMemo(() => {
+    return agents.filter((agent) => {
+      const matchesQuery = `${agent.name} ${agent.model ?? ''}`.toLowerCase().includes(agentQuery.trim().toLowerCase());
+      if (!matchesQuery) return false;
+      if (agentFilter === 'online') return agent.status === 'online' || agent.status === 'busy';
+      if (agentFilter === 'busy') return agent.status === 'busy';
+      return true;
+    });
+  }, [agents, agentFilter, agentQuery]);
 
   const getAgentTokensToday = (agentId: string) => {
     const u = (tokenUsages ?? []).find(t => t.agentId === agentId);
@@ -245,8 +257,32 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
             </div>
           </div>
 
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              value={agentQuery}
+              onChange={(e) => setAgentQuery(e.target.value)}
+              placeholder="Buscar agente..."
+              className="min-w-[220px] flex-1 bg-bg-base border border-border-panel rounded-sm px-3 py-2 text-[10px] text-text-primary font-mono placeholder:text-text-secondary/30 focus:outline-none focus:border-brand-mint/30 transition-colors"
+            />
+            {(['all', 'online', 'busy'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setAgentFilter(filter)}
+                className={cn(
+                  'px-2.5 py-2 rounded-sm border text-[8px] font-black uppercase tracking-widest transition-colors',
+                  agentFilter === filter
+                    ? 'border-brand-mint/30 bg-brand-mint/10 text-brand-mint'
+                    : 'border-border-panel text-text-secondary hover:text-text-primary'
+                )}
+              >
+                {filter === 'all' ? 'Todos' : filter === 'online' ? 'Online' : 'Busy'}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-            {agents.map((agent) => {
+            {filteredAgents.map((agent) => {
               const status = statusDot[agent.status];
               const isOnline = agent.status === 'online' || agent.status === 'busy';
               const tokensToday = getAgentTokensToday(agent.id);
