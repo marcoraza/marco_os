@@ -2,8 +2,8 @@
   "_meta": {
     "db_id": "30bb72d5-042d-8176-a902-deaef821c5f2",
     "db_name": "research",
-    "synced_at": "2026-03-05T02:00:04.985152+00:00",
-    "count": 46
+    "synced_at": "2026-03-08T19:00:02.426341+00:00",
+    "count": 50
   },
   "items": [
     {
@@ -927,7 +927,7 @@
     {
       "_id": "310b72d5-042d-815f-85c9-c614c0b5127b",
       "_created_time": "2026-02-23T14:59:00.000Z",
-      "_edited_time": "2026-02-25T01:30:00.000Z",
+      "_edited_time": "2026-03-08T01:54:00.000Z",
       "_url": "https://www.notion.so/hasantoxr-Scrapling-scraping-adaptativo-e-indetect-vel-para-OpenClaw-310b72d5042d815f85c9c614c0b5127b",
       "Resumo": "Scrapling é biblioteca Python de scraping adaptativo que não quebra quando sites atualizam estrutura, bypassa Cloudflare e evita detecção de bots. Já instalado no VPS (v0.4). Caso de uso imediato: substituir seletores frágeis no radar_noturno (ClawHub scraper) e ddg_search.",
       "Reprocessar": true,
@@ -1022,8 +1022,8 @@
     {
       "_id": "310b72d5-042d-81ce-885e-d7968d71951e",
       "_created_time": "2026-02-23T14:12:00.000Z",
-      "_edited_time": "2026-02-25T01:30:00.000Z",
-      "_url": "https://www.notion.so/OpenCl-310b72d5042d81ce885ed7968d71951e",
+      "_edited_time": "2026-03-08T01:54:00.000Z",
+      "_url": "https://www.notion.so/openclaw-OpenClaw-2026-2-22-MistralAI-multilingual-memory-auto-updater-e-40-security-fixes-310b72d5042d81ce885ed7968d71951e",
       "Resumo": "OpenClaw anunciou a versão 2026.2.22, integrando profundamente o Mistral AI para chat, memória e voz, além de memória multilíngue, segurança aprimorada e uma extensão de navegador confiável.",
       "Reprocessar": false,
       "Data": "2026-02-23",
@@ -1047,7 +1047,7 @@
         "Análise técnica"
       ],
       "Link Original": "https://x.com/openclaw/status/2025785584241844727?s=20",
-      "Name": "OpenCl"
+      "Name": "@openclaw — OpenClaw 2026.2.22: MistralAI, multilingual memory, auto-updater e 40+ security fixes"
     },
     {
       "_id": "310b72d5-042d-81de-8123-e8cd8bd27481",
@@ -1426,8 +1426,8 @@
     {
       "_id": "319b72d5-042d-81a6-96ff-c1e74d377a5b",
       "_created_time": "2026-03-04T22:37:00.000Z",
-      "_edited_time": "2026-03-05T01:30:00.000Z",
-      "_url": "https://www.notion.so/ashen_one-X-Twitter-319b72d5042d81a696ffc1e74d377a5b",
+      "_edited_time": "2026-03-08T01:53:00.000Z",
+      "_url": "https://www.notion.so/ashen_one-Onchain-Vibecoding-Claude-Code-Skill-para-AI-Trading-Bot-e-Prediction-Markets-no-Solana-319b72d5042d81a696ffc1e74d377a5b",
       "Resumo": "O vídeo explica como usar uma nova “habilidade” lançada por Phantom e Dflow para facilitar a criação de bots de trade e agentes de análise (ex.: mercados de previsão) no ecossistema Solana.\nO autor defende que, com ferramentas de “vibe coding” e um LLM (citado como OpenCl…/OpenCloth), é possível prototipar um bot e um site de suporte ao trading em poucos minutos.\nEle enfatiza a importância de detalhar bem o prompt e planejar requisitos antes de pedir para a IA gerar o projeto.\nTambém argumenta que stablecoins (ex.: USDC) são uma forma mais segura/prática de dar “carteira” e capacidade de pagamento a agentes autônomos, sem expor cartão de crédito.\nPor fim, justifica Solana como escolha por adoção em micropagamentos para agentes de IA e por ser um dos principais ecossistemas para esse tipo de integração.",
       "Reprocessar": false,
       "Data": "2026-03-04",
@@ -1451,7 +1451,7 @@
         "Análise técnica"
       ],
       "Link Original": "https://x.com/ashen_one/status/2029260116436861338",
-      "Name": "@ashen_one — X/Twitter"
+      "Name": "@ashen_one — Onchain Vibecoding: Claude Code Skill para AI Trading Bot e Prediction Markets no Solana"
     },
     {
       "_id": "319b72d5-042d-81b6-b232-ed27387044f1",
@@ -1478,6 +1478,106 @@
       "Estilo": [],
       "Link Original": "https://www.youtube.com/live/pqtLLYyztc8",
       "Name": "AIOX Squad: Construa seu Exército de IA e Escale seus Lucros em até 10x"
+    },
+    {
+      "_id": "31bb72d5-042d-81c3-b6c8-ed7b6a7d19fa",
+      "_created_time": "2026-03-06T11:47:00.000Z",
+      "_edited_time": "2026-03-07T01:30:00.000Z",
+      "_url": "https://www.notion.so/Batch-Research-tendencias-e-insights-do-dia-2026-03-06-31bb72d5042d81c3b6c8ed7b6a7d19fa",
+      "Resumo": "1) **O maior “insight do dia” aqui é que seu pipeline de inteligência está cego**\n- Se a coleta depende de HTML público do X, você vai receber páginas de erro/JS e concluir tendências falsas (ou nenhuma tendência).\n- Ação: tratar isso como incidente de dados, não como “dia sem tendências”.\n\n2) **“Fontes válidas processadas 3/3” é um falso positivo**\n- Você processou 3 URLs, mas não processou o *conteúdo* (tweets). Métrica de sucesso precisa ser “texto extraído + metadados essenciais”, não “URLs ",
+      "Reprocessar": false,
+      "Data": "2026-03-06",
+      "Processado por": "Frank",
+      "Deep Dives": null,
+      "Link Drive": null,
+      "Plataforma": "X",
+      "Idioma": null,
+      "Qualidade": null,
+      "Tem transcript": false,
+      "Tags": [],
+      "Content (Inspiração)": null,
+      "Place": null,
+      "Tópico": [
+        "IA"
+      ],
+      "Criador": null,
+      "Estilo": [],
+      "Link Original": "https://x.com/milesdeutscher/status/2029323516047491106",
+      "Name": "Batch Research — tendencias e insights do dia (2026-03-06)"
+    },
+    {
+      "_id": "31db72d5-042d-815a-b7a9-d203d2e502ca",
+      "_created_time": "2026-03-08T12:01:00.000Z",
+      "_edited_time": "2026-03-08T12:01:00.000Z",
+      "_url": "https://www.notion.so/Batch-Research-padr-es-e-tend-ncias-da-semana-2026-03-08-31db72d5042d815ab7a9d203d2e502ca",
+      "Resumo": "1. **Distintividade começa pelo que é mais “perceptível em 1 segundo”: cor + silhueta do ícone + linguagem de ilustração**  \n   - A fonte mostra que evitar “preto/branco dev tool” (GitHub) e “personagens PB” (Notion) não é detalhe estético: é estratégia para reduzir confusão e acelerar reconhecimento.\n\n2. **Use IA como “motor de execução”, não como “oráculo criativo”**  \n   - O método não é “prompt genérico para criar uma marca”; é decompor a identidade em partes, alimentar referências e control",
+      "Reprocessar": false,
+      "Data": "2026-03-08",
+      "Processado por": "Frank",
+      "Deep Dives": null,
+      "Link Drive": null,
+      "Plataforma": "YouTube",
+      "Idioma": null,
+      "Qualidade": null,
+      "Tem transcript": false,
+      "Tags": [],
+      "Content (Inspiração)": null,
+      "Place": null,
+      "Tópico": [
+        "IA"
+      ],
+      "Criador": null,
+      "Estilo": [],
+      "Link Original": "[\"https://www.youtube.com/live/pqtLLYyztc8\", \"https://www.youtube.com/watch?v=lhl0jgb0siI\"]",
+      "Name": "Batch Research — padrões e tendências da semana (2026-03-08)"
+    },
+    {
+      "_id": "31db72d5-042d-81a1-99da-c74d1d006d55",
+      "_created_time": "2026-03-08T16:22:00.000Z",
+      "_edited_time": "2026-03-08T16:22:00.000Z",
+      "_url": "https://www.notion.so/linuz90-X-Twitter-31db72d5042d81a199dac74d1d006d55",
+      "Resumo": "O tweet ensina como organizar um bot/agent no Telegram usando “forum topics”, criando tópicos separados para isolar sessões de LLM e manter conversas/ações mais organizadas.",
+      "Reprocessar": false,
+      "Data": "2026-03-08",
+      "Processado por": "Frank",
+      "Deep Dives": null,
+      "Link Drive": null,
+      "Plataforma": "X",
+      "Idioma": null,
+      "Qualidade": null,
+      "Tem transcript": false,
+      "Tags": [],
+      "Content (Inspiração)": null,
+      "Place": null,
+      "Tópico": [],
+      "Criador": null,
+      "Estilo": [],
+      "Link Original": "https://x.com/linuz90/status/2030616602782450087?s=20",
+      "Name": "@linuz90 — X/Twitter"
+    },
+    {
+      "_id": "31db72d5-042d-81a4-97a6-d9093afffdfc",
+      "_created_time": "2026-03-08T16:09:00.000Z",
+      "_edited_time": "2026-03-08T16:09:00.000Z",
+      "_url": "https://www.notion.so/openclaw-X-Twitter-31db72d5042d81a497a6d9093afffdfc",
+      "Resumo": "Anúncio do release OpenClaw 2026.3.7, destacando integrações com GPT-5.4 e Gemini 3.1 Flash-Lite e várias melhorias de infraestrutura, segurança e canais.",
+      "Reprocessar": false,
+      "Data": "2026-03-08",
+      "Processado por": "Frank",
+      "Deep Dives": null,
+      "Link Drive": null,
+      "Plataforma": "X",
+      "Idioma": null,
+      "Qualidade": null,
+      "Tem transcript": false,
+      "Tags": [],
+      "Content (Inspiração)": null,
+      "Place": null,
+      "Tópico": [],
+      "Criador": null,
+      "Estilo": [],
+      "Link Original": "https://x.com/openclaw/status/2030522386894946620",
+      "Name": "@openclaw — X/Twitter"
     }
   ]
 }
