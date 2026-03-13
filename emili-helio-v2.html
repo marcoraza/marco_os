@@ -575,7 +575,7 @@
   }
 
   .op-card.expanded .op-expanded {
-    max-height: 500px;
+    max-height: 3000px;
     opacity: 1;
   }
 
@@ -1064,6 +1064,303 @@
     color: var(--navy);
     font-weight: 600;
   }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10, 14, 26, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .modal-box {
+    position: relative;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 560px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    transform: scale(0.97);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal-box {
+    transform: scale(1);
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    cursor: pointer; font-size: 20px; color: #8892a4;
+    line-height: 1;
+    background: none; border: none; padding: 4px;
+    transition: color 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .modal-close:hover { color: var(--navy); }
+  .modal-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 16px;
+    padding-right: 24px;
+    font-family: 'Inter', sans-serif;
+  }
+  .modal-body {
+    font-size: 13px;
+    color: var(--text-body);
+    line-height: 1.6;
+    font-family: 'Inter', sans-serif;
+  }
+  .modal-body strong { font-weight: 600; color: var(--navy); }
+  .modal-body pre {
+    background: rgba(0,0,0,0.04);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    margin: 8px 0;
+    color: var(--navy);
+  }
+  .modal-item {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .modal-item:last-child { border-bottom: none; }
+  .modal-item-title {
+    font-weight: 600;
+    color: var(--navy);
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+  .modal-item-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .modal-item-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #3B82F6;
+    margin-top: 2px;
+  }
+  .modal-copy-btn {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 16px;
+    border-radius: 6px;
+    background: var(--navy);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: background 0.15s;
+  }
+  .modal-copy-btn:hover { background: #2a3050; }
+  .modal-copy-btn.copied { background: #059669; }
+
+  /* ─── CONTEXT SECTION ─── */
+  .ctx-section {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.07);
+  }
+  .ctx-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 10px;
+    font-family: 'Inter', sans-serif;
+  }
+  .ctx-btn {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.9);
+    color: var(--text-body);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+    margin-bottom: 8px;
+  }
+  .ctx-btn:hover { background: white; border-color: rgba(0,0,0,0.22); }
+  .ctx-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    line-height: 1.45;
+    font-family: 'Inter', sans-serif;
+  }
+  .ctx-success {
+    font-size: 11px;
+    color: #059669;
+    font-weight: 500;
+    margin-top: 8px;
+    padding: 5px 9px;
+    background: rgba(16,185,129,0.08);
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+  }
+  .ctx-sub-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 5px;
+    margin-top: 10px;
+    font-family: 'Inter', sans-serif;
+  }
+  .bio-options {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 4px;
+  }
+  .bio-option-card {
+    background: rgba(0,0,0,0.025);
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .bio-option-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .bio-option-text {
+    font-size: 12px;
+    color: var(--text-body);
+    line-height: 1.45;
+    margin-bottom: 7px;
+    font-family: 'Inter', sans-serif;
+  }
+  .bio-use-btn {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 5px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.8);
+    color: var(--text-body);
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+  }
+  .bio-use-btn:hover { background: white; }
+  .bio-use-btn.copied { color: #059669; border-color: #059669; }
+  .ctx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-top: 4px;
+    font-family: 'Inter', sans-serif;
+  }
+  .ctx-table thead th {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 5px 8px;
+    text-align: left;
+    background: rgba(0,0,0,0.03);
+  }
+  .ctx-table tbody td {
+    padding: 6px 8px;
+    color: var(--text-body);
+    border-top: 1px solid rgba(0,0,0,0.04);
+    line-height: 1.35;
+  }
+  .ctx-table tbody td:first-child {
+    font-weight: 500;
+    color: var(--navy);
+  }
+  .ctx-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .ctx-list li {
+    font-size: 12px;
+    color: var(--text-body);
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    line-height: 1.4;
+    font-family: 'Inter', sans-serif;
+  }
+  .ctx-list li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .ctx-product-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .ctx-product-card {
+    background: rgba(0,0,0,0.025);
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .ctx-product-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 2px;
+    font-family: 'Inter', sans-serif;
+  }
+  .ctx-product-price {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+  .ctx-product-desc {
+    font-size: 11px;
+    color: var(--text-body);
+    font-family: 'Inter', sans-serif;
+  }
+  .ctx-partners-inline {
+    font-size: 12px;
+    color: var(--text-body);
+    margin-top: 4px;
+    font-family: 'Inter', sans-serif;
+  }
 </style>
 </head>
 <body>
@@ -1516,6 +1813,15 @@
 
   </main>
 
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modal-title" class="modal-title"></div>
+    <div id="modal-body" class="modal-body"></div>
+  </div>
 </div>
 
 <script>
@@ -2006,6 +2312,7 @@ function renderCard(opId) {
       <div class="op-objective"><strong>Objetivo</strong>${op.objective}</div>
       ${depHTML}
       ${renderPeopleTabs(opId, color)}
+      ${renderContextSection(opId)}
       <div class="op-objective" style="margin-bottom:6px;"><strong>Sub-tarefas</strong></div>
       <ul class="op-subtasks">${subtasksHTML}</ul>
       <div class="op-actions">
@@ -2257,6 +2564,266 @@ function switchTab(tab) {
     document.getElementById('main').scrollTop = 0;
     window.scrollTo({ top: 60, behavior: 'smooth' });
   }
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+
+const MODAL_CONTENT = {
+  'op01-bio-atual': {
+    title: 'Bio atual',
+    html: '<p style="margin-bottom:10px;"><strong>Bio atual:</strong></p><pre>"Receitas faceis usando 8 ingredientes ou menos!\nemilizarembaa@gmail.com"</pre><p style="margin-top:12px;"><strong>Problema:</strong> Posicionamento sem CTA de conversao. Email na bio nao converte.</p>'
+  },
+  'op02-top-reels': {
+    title: 'Top 5 Reels para repostar',
+    html: '<div class="modal-item"><div class="modal-item-title">1. Pao pita</div><div class="modal-item-meta">26.304 likes &middot; 86 comentarios</div><div class="modal-item-link">instagram.com/p/DVzI3WjAfYy</div></div><div class="modal-item"><div class="modal-item-title">2. Caramelo</div><div class="modal-item-meta">1.059 likes &middot; 5 comentarios</div><div class="modal-item-link">instagram.com/p/DVli8SjDpCD</div></div><div class="modal-item"><div class="modal-item-title">3. Pao batata</div><div class="modal-item-meta">832 likes &middot; 11 comentarios</div><div class="modal-item-link">instagram.com/p/DVMGeZYEUeF</div></div><div class="modal-item"><div class="modal-item-title">4. Cobertura proteica</div><div class="modal-item-meta">331 likes &middot; 5 comentarios</div><div class="modal-item-link">instagram.com/p/DVRZFVXAQ2q</div></div><div class="modal-item"><div class="modal-item-title">5. Pao macio</div><div class="modal-item-meta">274 likes &middot; 0 comentarios</div><div class="modal-item-link">instagram.com/p/DVZCHkBkSGi</div></div>'
+  },
+  'op04-receitas': {
+    title: 'Receitas para o e-book',
+    html: '<p style="margin-bottom:12px;color:var(--text-muted);font-size:12px;">Baseado nos top posts do Instagram:</p><div class="modal-item"><div class="modal-item-title">1. Pao pita</div><div class="modal-item-meta">Receita mais viral &mdash; 26k likes</div></div><div class="modal-item"><div class="modal-item-title">2. Caramelo saudavel</div><div class="modal-item-meta">1k likes</div></div><div class="modal-item"><div class="modal-item-title">3. Pao de batata macio</div><div class="modal-item-meta">832 likes</div></div><div class="modal-item"><div class="modal-item-title">4. Cobertura proteica para bolos</div><div class="modal-item-meta">331 likes</div></div><div class="modal-item"><div class="modal-item-title">5&ndash;10. +6 receitas</div><div class="modal-item-meta">Proximos melhores posts do Instagram</div></div>'
+  },
+  'op07-script': {
+    title: 'Script do Reel de lancamento',
+    html: '<div class="modal-item"><div class="modal-item-title">Hook (3s)</div><div class="modal-item-meta">"Voce faz receitas saudaveis mas ainda nao tem esse guia?"</div></div><div class="modal-item"><div class="modal-item-title">Corpo (20s)</div><div class="modal-item-meta">Mostrar o e-book na tela, folhear as receitas</div></div><div class="modal-item"><div class="modal-item-title">CTA (7s)</div><div class="modal-item-meta">"E de graca. So clicar no link da bio e baixar."</div></div>'
+  },
+  'op09-template': {
+    title: 'Template de mensagem para marcas',
+    html: '<pre>Ola, tudo bem?\nSou a [Nome], criadora de conteudo de confeitaria saudavel\ncom 28k seguidores e 8,6% de engajamento.\nTenho interesse em colaborar com [Marca] para [tipo de conteudo].\nMeu midia kit esta em [link]. Quando podemos conversar?</pre><button class="modal-copy-btn" id="copy-op09-template" onclick="copyToClipboard(\'Ola, tudo bem?\\nSou a [Nome], criadora de conteudo de confeitaria saudavel com 28k seguidores e 8,6% de engajamento.\\nTenho interesse em colaborar com [Marca] para [tipo de conteudo].\\nMeu midia kit esta em [link]. Quando podemos conversar?\', \'copy-op09-template\')">Copiar mensagem</button>'
+  }
+};
+
+function openModal(key) {
+  var content = MODAL_CONTENT[key];
+  if (!content) return;
+  document.getElementById('modal-title').textContent = content.title;
+  document.getElementById('modal-body').innerHTML = content.html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  setTimeout(function() { document.getElementById('modal-body').innerHTML = ''; }, 200);
+}
+
+const COPY_TEXTS = {
+  'bio-a': 'Confeitaria saudavel com 8 ingredientes ou menos — E-book gratis — link na bio',
+  'bio-b': 'Pao e doces que parecem pecado, mas nao sao — Receitas gratis — link na bio',
+  'bio-c': 'Receitas fit de confeitaria profissional — Baixe o e-book — link na bio'
+};
+
+function copyText(key, btnId) {
+  var text = COPY_TEXTS[key];
+  if (!text) return;
+  copyToClipboard(text, btnId);
+}
+
+function copyToClipboard(text, btnId) {
+  function doFeedback(btn) {
+    if (!btn) return;
+    var original = btn.textContent;
+    btn.textContent = 'Copiado!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = original; btn.classList.remove('copied'); }, 2000);
+  }
+  navigator.clipboard.writeText(text).then(function() {
+    doFeedback(document.getElementById(btnId));
+  }).catch(function() {
+    try {
+      var el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    } catch(e) {}
+    doFeedback(document.getElementById(btnId));
+  });
+}
+
+// ─── CONTEXT SECTIONS ─────────────────────────────────────────────────────────
+
+function renderContextSection(opId) {
+  var html = '';
+  switch(opId) {
+    case 'op01':
+      html =
+        '<button class="ctx-btn" onclick="event.stopPropagation(); openModal(\'op01-bio-atual\')">Ver bio atual</button>' +
+        '<span class="ctx-sub-label">3 opcoes sugeridas</span>' +
+        '<div class="bio-options">' +
+          '<div class="bio-option-card">' +
+            '<div class="bio-option-label">Opcao A</div>' +
+            '<div class="bio-option-text">Confeitaria saudavel com 8 ingredientes ou menos &mdash; E-book gratis &mdash; link na bio</div>' +
+            '<button class="bio-use-btn" id="copy-bio-a" onclick="event.stopPropagation(); copyText(\'bio-a\', \'copy-bio-a\')">Usar esta</button>' +
+          '</div>' +
+          '<div class="bio-option-card">' +
+            '<div class="bio-option-label">Opcao B</div>' +
+            '<div class="bio-option-text">Pao e doces que parecem pecado, mas nao sao &mdash; Receitas gratis &mdash; link na bio</div>' +
+            '<button class="bio-use-btn" id="copy-bio-b" onclick="event.stopPropagation(); copyText(\'bio-b\', \'copy-bio-b\')">Usar esta</button>' +
+          '</div>' +
+          '<div class="bio-option-card">' +
+            '<div class="bio-option-label">Opcao C</div>' +
+            '<div class="bio-option-text">Receitas fit de confeitaria profissional &mdash; Baixe o e-book &mdash; link na bio</div>' +
+            '<button class="bio-use-btn" id="copy-bio-c" onclick="event.stopPropagation(); copyText(\'bio-c\', \'copy-bio-c\')">Usar esta</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ctx-success">Criterio: Bio inclui nicho + diferencial + CTA</div>';
+      break;
+
+    case 'op02':
+      html =
+        '<button class="ctx-btn" onclick="event.stopPropagation(); openModal(\'op02-top-reels\')">Ver top 5 Reels</button>' +
+        '<div class="ctx-note">Repostar os de maior engajamento primeiro. Frank baixa via API e agenda no Postiz.</div>';
+      break;
+
+    case 'op03':
+      html =
+        '<span class="ctx-sub-label">4 links da landing page</span>' +
+        '<ul class="ctx-list">' +
+          '<li>Download e-book gratuito (OP-04)</li>' +
+          '<li>WhatsApp para encomendas / contato</li>' +
+          '<li>TikTok (OP-02)</li>' +
+          '<li>Contato comercial / parcerias</li>' +
+        '</ul>' +
+        '<div class="ctx-note">Carrd.co recomendado (gratis ate 3 paginas). Mailchimp para captura de email.</div>';
+      break;
+
+    case 'op04':
+      html =
+        '<span class="ctx-sub-label">Titulo sugerido</span>' +
+        '<div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:8px;font-family:\'Inter\',sans-serif;">"10 Receitas Saudaveis com 8 Ingredientes ou Menos"</div>' +
+        '<button class="ctx-btn" onclick="event.stopPropagation(); openModal(\'op04-receitas\')">Ver receitas para incluir</button>' +
+        '<div class="ctx-note">Frank extrai as receitas via API do Instagram e estrutura o PDF.</div>';
+      break;
+
+    case 'op05':
+      html =
+        '<span class="ctx-sub-label">Calendario semanal de stories</span>' +
+        '<table class="ctx-table">' +
+          '<thead><tr><th>Dia</th><th>Tipo</th><th>Exemplo</th></tr></thead>' +
+          '<tbody>' +
+            '<tr><td>Seg</td><td>Bastidor</td><td>"Preparando a massa do dia"</td></tr>' +
+            '<tr><td>Ter</td><td>Enquete</td><td>"Qual voce prefere: pao ou bolo?"</td></tr>' +
+            '<tr><td>Qua</td><td>Lifestyle</td><td>"Minha rotina de manha"</td></tr>' +
+            '<tr><td>Qui</td><td>Receita rapida</td><td>"Dica em 30 segundos"</td></tr>' +
+            '<tr><td>Sex</td><td>Box perguntas</td><td>"Me perguntem sobre receitas saudaveis"</td></tr>' +
+            '<tr><td>Sab</td><td>Antes-depois</td><td>"Fiz o pao, olha como ficou"</td></tr>' +
+            '<tr><td>Dom</td><td>Repurpose</td><td>(opcional)</td></tr>' +
+          '</tbody>' +
+        '</table>';
+      break;
+
+    case 'op06':
+      html =
+        '<span class="ctx-sub-label">Tabela de precos sugeridos</span>' +
+        '<table class="ctx-table">' +
+          '<thead><tr><th>Formato</th><th>Preco</th></tr></thead>' +
+          '<tbody>' +
+            '<tr><td>Story (1 frame)</td><td>R$ 300</td></tr>' +
+            '<tr><td>Reel patrocinado</td><td>R$ 800</td></tr>' +
+            '<tr><td>Pacote 3 posts</td><td>R$ 2.000</td></tr>' +
+            '<tr><td>Feed + stories</td><td>R$ 500</td></tr>' +
+          '</tbody>' +
+        '</table>' +
+        '<span class="ctx-sub-label" style="margin-top:10px;">Marcas ja parceiras</span>' +
+        '<div class="ctx-partners-inline">BoxViva &middot; DUX Nutrition &middot; Fugini</div>' +
+        '<div class="ctx-note">Engajamento de 8,61% justifica preco premium vs media do nicho.</div>';
+      break;
+
+    case 'op07':
+      html =
+        '<div class="ctx-success">Meta: 500 leads em 30 dias = ~17 novos leads/dia</div>' +
+        '<button class="ctx-btn" style="margin-top:8px;" onclick="event.stopPropagation(); openModal(\'op07-script\')">Ver script do Reel</button>';
+      break;
+
+    case 'op08':
+      html =
+        '<div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:10px;font-family:\'Inter\',sans-serif;">"Receituario Completo: 30 Receitas Saudaveis com 8 Ingredientes"</div>' +
+        '<span class="ctx-sub-label">Opcoes de preco e formato</span>' +
+        '<table class="ctx-table">' +
+          '<thead><tr><th>Versao</th><th>Preco</th><th>Conteudo</th></tr></thead>' +
+          '<tbody>' +
+            '<tr><td>Entrada (PDF)</td><td>R$ 47</td><td>30 receitas em PDF</td></tr>' +
+            '<tr><td>Premium (PDF + video)</td><td>R$ 97</td><td>Receitas + videos de preparo</td></tr>' +
+          '</tbody>' +
+        '</table>' +
+        '<div class="ctx-note" style="margin-top:8px;">Projecao: 50 vendas = R$ 2.350 (basico) a R$ 4.850 (premium). Plataformas: Hotmart ou Kiwify.</div>';
+      break;
+
+    case 'op09':
+      html =
+        '<span class="ctx-sub-label">Marcas para prospectar</span>' +
+        '<ul class="ctx-list">' +
+          '<li>BoxViva (ja parceira) &mdash; suplementos fit</li>' +
+          '<li>DUX Nutrition (ja parceira) &mdash; proteinas, whey</li>' +
+          '<li>Fugini (ja parceira) &mdash; alimentos</li>' +
+          '<li>Alvos novos: farinhas funcionais, adocantes naturais, utensilios de confeitaria</li>' +
+        '</ul>' +
+        '<button class="ctx-btn" style="margin-top:8px;" onclick="event.stopPropagation(); openModal(\'op09-template\')">Ver template de mensagem</button>';
+      break;
+
+    case 'op10':
+      html =
+        '<span class="ctx-sub-label">4 videos sugeridos</span>' +
+        '<ul class="ctx-list">' +
+          '<li>"Pao pita em casa &mdash; receita com 8 ingredientes" (viral 26k likes)</li>' +
+          '<li>"Caramelo saudavel do zero &mdash; sem acucar"</li>' +
+          '<li>"Pao de batata que continua macio no dia seguinte"</li>' +
+          '<li>"Cobertura proteica para bolos &mdash; 3 ingredientes"</li>' +
+        '</ul>' +
+        '<div class="ctx-note">Formato: 8-12 min, receita completa com processo. Frank otimiza titulos, tags, descricoes.</div>';
+      break;
+
+    case 'op11':
+      html =
+        '<div style="font-size:12px;color:var(--navy);font-weight:600;margin-bottom:10px;font-family:\'Inter\',sans-serif;">"Panificacao Saudavel do Zero &mdash; Metodo 8 Ingredientes"</div>' +
+        '<span class="ctx-sub-label">Modulos sugeridos</span>' +
+        '<ul class="ctx-list">' +
+          '<li>1. Os 8 ingredientes fundamentais</li>' +
+          '<li>2. Paes artesanais saudaveis</li>' +
+          '<li>3. Bolos e massas sem culpa</li>' +
+          '<li>4. Coberturas e recheios fit</li>' +
+          '<li>5. Doces rapidos para o dia a dia</li>' +
+          '<li>6. Adaptando receitas tradicionais</li>' +
+          '<li>7. Bonus: cardapio semanal saudavel</li>' +
+        '</ul>' +
+        '<div class="ctx-note">Projecao: 30 vendas x R$ 197 = R$ 5.910 | 30 vendas x R$ 297 = R$ 8.910</div>';
+      break;
+
+    case 'op12':
+      html =
+        '<div class="ctx-note" style="font-size:12px;margin-bottom:6px;">Pinterest tem ciclo longo &mdash; resultados aparecem 30-60 dias apos publicacao.</div>' +
+        '<ul class="ctx-list">' +
+          '<li>1 pin por post do Instagram = ~5-6 pins/semana automaticos</li>' +
+          '<li>Meta: 500 cliques/mes apos 60 dias de operacao</li>' +
+        '</ul>';
+      break;
+
+    case 'op13':
+      html =
+        '<span class="ctx-sub-label">Opcoes de produto fisico</span>' +
+        '<div class="ctx-product-cards">' +
+          '<div class="ctx-product-card">' +
+            '<div class="ctx-product-name">Kit Ingredientes</div>' +
+            '<div class="ctx-product-price">R$ 89&ndash;149</div>' +
+            '<div class="ctx-product-desc">Ingredientes curados para 1 semana de receitas</div>' +
+          '</div>' +
+          '<div class="ctx-product-card">' +
+            '<div class="ctx-product-name">Box Mensal</div>' +
+            '<div class="ctx-product-price">R$ 99&ndash;199/mes</div>' +
+            '<div class="ctx-product-desc">Kit + receita exclusiva do mes</div>' +
+          '</div>' +
+          '<div class="ctx-product-card">' +
+            '<div class="ctx-product-name">Encomendas Sazonais</div>' +
+            '<div class="ctx-product-price">R$ 50&ndash;200</div>' +
+            '<div class="ctx-product-desc">Pascoa, Natal, Dia das Maes</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ctx-note" style="margin-top:8px;">Validacao: Publicar stories "quem compraria?" antes de produzir qualquer coisa.</div>';
+      break;
+
+    default:
+      return '';
+  }
+  return '<div class="ctx-section"><span class="ctx-label">Contexto</span>' + html + '</div>';
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
