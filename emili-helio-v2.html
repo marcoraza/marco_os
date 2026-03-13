@@ -2330,64 +2330,253 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
-    /* ===== MOBILE FIX: Pesquisa + Evento overflow ===== */
-    @media (max-width: 768px) {
-      /* Tabelas scrollaveis */
-      .cr-table, .evt-table, table {
-        display: block;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        max-width: 100%;
-      }
-      table thead, table tbody, table tr, table td, table th {
-        white-space: nowrap;
-      }
-      /* Cards concorrentes - 1 coluna */
-      .cr-cards-grid { grid-template-columns: 1fr !important; }
-      /* Cards de oportunidade */
-      .cr-opp-grid { grid-template-columns: 1fr !important; }
-      /* Pesquisa: qualquer grid multi-col */
-      .cr-section * { max-width: 100%; box-sizing: border-box; }
-      /* Event cards - 1 coluna */
-      .evt-cards-grid { grid-template-columns: 1fr !important; }
-      /* Timeline vertical */
-      .evt-timeline {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 0 !important;
-      }
-      .evt-timeline-connector {
-        width: 2px !important;
-        height: 28px !important;
-        margin: 0 0 0 17px !important;
-        align-self: flex-start !important;
-      }
-      .evt-node {
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 10px !important;
-      }
-      .evt-node-label {
-        text-align: left !important;
-        margin-top: 0 !important;
-      }
-      /* Funil: wrap */
-      .evt-funnel { flex-wrap: wrap !important; }
-      /* Stack chips wrap */
-      .evt-stack-chips { flex-wrap: wrap !important; }
-      /* Textos longos */
-      .evt-copy-text, .cr-bio-text, .cr-cta-text {
-        word-break: break-word !important;
-        overflow-wrap: break-word !important;
-        white-space: normal !important;
-      }
-      /* Prevenir overflow geral nas abas */
-      #panel-pesquisa, #panel-evento {
-        overflow-x: hidden;
-        max-width: 100vw;
-      }
+  /* ─── MOBILE FIXES: PESQUISA COMPETITIVA + EVENTO ─── */
+  @media (max-width: 768px) {
+    #panel-pesquisa,
+    #panel-evento {
+      overflow-x: hidden;
     }
-    /* ===== FIM MOBILE FIX ===== */
+
+    #panel-pesquisa *,
+    #panel-evento * {
+      box-sizing: border-box;
+      min-width: 0;
+    }
+
+    #panel-pesquisa p,
+    #panel-pesquisa span,
+    #panel-pesquisa td,
+    #panel-pesquisa li,
+    #panel-evento p,
+    #panel-evento span,
+    #panel-evento td,
+    #panel-evento li {
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Pesquisa Competitiva */
+    .cr-section-heading {
+      font-size: 28px;
+      line-height: 1.08;
+    }
+
+    .cr-table-wrap {
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .cr-table {
+      width: max-content;
+      min-width: 640px;
+    }
+
+    .cr-cards-grid,
+    .cr-opp-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .cr-card,
+    .cr-opp-card,
+    .cr-callout {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .cr-card,
+    .cr-opp-card {
+      padding: 16px;
+    }
+
+    .cr-card-value,
+    .cr-opp-title,
+    .cr-opp-desc,
+    .cr-pattern-pill {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    /* Evento */
+    .evt-timeline-wrap,
+    .evt-card,
+    .evt-checklist-wrap,
+    .evt-accordion {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .evt-timeline-wrap {
+      padding: 20px 16px;
+      overflow: visible;
+    }
+
+    .evt-timeline-title {
+      margin-bottom: 20px;
+    }
+
+    .evt-timeline {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      padding-bottom: 0;
+    }
+
+    .evt-timeline-line {
+      display: none;
+    }
+
+    .evt-timeline-node-wrap {
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      flex: none;
+      width: 100%;
+      position: relative;
+      padding-bottom: 20px;
+    }
+
+    .evt-timeline-node-wrap:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 17px;
+      top: 36px;
+      width: 2px;
+      height: 32px;
+      background: rgba(0,0,0,0.14);
+    }
+
+    .evt-timeline-node-wrap:last-child {
+      padding-bottom: 0;
+    }
+
+    .evt-timeline-node {
+      margin-bottom: 0;
+    }
+
+    .evt-node-date {
+      order: 2;
+      text-align: left;
+      margin-top: 0;
+      white-space: nowrap;
+    }
+
+    .evt-node-label {
+      order: 3;
+      text-align: left;
+      margin-top: 0;
+      white-space: normal;
+      flex: 1;
+    }
+
+    .evt-node-label::before {
+      content: '— ';
+      color: var(--text-muted);
+    }
+
+    .evt-today-label {
+      order: 4;
+      margin-top: 0;
+      margin-left: 0;
+      white-space: nowrap;
+    }
+
+    .evt-cards-row {
+      grid-template-columns: 1fr !important;
+    }
+
+    .evt-card {
+      padding: 18px 16px 16px;
+    }
+
+    .evt-card-header {
+      flex-wrap: wrap;
+    }
+
+    .evt-tickets-row,
+    .evt-card-kpis,
+    .evt-footer,
+    .evt-chips,
+    .evt-funnel {
+      flex-wrap: wrap;
+    }
+
+    .evt-checklist {
+      grid-template-columns: 1fr !important;
+      gap: 6px;
+    }
+
+    .evt-check-item {
+      align-items: flex-start;
+      min-width: 0;
+    }
+
+    .evt-check-text {
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .evt-accordion-header {
+      padding: 14px 16px;
+      align-items: flex-start;
+    }
+
+    .evt-accordion-body {
+      padding: 0 16px 16px;
+      min-width: 0;
+    }
+
+    .evt-sub-acc-header {
+      padding: 11px 12px;
+      align-items: flex-start;
+    }
+
+    .evt-sub-acc-body {
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .evt-table {
+      display: block;
+      width: max-content;
+      min-width: 520px;
+      max-width: none;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .evt-copy-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .evt-copy-text {
+      width: 100%;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .evt-copy-btn {
+      align-self: flex-start;
+    }
+
+    .evt-msg-central,
+    .evt-list li,
+    .evt-numbered-list li,
+    .evt-headline-field,
+    .evt-card-meta,
+    .evt-kpi-item,
+    .evt-footer-meta,
+    .evt-sub-label,
+    .evt-accordion-label,
+    .evt-projection {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+  }
 
   </style>
 </head>
