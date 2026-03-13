@@ -674,6 +674,64 @@
 
   .op-btn.primary:hover { filter: brightness(1.1); }
 
+  /* ─── PEOPLE TABS ─── */
+  .people-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .person-tab {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.5);
+    color: #4a5068;
+    transition: all 0.15s ease;
+  }
+  .person-tab.active {
+    background: var(--person-tab-color, #3B82F6);
+    color: white;
+    border-color: transparent;
+  }
+  .person-tasks {
+    margin-bottom: 12px;
+  }
+  .person-task-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .person-task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-body);
+    line-height: 1.4;
+  }
+  .person-task-bullet {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .people-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+
   /* ─── SCROLLBAR ─── */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -1669,6 +1727,64 @@ const OPS = {
   }
 };
 
+// ─── PEOPLE DATA ────────────────────────────────────────────────────────────
+
+const OP_PEOPLE = {
+  'op01': {
+    'Emili': ['Escolher a bio final', 'Publicar no perfil'],
+    'Marco': ['Redigir 3 opcoes de bio', 'Apresentar para Emili escolher']
+  },
+  'op02': {
+    'Emili': ['Criar conta', 'Configurar perfil', 'Gravar e publicar 1 video/dia'],
+    'Frank': ['Baixar os 5 melhores Reels do Instagram', 'Preparar para repostar via Postiz']
+  },
+  'op03': {
+    'Emili': ['Publicar o link na bio do Instagram'],
+    'Frank': ['Configurar conta Carrd.co', 'Estruturar 4 links', 'Integrar Mailchimp', 'Gerar URL'],
+    'Marco': ['Revisar e aprovar a estrutura da pagina']
+  },
+  'op04': {
+    'Emili': ['Revisar as receitas', 'Aprovar o PDF final'],
+    'Frank': ['Extrair receitas via API', 'Estruturar e diagramar o PDF', 'Hospedar no Drive']
+  },
+  'op05': {
+    'Emili': ['Publicar 2-3 stories/dia com bastidor', 'Enquetes e lifestyle', 'Box de perguntas 1x/semana']
+  },
+  'op06': {
+    'Frank': ['Coletar dados atualizados', 'Criar o PDF com precos e estatisticas'],
+    'Marco': ['Revisar', 'Aprovar', 'Usar para prospectar marcas']
+  },
+  'op07': {
+    'Emili': ['Criar Reel de lancamento do e-book', 'Incluir CTA em todos os posts', 'Publicar story semanal', 'Responder DMs'],
+    'Frank': ['Monitorar metricas de leads', 'Acompanhar progresso rumo a 500 leads']
+  },
+  'op08': {
+    'Emili': ['Gravar videos ou organizar conteudo do receituario', 'Divulgar para audiencia'],
+    'Frank': ['Configurar o produto na plataforma', 'Criar pagina de vendas'],
+    'Marco': ['Escolher plataforma (Hotmart ou Kiwify)', 'Definir preco e estrategia de lancamento']
+  },
+  'op09': {
+    'Emili': ['Executar o publipost', 'Criar o conteudo patrocinado com autenticidade'],
+    'Marco': ['Enviar midia kit para marcas', 'Negociar valores e contratos', 'Fechar parcerias']
+  },
+  'op10': {
+    'Emili': ['Gravar os 4 videos de receita (8-12min cada)', 'Criar thumbnails no Canva'],
+    'Frank': ['Criar canal', 'Otimizar SEO dos titulos, tags e descricoes']
+  },
+  'op11': {
+    'Emili': ['Gravar modulos do curso', 'Revisar roteiro', 'Apresentar o lancamento'],
+    'Frank': ['Configurar plataforma', 'Criar pagina de vendas', 'Agendar email marketing'],
+    'Marco': ['Definir estrategia de lancamento', 'Coordenar warming e live de lancamento']
+  },
+  'op12': {
+    'Emili': ['Aprovar visual dos pins', 'Fornecer imagens das receitas'],
+    'Frank': ['Criar conta business', 'Configurar automacao', 'Publicar 20 pins/semana']
+  },
+  'op13': {
+    'Emili': ['Publicar stories de pesquisa de interesse', 'Abrir pre-venda', 'Gerenciar producao e logistica']
+  }
+};
+
 // ─── STATE ──────────────────────────────────────────────────────────────────
 
 const STATE_KEY = 'emili-ops-state';
@@ -1745,6 +1861,62 @@ function stateBadgeClass(state, phaseId) {
 function stateBadgeLabel(state) {
   const labels = { ready: 'Pendente', doing: 'Em Andamento', done: 'Concluido', blocked: 'Bloqueado' };
   return labels[state] || state;
+}
+
+// ─── PEOPLE TABS ────────────────────────────────────────────────────────────
+
+function getDefaultPerson(opId) {
+  const people = OP_PEOPLE[opId];
+  if (!people) return null;
+  const names = Object.keys(people);
+  if (names.includes('Emili')) return 'Emili';
+  return names[0];
+}
+
+function renderPeopleTabs(opId, color) {
+  const people = OP_PEOPLE[opId];
+  if (!people) return '';
+  const names = Object.keys(people);
+  const defaultPerson = getDefaultPerson(opId);
+
+  const tabsHTML = names.map(name => {
+    const isActive = name === defaultPerson;
+    return `<button class="person-tab ${isActive ? 'active' : ''}" data-person="${name}" onclick="event.stopPropagation(); switchPersonTab('${opId}', '${name}', '${color}')" style="${isActive ? `--person-tab-color:${color};` : ''}">${name}</button>`;
+  }).join('');
+
+  const defaultTasks = people[defaultPerson] || [];
+  const tasksHTML = defaultTasks.map(t =>
+    `<li class="person-task-item"><span class="person-task-bullet" style="background:${color};"></span><span>${t}</span></li>`
+  ).join('');
+
+  return `<span class="people-section-label">Responsabilidades</span><div class="people-tabs" id="people-tabs-${opId}">${tabsHTML}</div><div class="person-tasks" id="person-tasks-${opId}"><ul class="person-task-list">${tasksHTML}</ul></div>`;
+}
+
+function switchPersonTab(opId, person, color) {
+  const people = OP_PEOPLE[opId];
+  if (!people || !people[person]) return;
+
+  const tabsContainer = document.getElementById(`people-tabs-${opId}`);
+  if (tabsContainer) {
+    tabsContainer.querySelectorAll('.person-tab').forEach(btn => {
+      const isActive = btn.dataset.person === person;
+      btn.classList.toggle('active', isActive);
+      if (isActive) {
+        btn.style.setProperty('--person-tab-color', color);
+      } else {
+        btn.style.removeProperty('--person-tab-color');
+      }
+    });
+  }
+
+  const tasksContainer = document.getElementById(`person-tasks-${opId}`);
+  if (tasksContainer) {
+    const tasks = people[person];
+    const tasksHTML = tasks.map(t =>
+      `<li class="person-task-item"><span class="person-task-bullet" style="background:${color};"></span><span>${t}</span></li>`
+    ).join('');
+    tasksContainer.innerHTML = `<ul class="person-task-list">${tasksHTML}</ul>`;
+  }
 }
 
 // SVG icons
@@ -1833,6 +2005,7 @@ function renderCard(opId) {
       <div class="op-expand-divider"></div>
       <div class="op-objective"><strong>Objetivo</strong>${op.objective}</div>
       ${depHTML}
+      ${renderPeopleTabs(opId, color)}
       <div class="op-objective" style="margin-bottom:6px;"><strong>Sub-tarefas</strong></div>
       <ul class="op-subtasks">${subtasksHTML}</ul>
       <div class="op-actions">
