@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plano Operacional — Emili Zaremba</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --sidebar-bg: #f7f7f7;
+      --sidebar-border: #e8e8e8;
+      --content-bg: #ffffff;
+      --heading: #1a1a1a;
+      --text: #374151;
+      --muted: #6b7280;
+      --nav-text: #374151;
+      --nav-active: #1a1a1a;
+      --nav-active-bg: #efefef;
+      --nav-hover: #f0f0f0;
+      --accent: #e5590a;
+      --divider: #e5e7eb;
+      --hint-bg: #f0fdf4;
+      --hint-border: #22c55e;
+      --warning-bg: #fffbeb;
+      --warning-border: #f59e0b;
+      --info-bg: #eff6ff;
+      --info-border: #3b82f6;
+      --header-h: 56px;
+      --sidebar-w: 260px;
+      --toc-w: 220px;
+      --content-max: 740px;
+      --radius: 8px;
+      --shadow: 0 1px 2px rgba(16,24,40,.04);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--accent);
+      width: 0%;
+      z-index: 1000;
+      transition: width .1s linear;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-h);
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 999;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .menu-btn {
+      display: none;
+      border: 1px solid var(--divider);
+      background: #fff;
+      color: var(--heading);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #111827 0%, #374151 100%);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-crumb {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-search {
+      width: 240px;
+      max-width: 32vw;
+      border: 1px solid var(--divider);
+      background: #fafafa;
+      color: var(--text);
+      border-radius: 9px;
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+      min-height: 100vh;
+      padding-top: var(--header-h);
+    }
+
+    .sidebar {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--sidebar-border);
+      overflow-y: auto;
+      padding: 18px 14px 32px;
+      scrollbar-width: thin;
+      scrollbar-color: #cfd4dc transparent;
+    }
+
+    .sidebar::-webkit-scrollbar,
+    .toc::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-thumb,
+    .toc::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+
+    .sidebar-search {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(var(--sidebar-bg) 80%, rgba(247,247,247,0));
+      padding-bottom: 14px;
+      z-index: 3;
+    }
+
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--divider);
+      background: #fff;
+      border-radius: 10px;
+      padding: 0 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .search-wrap input {
+      border: 0;
+      background: transparent;
+      width: 100%;
+      padding: 10px 0;
+      font: inherit;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .nav-section {
+      margin-top: 14px;
+    }
+
+    .nav-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 8px 8px;
+      cursor: pointer;
+    }
+
+    .nav-items {
+      display: grid;
+      gap: 3px;
+      padding-top: 2px;
+    }
+
+    .nav-section.collapsed .nav-items { display: none; }
+    .nav-section.collapsed .chev { transform: rotate(-90deg); }
+
+    .nav-item {
+      display: block;
+      padding: 8px 10px 8px 14px;
+      margin-left: 4px;
+      border-radius: 8px;
+      color: var(--nav-text);
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .nav-item::before {
+      content: '›';
+      position: absolute;
+      left: 4px;
+      top: 8px;
+      color: #9ca3af;
+      font-size: 13px;
+    }
+
+    .nav-item:hover {
+      background: var(--nav-hover);
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      background: var(--nav-active-bg);
+      color: var(--nav-active);
+      font-weight: 600;
+    }
+
+    .main {
+      margin-left: var(--sidebar-w);
+      padding: 0;
+      min-width: 0;
+    }
+
+    .content-wrap {
+      max-width: calc(var(--content-max) + 80px + var(--toc-w));
+      padding: 0 40px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, var(--content-max)) 220px;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .content {
+      background: var(--content-bg);
+      padding: 48px 0 80px;
+      min-width: 0;
+    }
+
+    .doc-kicker {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .hero {
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--divider);
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: 32px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+      color: var(--heading);
+      margin: 0 0 8px;
+    }
+
+    h2 {
+      font-size: 24px;
+      line-height: 1.25;
+      font-weight: 600;
+      color: var(--heading);
+      margin: 40px 0 14px;
+    }
+
+    h3 {
+      font-size: 18px;
+      line-height: 1.35;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+
+    p, li { font-size: 16px; }
+    ul { padding-left: 20px; }
+    .muted { color: var(--muted); }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid var(--divider);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      line-height: 1;
+      color: var(--text);
+      background: #fff;
+      white-space: nowrap;
+    }
+
+    .pill strong { color: var(--heading); font-size: 12px; }
+
+    .section {
+      padding: 20px 0 30px;
+      border-bottom: 1px solid var(--divider);
+      scroll-margin-top: 76px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .breadcrumb .slash { color: #c4c8cf; }
+
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 6px;
+      margin: 18px 0;
+      border: 1px solid transparent;
+      border-left-width: 4px;
+    }
+
+    .callout-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .callout.hint { background: var(--hint-bg); border-left-color: var(--hint-border); }
+    .callout.hint .callout-icon { background: rgba(34,197,94,.12); color: #15803d; }
+    .callout.warning { background: var(--warning-bg); border-left-color: var(--warning-border); }
+    .callout.warning .callout-icon { background: rgba(245,158,11,.12); color: #b45309; }
+    .callout.info { background: var(--info-bg); border-left-color: var(--info-border); }
+    .callout.info .callout-icon { background: rgba(59,130,246,.12); color: #1d4ed8; }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 8px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 18px;
+      margin: 24px 0;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .step-num {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(229,89,10,.12);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .step-body p {
+      margin: 6px 0 0;
+      color: var(--text);
+    }
+
+    .subtle-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 22px 0 8px;
+    }
+
+    .link-list li + li { margin-top: 6px; }
+
+    .nav-pager {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 26px;
+    }
+
+    .pager-card {
+      border: 1px solid var(--divider);
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: var(--text);
+      transition: border-color .18s ease, transform .18s ease, background .18s ease;
+      min-height: 74px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .pager-card:hover {
+      border-color: rgba(229,89,10,.35);
+      background: #fffaf7;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .pager-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .pager-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--heading);
+      line-height: 1.45;
+    }
+
+    .toc {
+      position: sticky;
+      top: 80px;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      padding-top: 48px;
+    }
+
+    .toc-box {
+      border-left: 1px solid var(--divider);
+      padding-left: 16px;
+    }
+
+    .toc-title {
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .toc-link {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      padding: 5px 0;
+      line-height: 1.45;
+      border-left: 2px solid transparent;
+      padding-left: 10px;
+      margin-left: -17px;
+    }
+
+    .toc-link:hover { color: var(--heading); text-decoration: none; }
+    .toc-link.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      font-weight: 600;
+    }
+
+    .footer-note {
+      padding: 26px 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(17,24,39,.28);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+      z-index: 900;
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media (max-width: 1200px) {
+      .content-wrap {
+        grid-template-columns: minmax(0, var(--content-max));
+        max-width: calc(var(--content-max) + 80px);
+      }
+      .toc { display: none; }
+      .header-search { display: none; }
+    }
+
+    @media (max-width: 900px) {
+      .menu-btn { display: inline-flex; }
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform .22s ease;
+        z-index: 950;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .content-wrap { padding: 0 22px; }
+      .content { padding-top: 32px; }
+      .header {
+        padding: 0 14px;
+      }
+      .header-crumb {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 28px; }
+      h2 { font-size: 22px; }
+      .nav-pager { grid-template-columns: 1fr; }
+      .content-wrap { padding: 0 16px; }
+      .meta-row, .stats { gap: 6px; }
+      .pill { white-space: normal; line-height: 1.3; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-bar" id="progressBar"></div>
+  <header class="header">
+    <div class="header-left">
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir navegação">☰</button>
+      <div class="brand">
+        <div class="brand-mark">EZ</div>
+        <div class="brand-title">Emili Zaremba · Plano Operacional</div>
+      </div>
+      <div class="header-crumb" id="headerCrumb">Plano Operacional / Visão Geral</div>
+    </div>
+    <input class="header-search" id="headerSearch" type="search" placeholder="Search..." />
+  </header>
+
+  <div class="overlay" id="overlay"></div>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-search">
+        <div class="search-wrap">
+          <span>⌕</span>
+          <input id="sidebarSearch" type="search" placeholder="Search..." />
+        </div>
+      </div>
+
+      <nav>
+        <div class="nav-section" data-phase="visao">
+          <button class="nav-label" type="button">
+            <span>Documento</span>
+            <span class="chev">⌄</span>
+          </button>
+          <div class="nav-items">
+            <a class="nav-item" data-target="overview" href="#overview">Visão Geral</a>
+          </div>
+        </div>
+
+        <div class="nav-section" data-phase="fase-1">
+          <button class="nav-label" type="button">
+            <span>Fase 1 · Fundação</span>
+            <span class="chev">⌄</span>
+          </button>
+          <div class="nav-items">
+            <a class="nav-item" data-target="op-01" href="#op-01">OP-01 · Reposicionamento de Bio</a>
+            <a class="nav-item" data-target="op-02" href="#op-02">OP-02 · Ativação TikTok</a>
+            <a class="nav-item" data-target="op-03" href="#op-03">OP-03 · Setup Landing Page</a>
+            <a class="nav-item" data-target="op-04" href="#op-04">OP-04 · Lead Magnet (E-book)</a>
+          </div>
+        </div>
+
+        <div class="nav-section" data-phase="fase-2">
+          <button class="nav-label" type="button">
+            <span>Fase 2 · Captura</span>
+            <span class="chev">⌄</span>
+          </button>
+          <div class="nav-items">
+            <a class="nav-item" data-target="op-05" href="#op-05">OP-05 · Stories Diários</a>
+            <a class="nav-item" data-target="op-06" href="#op-06">OP-06 · Mídia Kit</a>
+            <a class="nav-item" data-target="op-07" href="#op-07">OP-07 · Campanha de Captura</a>
+          </div>
+        </div>
+
+        <div class="nav-section" data-phase="fase-3">
+          <button class="nav-label" type="button">
+            <span>Fase 3 · Monetização</span>
+            <span class="chev">⌄</span>
+          </button>
+          <div class="nav-items">
+            <a class="nav-item" data-target="op-08" href="#op-08">OP-08 · Primeiro Produto Digital</a>
+            <a class="nav-item" data-target="op-09" href="#op-09">OP-09 · Parcerias Pagas</a>
+            <a class="nav-item" data-target="op-10" href="#op-10">OP-10 · YouTube — 4 Vídeos</a>
+          </div>
+        </div>
+
+        <div class="nav-section" data-phase="fase-4">
+          <button class="nav-label" type="button">
+            <span>Fase 4 · Escala</span>
+            <span class="chev">⌄</span>
+          </button>
+          <div class="nav-items">
+            <a class="nav-item" data-target="op-11" href="#op-11">OP-11 · Mini-Curso</a>
+            <a class="nav-item" data-target="op-12" href="#op-12">OP-12 · Pinterest Automatizado</a>
+            <a class="nav-item" data-target="op-13" href="#op-13">OP-13 · Produto Físico — Teste</a>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="content-wrap">
+        <article class="content">
+          <section class="hero section" id="overview" data-title="Visão Geral" data-breadcrumb="Plano Operacional / Visão Geral">
+            <div class="doc-kicker">Plano Operacional / Overview</div>
+            <h1>Plano Operacional — Emili Zaremba</h1>
+            <p>Plano de 12 semanas para transformar uma audiência altamente engajada em captura recorrente, monetização digital e expansão cross-platform — mantendo uma experiência de leitura no estilo GitBook, limpa, editorial e orientada por execução.</p>
+            <div class="stats">
+              <span class="pill"><strong>Seguidores</strong> 28.866</span>
+              <span class="pill"><strong>Engajamento</strong> 8,61%</span>
+              <span class="pill"><strong>Receita atual</strong> R$0</span>
+              <span class="pill"><strong>Meta</strong> R$3k/mês em 90 dias</span>
+            </div>
+            <div class="callout warning">
+              <div class="callout-icon">!</div>
+              <p><strong>Resumo executivo.</strong> A oportunidade é direta: alta atenção, frequência acima da média e ausência completa de monetização. O plano prioriza fundamentos, captura, produto e escala sem transformar a operação em algo pesado.</p>
+            </div>
+            <h2 id="timeline">Timeline de 12 semanas</h2>
+            <ul class="link-list">
+              <li><strong>Semana 1–2:</strong> OP-01 a OP-04 · Fundação</li>
+              <li><strong>Semana 3–4:</strong> OP-05 a OP-07 · Captura</li>
+              <li><strong>Semana 5–8:</strong> OP-08 a OP-10 · Monetização</li>
+              <li><strong>Semana 9–12:</strong> OP-11 a OP-13 · Escala</li>
+            </ul>
+          </section>
+
+          <section class="section" id="op-01" data-title="OP-01 · Reposicionamento de Bio" data-breadcrumb="Plano Operacional / Fase 1 / OP-01">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 1</span><span class="slash">/</span><span>OP-01</span></div>
+            <h1>Reposicionamento de Bio</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Marco → Emili</span>
+              <span class="pill"><strong>Tempo</strong> 15 min</span>
+              <span class="pill"><strong>Dependências</strong> Nenhuma</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Criar uma bio que comunique nicho, diferencial e CTA em até 150 caracteres, removendo ambiguidade logo na primeira leitura.</p></div>
+            <div class="subtle-title">Processo</div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Definir a promessa central</h3><p>Escolher a linha principal da comunicação: confeitaria saudável, indulgência sem culpa ou repertório fit com acabamento profissional.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Testar três versões objetivas</h3><p>Opção A: “Confeitaria saudável com 8 ingredientes ou menos 🍞 E-book grátis 👇” · Opção B: “Pão e doces que parecem pecado — mas não são 🧁 Receitas grátis 👇” · Opção C: “Receitas fit de confeitaria profissional ✨ Baixe o e-book 👇”.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Publicar e validar leitura imediata</h3><p>Checar se a bio deixa claro o nicho, o diferencial e o próximo passo sem depender de contexto extra.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Três opções de bio prontas para teste e uma versão escolhida para publicação imediata.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>A bio inclui nicho, diferencial e CTA.</li>
+              <li>A leitura faz sentido em menos de 5 segundos.</li>
+              <li>O CTA aponta para um destino claro.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#overview"><span class="pager-label">← Previous</span><span class="pager-title">Visão Geral</span></a>
+              <a class="pager-card" href="#op-02"><span class="pager-label">Next →</span><span class="pager-title">OP-02 · Ativação TikTok</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-02" data-title="OP-02 · Ativação TikTok" data-breadcrumb="Plano Operacional / Fase 1 / OP-02">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 1</span><span class="slash">/</span><span>OP-02</span></div>
+            <h1>Ativação TikTok</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Emili + Frank (Postiz)</span>
+              <span class="pill"><strong>Tempo</strong> 30 min setup + 5 min/dia</span>
+              <span class="pill"><strong>Dependências</strong> Bio definida</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Abrir uma presença mínima viável no TikTok usando o conteúdo que já performa, sem exigir produção nova logo no início.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Criar a conta creator</h3><p>Subir a conta com naming consistente, foto, bio alinhada e configuração correta para operação futura.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Selecionar os 5 melhores Reels</h3><p>Baixar os conteúdos com maior aderência e adaptar a postagem para formato nativo de TikTok.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Publicar 1 por dia</h3><p>Manter a cadência inicial simples enquanto prepara uma sincronização futura com Instagram.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Conta criada, posicionada como creator e com cinco vídeos republicados.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>5 vídeos publicados.</li>
+              <li>Conta configurada em modo creator.</li>
+              <li>Bio e identidade visual alinhadas com Instagram.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-01"><span class="pager-label">← Previous</span><span class="pager-title">OP-01 · Reposicionamento de Bio</span></a>
+              <a class="pager-card" href="#op-03"><span class="pager-label">Next →</span><span class="pager-title">OP-03 · Setup Landing Page</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-03" data-title="OP-03 · Setup Landing Page" data-breadcrumb="Plano Operacional / Fase 1 / OP-03">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 1</span><span class="slash">/</span><span>OP-03</span></div>
+            <h1>Setup Landing Page</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Frank → Marco → Emili</span>
+              <span class="pill"><strong>Tempo</strong> 2h</span>
+              <span class="pill"><strong>Dependências</strong> OP-04</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Centralizar os próximos passos da audiência em um hub simples com captura, contato e distribuição para outros canais.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Escolher a estrutura mais rápida</h3><p>Usar Carrd ou Linktree como base, priorizando velocidade de publicação e clareza da página.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Configurar os quatro links principais</h3><p>Download do e-book, WhatsApp, TikTok e contato comercial em ordem de prioridade comercial.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Acoplar captura de email</h3><p>Integrar Mailchimp ou ConvertKit e atualizar a URL na bio para consolidar o funil.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Landing page live com links principais, formulário de captura e URL pronta para entrar na bio.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>Link na bio gera clique e captura emails.</li>
+              <li>Estrutura com download, WhatsApp, TikTok e contato comercial.</li>
+              <li>Experiência simples e mobile-first.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-02"><span class="pager-label">← Previous</span><span class="pager-title">OP-02 · Ativação TikTok</span></a>
+              <a class="pager-card" href="#op-04"><span class="pager-label">Next →</span><span class="pager-title">OP-04 · Lead Magnet (E-book)</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-04" data-title="OP-04 · Lead Magnet (E-book)" data-breadcrumb="Plano Operacional / Fase 1 / OP-04">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 1</span><span class="slash">/</span><span>OP-04</span></div>
+            <h1>Lead Magnet (E-book)</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Frank → Marco → Emili</span>
+              <span class="pill"><strong>Tempo</strong> Frank 1–2h + revisão 30 min</span>
+              <span class="pill"><strong>Dependências</strong> Receitas já publicadas</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Criar um ativo gratuito real, útil e imediatamente desejável para transformar atenção em lista.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Extrair 10 receitas dos posts</h3><p>Selecionar receitas já aprovadas pela audiência para evitar inventar material do zero.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Estruturar e diagramar</h3><p>Montar o PDF “10 Receitas Saudáveis com 8 Ingredientes ou Menos” com linguagem clara e acabamento profissional.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Hospedar e preparar distribuição</h3><p>Subir o arquivo no Drive, conectar ao hub e validar o fluxo completo de download.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> PDF final hospedado e pronto para servir como isca de captura.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>PDF profissional com receitas reais.</li>
+              <li>Título e promessa coerentes com o posicionamento.</li>
+              <li>Link de download funcional dentro da landing page.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-03"><span class="pager-label">← Previous</span><span class="pager-title">OP-03 · Setup Landing Page</span></a>
+              <a class="pager-card" href="#op-05"><span class="pager-label">Next →</span><span class="pager-title">OP-05 · Stories Diários</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-05" data-title="OP-05 · Stories Diários" data-breadcrumb="Plano Operacional / Fase 2 / OP-05">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 2</span><span class="slash">/</span><span>OP-05</span></div>
+            <h1>Stories Diários</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Emili</span>
+              <span class="pill"><strong>Tempo</strong> 15–20 min/dia</span>
+              <span class="pill"><strong>Dependências</strong> Rotina mínima de conteúdo</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Aumentar conexão, retenção e tempo de tela com uma camada diária mais íntima e conversacional.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Mostrar bastidor real</h3><p>Trazer contexto de cozinha, rotina e processo para aprofundar percepção de proximidade.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Usar interações simples</h3><p>Intercalar enquete, lifestyle e box de perguntas pelo menos uma vez por semana.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Manter consistência</h3><p>Sustentar 2–3 stories por dia sem tentar transformar a rotina em produção pesada.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Cadência mínima diária de stories com mix de bastidor, interação e lifestyle.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>2–3 stories por dia.</li>
+              <li>Taxa de resposta acima de 3%.</li>
+              <li>Views acima de 20% da base de seguidores.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-04"><span class="pager-label">← Previous</span><span class="pager-title">OP-04 · Lead Magnet (E-book)</span></a>
+              <a class="pager-card" href="#op-06"><span class="pager-label">Next →</span><span class="pager-title">OP-06 · Mídia Kit</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-06" data-title="OP-06 · Mídia Kit" data-breadcrumb="Plano Operacional / Fase 2 / OP-06">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 2</span><span class="slash">/</span><span>OP-06</span></div>
+            <h1>Mídia Kit</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Frank → Marco</span>
+              <span class="pill"><strong>Tempo</strong> 1h</span>
+              <span class="pill"><strong>Dependências</strong> Métricas consolidadas</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Criar um documento de uma página que reduza atrito comercial e permita iniciar prospecção sem improviso.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Organizar métricas-chave</h3><p>Reunir seguidores, engajamento, perfil de público e sinais de autoridade da conta.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Definir tabela simples de preços</h3><p>Usar como referência inicial: Story R$300, Reels R$800 e pacote de 3 posts por R$2.000.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Fechar em PDF enxuto</h3><p>Documento de 1 página com leitura rápida, sem excesso visual nem linguagem inflada.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> PDF de 1 página pronto para envio em parcerias e conversas comerciais.</p></div></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>Inclui seguidores, engajamento, público e preços.</li>
+              <li>Leitura comercial em menos de 1 minuto.</li>
+              <li>Pronto para anexar em prospecção.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-05"><span class="pager-label">← Previous</span><span class="pager-title">OP-05 · Stories Diários</span></a>
+              <a class="pager-card" href="#op-07"><span class="pager-label">Next →</span><span class="pager-title">OP-07 · Campanha de Captura</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-07" data-title="OP-07 · Campanha de Captura" data-breadcrumb="Plano Operacional / Fase 2 / OP-07">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 2</span><span class="slash">/</span><span>OP-07</span></div>
+            <h1>Campanha de Captura</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Emili + Frank</span>
+              <span class="pill"><strong>Tempo</strong> 5 min/dia extra</span>
+              <span class="pill"><strong>Dependências</strong> OP-03 + OP-04</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Bater 500 leads em 30 dias ativando CTA consistente em todo o conteúdo e nas conversas que já acontecem em DM.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Lançar um post ou Reel de anúncio</h3><p>Transformar o e-book em oferta explícita com promessa clara e CTA direto para o link na bio.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Reforçar o CTA em tudo</h3><p>Inserir “link na bio” em conteúdos, legendas, stories e respostas sempre que houver contexto.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Responder DMs para destravar conversão</h3><p>Usar as conversas como extensão do funil, acelerando clique e cadastro.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Campanha ativa com peça principal, stories semanais e rotina mínima de resposta em DMs.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>Meta de 500 leads em 30 dias.</li>
+              <li>CTA presente em toda a comunicação relevante.</li>
+              <li>Fluxo de captura funcionando sem fricção.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-06"><span class="pager-label">← Previous</span><span class="pager-title">OP-06 · Mídia Kit</span></a>
+              <a class="pager-card" href="#op-08"><span class="pager-label">Next →</span><span class="pager-title">OP-08 · Primeiro Produto Digital</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-08" data-title="OP-08 · Primeiro Produto Digital" data-breadcrumb="Plano Operacional / Fase 3 / OP-08">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 3</span><span class="slash">/</span><span>OP-08</span></div>
+            <h1>Primeiro Produto Digital</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Marco + Frank + Emili</span>
+              <span class="pill"><strong>Tempo</strong> Sprint de lançamento</span>
+              <span class="pill"><strong>Dependências</strong> OP-04 + lista de leads</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Abrir a primeira linha de receita via infoproduto com ticket acessível e alto alinhamento com o conteúdo que já performa.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Definir a oferta</h3><p>Produto sugerido: “Receituário Completo: 30 Receitas Saudáveis com 8 Ingredientes” por R$47 na versão de entrada ou R$97 na versão premium com vídeos.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Escolher a plataforma</h3><p>Subir em Hotmart ou Kiwify com checkout simples e página de vendas objetiva.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Lançar para a base já aquecida</h3><p>Acionar lista e audiência do Instagram com foco em conversão rápida do primeiro lote.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Produto digital publicado com checkout ativo, copy básica e oferta pronta para venda.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>50 vendas no primeiro mês.</li>
+              <li>Faixa de receita entre R$2.350 e R$4.850.</li>
+              <li>Oferta clara, ticket simples e entrega alinhada à promessa.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-07"><span class="pager-label">← Previous</span><span class="pager-title">OP-07 · Campanha de Captura</span></a>
+              <a class="pager-card" href="#op-09"><span class="pager-label">Next →</span><span class="pager-title">OP-09 · Parcerias Pagas</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-09" data-title="OP-09 · Parcerias Pagas" data-breadcrumb="Plano Operacional / Fase 3 / OP-09">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 3</span><span class="slash">/</span><span>OP-09</span></div>
+            <h1>Parcerias Pagas</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Marco + Emili</span>
+              <span class="pill"><strong>Tempo</strong> Marco 1h/semana</span>
+              <span class="pill"><strong>Dependências</strong> OP-06</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Abrir receita recorrente com publis e ativações alinhadas ao universo de confeitaria saudável.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Enviar o mídia kit</h3><p>Usar o PDF como ponto de partida para conversas com marcas do nicho.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Prospectar marcas aderentes</h3><p>Priorizar farinhas, adoçantes, proteínas e utensílios; marcas já presentes: BoxViva, DUX e Fugini.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Fechar piso mínimo por entrega</h3><p>Negociar a partir de R$500 por post para preservar margem e percepção de valor.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Pipeline de prospecção ativo e primeiras negociações com marcas do setor.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>2 parcerias fechadas.</li>
+              <li>Receita entre R$1.000 e R$3.000/mês.</li>
+              <li>Marcas compatíveis com posicionamento da Emili.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-08"><span class="pager-label">← Previous</span><span class="pager-title">OP-08 · Primeiro Produto Digital</span></a>
+              <a class="pager-card" href="#op-10"><span class="pager-label">Next →</span><span class="pager-title">OP-10 · YouTube — 4 Vídeos</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-10" data-title="OP-10 · YouTube — 4 Vídeos" data-breadcrumb="Plano Operacional / Fase 3 / OP-10">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 3</span><span class="slash">/</span><span>OP-10</span></div>
+            <h1>YouTube — 4 Vídeos</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Emili + Frank (SEO)</span>
+              <span class="pill"><strong>Tempo</strong> 2–3h/vídeo</span>
+              <span class="pill"><strong>Dependências</strong> Canal criado</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Abrir uma nova superfície de descoberta com vídeos completos e buscáveis, estendendo a profundidade do conteúdo.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Criar o canal e posicionar</h3><p>Nome, descrição e capa alinhados à promessa central da marca.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Publicar 4 vídeos de receita completa</h3><p>Formato de 8–12 minutos com valor real, passo a passo e retenção razoável.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Aplicar camada básica de SEO</h3><p>Otimizar títulos, tags e thumbnails no Canva para facilitar descoberta e clique.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Canal publicado com 4 vídeos completos e estrutura mínima de SEO.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>4 vídeos publicados.</li>
+              <li>1k views totais como marco inicial.</li>
+              <li>Canal alinhado visualmente ao resto da operação.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-09"><span class="pager-label">← Previous</span><span class="pager-title">OP-09 · Parcerias Pagas</span></a>
+              <a class="pager-card" href="#op-11"><span class="pager-label">Next →</span><span class="pager-title">OP-11 · Mini-Curso</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-11" data-title="OP-11 · Mini-Curso" data-breadcrumb="Plano Operacional / Fase 4 / OP-11">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 4</span><span class="slash">/</span><span>OP-11</span></div>
+            <h1>Mini-Curso</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Emili + Marco + Frank</span>
+              <span class="pill"><strong>Tempo</strong> Janela de lançamento</span>
+              <span class="pill"><strong>Dependências</strong> Base aquecida + produto inicial</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Subir o ticket médio com um método estruturado e percebido como transformação, não apenas coleção de receitas.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Definir o método</h3><p>Produto sugerido: “Panificação Saudável do Zero — Método 8 Ingredientes” com faixa de R$197–297.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Estruturar os módulos</h3><p>Base sugerida com 6–8 módulos: ingredientes, pães, bolos, coberturas, doces rápidos, adaptação e bônus.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Lançar com aquecimento</h3><p>Usar stories, lista de email e live como sequência de aquecimento antes da oferta.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Mini-curso estruturado, posicionado e pronto para abertura de carrinho.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>30 vendas no lançamento.</li>
+              <li>Receita entre R$5.910 e R$8.910.</li>
+              <li>Oferta percebida como método, não como conteúdo solto.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-10"><span class="pager-label">← Previous</span><span class="pager-title">OP-10 · YouTube — 4 Vídeos</span></a>
+              <a class="pager-card" href="#op-12"><span class="pager-label">Next →</span><span class="pager-title">OP-12 · Pinterest Automatizado</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-12" data-title="OP-12 · Pinterest Automatizado" data-breadcrumb="Plano Operacional / Fase 4 / OP-12">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 4</span><span class="slash">/</span><span>OP-12</span></div>
+            <h1>Pinterest Automatizado</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Frank + Emili</span>
+              <span class="pill"><strong>Tempo</strong> Frank 2h setup, depois passivo</span>
+              <span class="pill"><strong>Dependências</strong> Acervo de posts</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Criar uma camada de tráfego orgânico passivo com reaproveitamento sistemático dos conteúdos já existentes.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Criar conta business</h3><p>Configurar perfil, descrição e boards coerentes com a linha de conteúdo.</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Transformar cada post em pin</h3><p>Usar Tailwind ou rotina manual com meta de 20 pins por semana.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Direcionar para ativos próprios</h3><p>Apontar pins para landing page, e-book e conteúdos que alimentam o funil.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Conta business configurada e sistema mínimo de publicação contínua.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>500 cliques/mês após 60 dias.</li>
+              <li>20 pins/semana como cadência alvo.</li>
+              <li>Canal funcionando de forma quase passiva.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-11"><span class="pager-label">← Previous</span><span class="pager-title">OP-11 · Mini-Curso</span></a>
+              <a class="pager-card" href="#op-13"><span class="pager-label">Next →</span><span class="pager-title">OP-13 · Produto Físico — Teste</span></a>
+            </div>
+          </section>
+
+          <section class="section" id="op-13" data-title="OP-13 · Produto Físico — Teste" data-breadcrumb="Plano Operacional / Fase 4 / OP-13">
+            <div class="breadcrumb"><span>Plano Operacional</span><span class="slash">/</span><span>Fase 4</span><span class="slash">/</span><span>OP-13</span></div>
+            <h1>Produto Físico — Teste</h1>
+            <div class="meta-row">
+              <span class="pill"><strong>Responsável</strong> Emili + Marco</span>
+              <span class="pill"><strong>Tempo</strong> Validação rápida</span>
+              <span class="pill"><strong>Dependências</strong> Audiência aquecida</span>
+            </div>
+            <div class="callout hint"><div class="callout-icon">✓</div><p><strong>Objetivo.</strong> Validar demanda para uma linha física antes de operar estoque ou complexidade desnecessária.</p></div>
+            <div class="steps">
+              <div class="step"><div class="step-num">1</div><div class="step-body"><h3>Escolher uma oferta simples de testar</h3><p>Opções iniciais: kit de ingredientes (R$89–149), box mensal (R$99–199) ou encomendas sazonais (R$50–200).</p></div></div>
+              <div class="step"><div class="step-num">2</div><div class="step-body"><h3>Medir intenção via stories</h3><p>Rodar enquete direta do tipo “quem compraria?” para validar demanda antes de produzir.</p></div></div>
+              <div class="step"><div class="step-num">3</div><div class="step-body"><h3>Abrir pré-venda e só então produzir</h3><p>Usar a pré-venda como filtro real de interesse, evitando custo adiantado.</p></div></div>
+            </div>
+            <div class="callout info"><div class="callout-icon">i</div><p><strong>Entregável.</strong> Teste de produto físico validado por interesse real e primeira pré-venda aberta.</p></div>
+            <div class="subtle-title">Critérios de sucesso</div>
+            <ul>
+              <li>20 unidades vendidas.</li>
+              <li>Oferta validada antes de escalar produção.</li>
+              <li>Modelo simples o suficiente para não travar a operação.</li>
+            </ul>
+            <div class="nav-pager">
+              <a class="pager-card" href="#op-12"><span class="pager-label">← Previous</span><span class="pager-title">OP-12 · Pinterest Automatizado</span></a>
+              <a class="pager-card" href="#overview"><span class="pager-label">Next →</span><span class="pager-title">Voltar para Visão Geral</span></a>
+            </div>
+          </section>
+
+          <div class="footer-note">Documento standalone em estilo GitBook light mode. Navegação lateral, busca, TOC contextual, progresso de leitura e responsividade incluídos.</div>
+        </article>
+
+        <aside class="toc">
+          <div class="toc-box">
+            <div class="toc-title">On this page</div>
+            <a class="toc-link active" href="#overview">Visão Geral</a>
+            <a class="toc-link" href="#op-01">OP-01 · Reposicionamento de Bio</a>
+            <a class="toc-link" href="#op-02">OP-02 · Ativação TikTok</a>
+            <a class="toc-link" href="#op-03">OP-03 · Setup Landing Page</a>
+            <a class="toc-link" href="#op-04">OP-04 · Lead Magnet</a>
+            <a class="toc-link" href="#op-05">OP-05 · Stories Diários</a>
+            <a class="toc-link" href="#op-06">OP-06 · Mídia Kit</a>
+            <a class="toc-link" href="#op-07">OP-07 · Campanha de Captura</a>
+            <a class="toc-link" href="#op-08">OP-08 · Primeiro Produto Digital</a>
+            <a class="toc-link" href="#op-09">OP-09 · Parcerias Pagas</a>
+            <a class="toc-link" href="#op-10">OP-10 · YouTube — 4 Vídeos</a>
+            <a class="toc-link" href="#op-11">OP-11 · Mini-Curso</a>
+            <a class="toc-link" href="#op-12">OP-12 · Pinterest Automatizado</a>
+            <a class="toc-link" href="#op-13">OP-13 · Produto Físico — Teste</a>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const sections = [...document.querySelectorAll('.section')];
+    const navItems = [...document.querySelectorAll('.nav-item')];
+    const tocLinks = [...document.querySelectorAll('.toc-link')];
+    const headerCrumb = document.getElementById('headerCrumb');
+    const progressBar = document.getElementById('progressBar');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuBtn = document.getElementById('menuBtn');
+    const sidebarSearch = document.getElementById('sidebarSearch');
+    const headerSearch = document.getElementById('headerSearch');
+
+    function setActive(id) {
+      navItems.forEach(item => item.classList.toggle('active', item.dataset.target === id));
+      tocLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + id));
+      const current = document.getElementById(id);
+      if (current) headerCrumb.textContent = current.dataset.breadcrumb || 'Plano Operacional / Visão Geral';
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (visible[0]) setActive(visible[0].target.id);
+    }, { rootMargin: '-20% 0px -60% 0px', threshold: [0.15, 0.35, 0.6] });
+
+    sections.forEach(section => observer.observe(section));
+
+    function updateProgress() {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      progressBar.style.width = Math.min(progress, 100) + '%';
+    }
+
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    updateProgress();
+
+    document.querySelectorAll('.nav-label').forEach(button => {
+      button.addEventListener('click', () => {
+        button.parentElement.classList.toggle('collapsed');
+      });
+    });
+
+    function filterNav(term) {
+      const q = term.trim().toLowerCase();
+      navItems.forEach(item => {
+        const match = item.textContent.toLowerCase().includes(q);
+        item.style.display = match ? '' : 'none';
+      });
+      document.querySelectorAll('.nav-section').forEach(section => {
+        const visibleItems = [...section.querySelectorAll('.nav-item')].some(item => item.style.display !== 'none');
+        section.style.display = visibleItems ? '' : 'none';
+        if (q && visibleItems) section.classList.remove('collapsed');
+      });
+    }
+
+    [sidebarSearch, headerSearch].forEach(input => {
+      input.addEventListener('input', (e) => {
+        const val = e.target.value;
+        sidebarSearch.value = val;
+        headerSearch.value = val;
+        filterNav(val);
+      });
+    });
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+    function openSidebar() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    menuBtn.addEventListener('click', () => {
+      if (sidebar.classList.contains('open')) closeSidebar(); else openSidebar();
+    });
+    overlay.addEventListener('click', closeSidebar);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSidebar();
+    });
+    navItems.forEach(item => item.addEventListener('click', closeSidebar));
+
+    const initial = location.hash ? location.hash.slice(1) : 'overview';
+    setActive(initial);
+  </script>
+</body>
+</html>
