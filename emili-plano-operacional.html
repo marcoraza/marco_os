@@ -3,620 +3,1224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plano Operacional — Emili Zaremba (@emilizaremba)</title>
+<title>Plano Operacional — Emili Zaremba</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#111;--bg2:#1a1a1a;--bg3:#222;
-  --sep:rgba(255,255,255,.06);--sep2:rgba(255,255,255,.1);
-  --text:#e2e2e2;--dim:#888;--dim2:#555;
-  --green:#4ade80;--blue:#60a5fa;--yellow:#fbbf24;
-  --orange:#fb923c;--purple:#c084fc;--red:#f87171;--gold:#fcd34d;
-  --overlay:rgba(0,0,0,.55);
+  --shell:#0a0a0a;
+  --surface:#18181b;
+  --card:#1f1f23;
+  --card-alt:#1a1a2e;
+  --border:#27272a;
+  --text:#d4d4d8;
+  --muted:#a1a1aa;
+  --heading:#f4f4f5;
+  --phase-1:#22c55e;
+  --phase-2:#3b82f6;
+  --phase-3:#eab308;
+  --phase-4:#a855f7;
   --pink:#f472b6;
+  --max-reading:720px;
+  --sidebar-w:240px;
+  --toc-w:200px;
+  --gutter:32px;
+  --radius:16px;
+  --shadow:none;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px}
-.page{max-width:900px;margin:0 auto;padding:32px 24px 64px}
-.header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
-.header h1{font-size:24px;font-weight:600;letter-spacing:-.5px;line-height:1.15}
-.header-sub{font-size:12px;color:var(--dim);margin-top:6px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.header-right{display:flex;align-items:center;gap:14px;padding-top:4px}
-.status-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green)}
-.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2.4s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.clock{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding:0 0 24px;border-bottom:1px solid var(--sep);margin-bottom:24px}
-.stat-card{background:var(--bg2);border:1px solid var(--sep);border-radius:8px;padding:14px 16px}
-.stat-val{font-size:24px;font-weight:700;line-height:1}
-.stat-lbl{font-size:11px;color:var(--dim);margin-top:5px;text-transform:uppercase;letter-spacing:.08em}
-.intro{background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);border:1px solid var(--sep);border-radius:10px;padding:18px 18px 14px;margin-bottom:22px}
-.intro-grid{display:grid;grid-template-columns:1.35fr .9fr;gap:16px}
-.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:10px}
-.kpi-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
-.kpi-item{background:var(--bg2);border:1px solid var(--sep);border-radius:7px;padding:10px 12px}
-.kpi-item b{color:var(--text)}
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--sep);margin-bottom:24px;overflow:auto}
-.tab{padding:10px 16px;font-size:12px;font-weight:500;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s;white-space:nowrap}
-.tab:hover{color:var(--text)}
-.tab.on{color:var(--text);border-bottom-color:var(--green)}
-.panel{display:none}
-.panel.on{display:block}
-.phase-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
-.phase-head h2{font-size:18px;font-weight:600;letter-spacing:-.2px}
-.phase-sub{font-size:12px;color:var(--dim);margin-top:4px;max-width:620px;line-height:1.6}
-.phase-pill{font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:5px 10px;border-radius:999px;border:1px solid var(--sep2);color:var(--dim)}
-.ops-grid{display:grid;gap:14px}
-.op-card{background:var(--bg2);border:1px solid var(--sep);border-left:4px solid var(--green);border-radius:8px;padding:16px 16px 14px;transition:border-color .15s,background .15s,transform .15s}
-.op-card:hover{background:var(--bg3);transform:translateY(-1px)}
-.op-card.phase-1{border-left-color:var(--green)}
-.op-card.phase-2{border-left-color:var(--blue)}
-.op-card.phase-3{border-left-color:var(--yellow)}
-.op-card.phase-4{border-left-color:var(--purple)}
-.op-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
-.op-code{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-.op-title{font-size:16px;font-weight:600;line-height:1.25;margin-top:4px}
-.time-pill{font-size:11px;color:var(--dim);padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid var(--sep);white-space:nowrap}
-.op-summary{font-size:13px;line-height:1.7;color:var(--dim);margin-bottom:12px}
-.meta-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
-.meta-box{background:rgba(255,255,255,.02);border:1px solid var(--sep);border-radius:7px;padding:10px 12px}
-.meta-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2);margin-bottom:6px}
-.meta-value{font-size:12px;line-height:1.55;color:var(--text)}
-.badges{display:flex;flex-wrap:wrap;gap:6px}
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:4px 8px;border-radius:999px}
-.badge.emili{background:rgba(244,114,182,.12);color:var(--pink)}
-.badge.marco{background:rgba(96,165,250,.12);color:var(--blue)}
-.badge.frank{background:rgba(74,222,128,.12);color:var(--green)}
-.badge.dep{background:rgba(255,255,255,.05);color:var(--dim)}
-.op-section{margin-top:12px}
-.op-section h4{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dim2);margin-bottom:8px}
-.op-list{display:flex;flex-direction:column;gap:6px}
-.op-list li{list-style:none;position:relative;padding-left:14px;color:var(--text);line-height:1.65}
-.op-list li::before{content:'—';position:absolute;left:0;color:var(--dim2)}
-.process-list{display:grid;gap:6px;margin-top:2px}
-.process-list li{list-style:none;padding:10px 12px 10px 38px;border:1px solid var(--sep);background:rgba(255,255,255,.02);border-radius:7px;position:relative;line-height:1.6}
-.process-list li .num{position:absolute;left:12px;top:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--bg3);color:var(--text);border:1px solid var(--sep2)}
-.options-grid{display:grid;gap:8px}
-.option-card{border:1px solid var(--sep);background:rgba(255,255,255,.02);border-radius:7px;padding:10px 12px;line-height:1.6}
-.option-card b{color:var(--text)}
-.checks{display:grid;gap:6px;margin-top:4px}
-.check{display:flex;align-items:flex-start;gap:9px;line-height:1.6;color:var(--text)}
-.check .boxy{width:15px;height:15px;border-radius:4px;border:1px solid var(--sep2);background:var(--bg3);margin-top:2px;flex-shrink:0;position:relative}
-.check .boxy::after{content:'';position:absolute;left:3px;top:1px;width:7px;height:4px;border-left:1.5px solid var(--green);border-bottom:1.5px solid var(--green);transform:rotate(-45deg);opacity:.9}
-.note{margin-top:12px;padding:10px 12px;border-radius:7px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.14);color:var(--gold);line-height:1.6}
-.timeline-shell{display:grid;gap:14px}
-.timeline-bar{background:var(--bg2);border:1px solid var(--sep);border-radius:10px;padding:18px 16px}
-.week-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin-top:12px}
-.week{border:1px solid var(--sep);background:rgba(255,255,255,.02);border-radius:7px;padding:10px 8px;text-align:center;min-height:74px;display:flex;flex-direction:column;justify-content:center;gap:6px}
-.week .w-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim2)}
-.week .w-num{font-size:18px;font-weight:700;color:var(--text)}
-.week .w-phase{font-size:10px;color:var(--dim)}
-.week.phase-1{border-color:rgba(74,222,128,.22);box-shadow:inset 0 0 0 1px rgba(74,222,128,.05)}
-.week.phase-2{border-color:rgba(96,165,250,.22);box-shadow:inset 0 0 0 1px rgba(96,165,250,.05)}
-.week.phase-3{border-color:rgba(251,191,36,.22);box-shadow:inset 0 0 0 1px rgba(251,191,36,.05)}
-.week.phase-4{border-color:rgba(192,132,252,.22);box-shadow:inset 0 0 0 1px rgba(192,132,252,.05)}
-.timeline-cards{display:grid;gap:12px}
-.t-card{background:var(--bg2);border:1px solid var(--sep);border-radius:8px;padding:14px 16px}
-.t-card h3{font-size:14px;font-weight:600;margin-bottom:8px}
-.t-ops{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.t-op{font-size:10px;padding:4px 7px;border-radius:999px;background:var(--bg3);border:1px solid var(--sep);color:var(--text)}
-.t-foot{display:flex;flex-wrap:wrap;gap:8px}
-.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.legend-item{display:inline-flex;align-items:center;gap:7px;font-size:11px;color:var(--dim)}
-.legend-dot{width:10px;height:10px;border-radius:999px}
-.footer-note{margin-top:22px;padding-top:16px;border-top:1px solid var(--sep);font-size:12px;color:var(--dim);line-height:1.7}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--dim2)}
-@media (max-width: 760px){
-  .page{padding:22px 16px 48px}
-  .header,.phase-head,.op-top{flex-direction:column}
-  .stats,.intro-grid,.meta-grid,.kpi-list,.week-grid{grid-template-columns:1fr}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--shell);
+  color:var(--text);
+  font-size:17px;
+  line-height:1.7;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+img{max-width:100%}
+.progress-bar{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:3px;
+  background:rgba(255,255,255,.04);
+  z-index:90;
+}
+.progress-bar > span{
+  display:block;
+  width:0;
+  height:100%;
+  background:var(--phase-1);
+  transition:width .12s linear, background-color .2s ease;
+}
+.layout{
+  display:grid;
+  grid-template-columns:var(--sidebar-w) minmax(0,var(--max-reading)) var(--toc-w);
+  justify-content:center;
+  gap:var(--gutter);
+  padding:0 24px 80px;
+}
+.sidebar-wrap,.toc-wrap{padding-top:24px}
+.sidebar,.toc{
+  position:sticky;
+  top:20px;
+}
+.sidebar{
+  padding:20px 0 24px;
+}
+.brand{
+  padding:0 0 20px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:20px;
+}
+.brand-kicker{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+.brand h1{
+  font-size:20px;
+  line-height:1.25;
+  margin:0 0 8px;
+  color:var(--heading);
+  letter-spacing:-.01em;
+}
+.brand p{
+  margin:0;
+  font-size:14px;
+  line-height:1.55;
+  color:var(--muted);
+}
+.mobile-topbar{display:none}
+.mobile-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:70;
+}
+.nav-section{margin-bottom:16px}
+.phase-toggle{
+  width:100%;
+  background:none;
+  border:0;
+  color:var(--heading);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 0;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:-.01em;
+}
+.phase-toggle .label{display:flex;align-items:center;gap:10px}
+.phase-dot{width:8px;height:8px;border-radius:999px;display:inline-block}
+.chevron{
+  color:var(--muted);
+  transition:transform .2s ease;
+  font-size:13px;
+}
+.nav-section.collapsed .chevron{transform:rotate(-90deg)}
+.phase-links{
+  display:grid;
+  gap:2px;
+  padding:4px 0 0 18px;
+}
+.nav-section.collapsed .phase-links{display:none}
+.sidebar-link{
+  display:block;
+  padding:8px 10px 8px 12px;
+  border-left:2px solid transparent;
+  color:var(--muted);
+  font-size:14px;
+  transition:color .18s ease, border-color .18s ease, background-color .18s ease;
+}
+.sidebar-link:hover{color:var(--heading);background:rgba(255,255,255,.02)}
+.sidebar-link.active{
+  color:var(--heading);
+  background:rgba(255,255,255,.03);
+}
+.sidebar-footer{
+  margin-top:24px;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.6;
+}
+main{
+  min-width:0;
+  background:var(--surface);
+  padding:24px 0 0;
+}
+.doc-header{
+  padding:8px 0 28px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:32px;
+}
+.doc-header h1{
+  font-size:32px;
+  line-height:1.15;
+  font-weight:700;
+  margin:0 0 16px;
+  color:var(--heading);
+  letter-spacing:-.01em;
+}
+.doc-subtitle{
+  font-size:16px;
+  color:var(--muted);
+  margin-bottom:18px;
+}
+.stats-bar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px 18px;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+}
+.stat-item{
+  display:flex;
+  gap:8px;
+  align-items:baseline;
+  font-size:14px;
+}
+.stat-item .label{color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:11px}
+.stat-item .value{color:var(--heading);font-weight:600}
+.executive-summary{
+  background:var(--card-alt);
+  border:1px solid rgba(59,130,246,.14);
+  border-radius:var(--radius);
+  padding:22px 24px;
+  margin-bottom:42px;
+}
+.executive-summary h2,
+.phase-intro h2,
+.timeline-section h2,
+.op-header h2{
+  letter-spacing:-.01em;
+}
+.executive-summary h2{
+  font-size:24px;
+  line-height:1.25;
+  font-weight:600;
+  margin:0 0 14px;
+  color:var(--heading);
+}
+.executive-summary p{margin:0;color:var(--text);max-width:var(--max-reading)}
+.phase-block{margin-bottom:56px}
+.phase-intro{
+  margin-bottom:24px;
+  padding-bottom:18px;
+  border-bottom:1px solid var(--border);
+}
+.phase-kicker{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  margin-bottom:10px;
+  color:var(--muted);
+}
+.phase-intro h2{
+  font-size:24px;
+  font-weight:600;
+  margin:0 0 8px;
+  color:var(--heading);
+}
+.phase-intro p{margin:0;color:var(--muted)}
+.phase-meta{
+  margin-top:12px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px 14px;
+  font-size:14px;
+  color:var(--muted);
+}
+.operation{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-left:3px solid var(--phase-color,var(--phase-1));
+  border-radius:var(--radius);
+  padding:24px 32px;
+  margin-bottom:48px;
+  scroll-margin-top:24px;
+}
+.op-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:18px;
+}
+.op-title-wrap{min-width:0}
+.op-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  line-height:1;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+.op-badge .pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:56px;
+  padding:7px 9px;
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--border);
+  color:var(--heading);
+  font-weight:700;
+}
+.op-header h2{
+  font-size:24px;
+  line-height:1.2;
+  font-weight:600;
+  margin:0 0 8px;
+  color:var(--heading);
+}
+.op-meta-line{
+  font-size:14px;
+  color:var(--muted);
+}
+.op-toggle{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.02);
+  color:var(--muted);
+  border-radius:999px;
+  padding:9px 14px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.op-toggle:hover{color:var(--heading);background:rgba(255,255,255,.04)}
+.op-body{display:block}
+.operation.collapsed .op-body{display:none}
+.operation.collapsed .op-toggle{color:var(--heading)}
+.info-group{
+  padding:16px 0;
+  border-top:1px solid var(--border);
+}
+.info-group:first-of-type{border-top:1px solid var(--border)}
+.info-group h3{
+  margin:0 0 10px;
+  font-size:18px;
+  line-height:1.3;
+  font-weight:600;
+  color:var(--text);
+  letter-spacing:-.01em;
+}
+.info-group p,
+.info-group li,
+.info-group div{max-width:var(--max-reading)}
+.info-group p{margin:0}
+.info-group ul,
+.info-group ol{
+  margin:0;
+  padding-left:22px;
+}
+.info-group li{margin:8px 0}
+.inline-tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+  font-size:13px;
+}
+.tag.emili{color:#f9a8d4}
+.tag.marco{color:#93c5fd}
+.tag.frank{color:#86efac}
+.options-list{display:grid;gap:10px}
+.option-item{
+  padding:14px 16px;
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+.checklist{display:grid;gap:8px}
+.check-item{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.checkbox{
+  width:17px;
+  height:17px;
+  border:1px solid var(--border);
+  border-radius:4px;
+  margin-top:4px;
+  flex:0 0 auto;
+  background:rgba(255,255,255,.02);
+}
+.callout-note{
+  margin-top:16px;
+  padding:14px 16px;
+  border:1px solid rgba(234,179,8,.18);
+  background:rgba(234,179,8,.08);
+  border-radius:12px;
+  color:#f5d97a;
+}
+.toc{
+  padding:24px 0 0;
+}
+.toc-card,
+.phase-mini-card{
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:14px;
+}
+.toc-title{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--muted);
+  margin-bottom:12px;
+}
+#tocList{display:grid;gap:4px}
+#tocList a{
+  display:block;
+  padding:7px 0 7px 10px;
+  border-left:2px solid transparent;
+  font-size:13px;
+  color:var(--muted);
+}
+#tocList a.active{color:var(--heading);border-left-color:var(--phase-1)}
+.phase-mini-card h3{
+  margin:0 0 8px;
+  font-size:16px;
+  color:var(--heading);
+}
+.phase-mini-card p{margin:0 0 6px;font-size:14px;color:var(--muted)}
+.timeline-section{
+  margin-top:20px;
+  padding-top:8px;
+}
+.timeline-section h2{
+  font-size:24px;
+  font-weight:600;
+  margin:0 0 8px;
+  color:var(--heading);
+}
+.timeline-section > p{
+  margin:0 0 24px;
+  color:var(--muted);
+}
+.timeline{
+  position:relative;
+  display:grid;
+  gap:18px;
+  padding-left:26px;
+}
+.timeline::before{
+  content:'';
+  position:absolute;
+  left:8px;
+  top:8px;
+  bottom:8px;
+  width:1px;
+  background:var(--border);
+}
+.week-item{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-left:3px solid var(--week-color,var(--phase-1));
+  border-radius:14px;
+  padding:16px 18px;
+}
+.week-item::before{
+  content:'';
+  position:absolute;
+  left:-24px;
+  top:20px;
+  width:11px;
+  height:11px;
+  border-radius:999px;
+  background:var(--week-color,var(--phase-1));
+  box-shadow:0 0 0 4px var(--surface);
+}
+.week-top{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:8px;
+}
+.week-top h3{
+  margin:0;
+  font-size:18px;
+  color:var(--heading);
+}
+.week-phase{font-size:13px;color:var(--muted)}
+.week-ops{font-size:15px;color:var(--text);margin-bottom:8px}
+.week-meta{font-size:14px;color:var(--muted)}
+.footer-note{
+  margin-top:28px;
+  padding-top:18px;
+  border-top:1px solid var(--border);
+  color:var(--muted);
+}
+.phase-1{--phase-color:var(--phase-1)}
+.phase-2{--phase-color:var(--phase-2)}
+.phase-3{--phase-color:var(--phase-3)}
+.phase-4{--phase-color:var(--phase-4)}
+[data-phase="1"]{--phase-color:var(--phase-1)}
+[data-phase="2"]{--phase-color:var(--phase-2)}
+[data-phase="3"]{--phase-color:var(--phase-3)}
+[data-phase="4"]{--phase-color:var(--phase-4)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--shell)}
+::-webkit-scrollbar-thumb{background:#2a2a2f;border-radius:999px}
+@media (max-width: 1180px){
+  .layout{grid-template-columns:220px minmax(0,1fr) 190px;gap:24px}
+}
+@media (max-width: 980px){
+  .layout{grid-template-columns:minmax(0,1fr);padding:72px 16px 72px}
+  .sidebar-wrap{
+    position:fixed;
+    inset:0 auto 0 0;
+    width:min(82vw,320px);
+    background:var(--shell);
+    z-index:80;
+    transform:translateX(-100%);
+    transition:transform .22s ease;
+    padding:20px 20px 32px;
+    border-right:1px solid var(--border);
+  }
+  body.menu-open .sidebar-wrap{transform:translateX(0)}
+  body.menu-open .mobile-overlay{display:block}
+  .toc-wrap{display:none}
+  .mobile-topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:75;
+    background:rgba(10,10,10,.95);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    padding:14px 16px;
+  }
+  .mobile-topbar .title{
+    font-size:14px;
+    color:var(--heading);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .hamburger,.toc-button{
+    border:1px solid var(--border);
+    background:rgba(255,255,255,.03);
+    color:var(--heading);
+    border-radius:10px;
+    padding:8px 12px;
+    cursor:pointer;
+  }
+  main{padding-top:0}
+  .operation{padding:22px 20px}
+}
+@media (max-width: 767px){
+  body{font-size:16px}
+  .doc-header h1{font-size:28px}
+  .op-header{flex-direction:column}
+  .timeline{padding-left:22px}
+  .week-top{flex-direction:column}
 }
 </style>
 </head>
 <body>
-<div class="page">
-  <div class="header">
-    <div>
-      <h1>Plano Operacional — Emili Zaremba (@emilizaremba)</h1>
-      <div class="header-sub">
-        <span>Mar 2026</span>
-        <span>·</span>
-        <span>Projeto de crescimento, captura e monetização em 90 dias</span>
+<div class="progress-bar"><span id="readingProgress"></span></div>
+<div class="mobile-topbar">
+  <button class="hamburger" id="menuToggle" aria-label="Abrir navegação">Menu</button>
+  <div class="title">Plano Operacional — Emili Zaremba</div>
+  <button class="toc-button" id="tocToggle" aria-label="Abrir resumo da seção">TOC</button>
+</div>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="layout">
+  <aside class="sidebar-wrap" id="sidebarWrap">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-kicker">Docs Pro</div>
+        <h1>Plano Operacional — Emili Zaremba</h1>
+        <p>13 operações · 4 fases · 12 semanas</p>
       </div>
-    </div>
-    <div class="header-right">
-      <div class="status-pill"><div class="sdot"></div>PLANO ATIVO</div>
-      <div class="clock" id="clock">--:-- BRT</div>
-    </div>
-  </div>
 
-  <div class="stats">
-    <div class="stat-card"><div class="stat-val" style="color:var(--text)">28.866</div><div class="stat-lbl">Seguidores</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--green)">8,61%</div><div class="stat-lbl">Engajamento</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--red)">R$0</div><div class="stat-lbl">Monetização atual</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--yellow)">R$3k/mês</div><div class="stat-lbl">Meta 90d</div></div>
-  </div>
-
-  <div class="intro">
-    <div class="intro-grid">
-      <div>
-        <div class="section-title">Diagnóstico</div>
-        <p style="line-height:1.8;color:var(--text)">Emili já opera no topo do nicho em consistência e resposta da audiência: <b>8,61% de engajamento</b> contra <b>0,68%</b> da média competitiva, <b>5,6 posts/semana</b> e um modelo de conteúdo fortemente puxado por <b>Reels (75%)</b>. O gargalo não é atenção. O gargalo é transformar atenção em <b>captura, ativos próprios e receita</b>.</p>
-      </div>
-      <div>
-        <div class="section-title">Contexto confirmado</div>
-        <div class="kpi-list">
-          <div class="kpi-item"><b>Formato:</b><br>75% Reels · 25% Carousel</div>
-          <div class="kpi-item"><b>Cross-platform:</b><br>só Instagram</div>
-          <div class="kpi-item"><b>Parcerias:</b><br>@boxviva · @duxhumanhealth · @fuginialimentos</div>
-          <div class="kpi-item"><b>Viral:</b><br>Pão Pita · 26.304 likes</div>
-          <div class="kpi-item" style="grid-column:1/-1"><b>Bio atual:</b><br>“Receitas fáceis usando 8 ingredientes ou menos”</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="tabs">
-    <div class="tab on" onclick="switchTab('fase1')">Fase 1: Fundação</div>
-    <div class="tab" onclick="switchTab('fase2')">Fase 2: Captura</div>
-    <div class="tab" onclick="switchTab('fase3')">Fase 3: Monetização</div>
-    <div class="tab" onclick="switchTab('fase4')">Fase 4: Escala</div>
-    <div class="tab" onclick="switchTab('timeline')">Timeline</div>
-  </div>
-
-  <div id="p-fase1" class="panel on">
-    <div class="phase-head">
-      <div>
-        <h2>Fase 1 — Fundação</h2>
-        <div class="phase-sub">Semanas 1-2. Objetivo: reposicionar a marca, abrir canais auxiliares e criar a infraestrutura mínima de captura para transformar tráfego em base própria.</div>
-      </div>
-      <div class="phase-pill">Semana 1-2</div>
-    </div>
-    <div class="ops-grid">
-      <div class="op-card phase-1">
-        <div class="op-top">
-          <div><div class="op-code">OP-01</div><div class="op-title">Reposicionamento de Bio</div></div>
-          <div class="time-pill">15 minutos</div>
-        </div>
-        <div class="op-summary">Bio que comunica nicho + diferencial + CTA em 150 caracteres.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge marco">Marco</span><span class="badge emili">Emili</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">3 opções de bio testadas</div></div>
-          <div class="meta-box"><div class="meta-label">Ferramenta</div><div class="meta-value">Instagram app</div></div>
-        </div>
-        <div class="op-section">
-          <h4>Opções propostas</h4>
-          <div class="options-grid">
-            <div class="option-card"><b>A)</b> Confeitaria saudável com 8 ingredientes ou menos 🍞 E-book grátis 👇</div>
-            <div class="option-card"><b>B)</b> Pão e doces que parecem pecado — mas não são 🧁 Receitas grátis 👇</div>
-            <div class="option-card"><b>C)</b> Receitas fit de confeitaria profissional ✨ Baixe o e-book 👇</div>
+      <nav>
+        <div class="nav-section" data-phase-nav="1">
+          <button class="phase-toggle" type="button">
+            <span class="label"><span class="phase-dot" style="background:var(--phase-1)"></span>Fase 1 · Fundação</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="phase-links">
+            <a class="sidebar-link" href="#fase-1">Visão geral</a>
+            <a class="sidebar-link" href="#op-01">OP-01 Reposicionamento de Bio</a>
+            <a class="sidebar-link" href="#op-02">OP-02 Ativação TikTok</a>
+            <a class="sidebar-link" href="#op-03">OP-03 Setup Linktree / Landing Page</a>
+            <a class="sidebar-link" href="#op-04">OP-04 Criação do Lead Magnet</a>
           </div>
         </div>
-        <div class="op-section">
-          <h4>Critério de sucesso</h4>
-          <div class="checks">
-            <div class="check"><span class="boxy"></span><span>Bio inclui nicho claro.</span></div>
-            <div class="check"><span class="boxy"></span><span>Bio explicita o diferencial.</span></div>
-            <div class="check"><span class="boxy"></span><span>CTA aponta para link com ação clara.</span></div>
+
+        <div class="nav-section" data-phase-nav="2">
+          <button class="phase-toggle" type="button">
+            <span class="label"><span class="phase-dot" style="background:var(--phase-2)"></span>Fase 2 · Captura</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="phase-links">
+            <a class="sidebar-link" href="#fase-2">Visão geral</a>
+            <a class="sidebar-link" href="#op-05">OP-05 Implementar Stories Diários</a>
+            <a class="sidebar-link" href="#op-06">OP-06 Mídia Kit</a>
+            <a class="sidebar-link" href="#op-07">OP-07 Primeira Campanha de Captura</a>
           </div>
         </div>
-        <div class="op-section">
-          <h4>Dependência</h4>
-          <div class="badges"><span class="badge dep">Nenhuma</span></div>
-        </div>
-      </div>
 
-      <div class="op-card phase-1">
-        <div class="op-top">
-          <div><div class="op-code">OP-02</div><div class="op-title">Ativação TikTok</div></div>
-          <div class="time-pill">30 min setup + 5 min/dia</div>
-        </div>
-        <div class="op-summary">Abrir presença no TikTok usando o estoque de conteúdo que já performa no Instagram.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge emili">Emili</span><span class="badge frank">Frank</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">Conta criada + 5 primeiros Reels repostados</div></div>
-          <div class="meta-box"><div class="meta-label">Ferramenta</div><div class="meta-value">TikTok app + CapCut</div></div>
-        </div>
-        <div class="op-section">
-          <h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Criar conta @emilizaremba no TikTok.</li>
-            <li><span class="num">2</span>Copiar a bio do Instagram com ajuste para plataforma.</li>
-            <li><span class="num">3</span>Baixar os 5 Reels com maior engajamento.</li>
-            <li><span class="num">4</span>Postar 1 por dia nos primeiros 5 dias.</li>
-            <li><span class="num">5</span>A partir da semana 2, postar no TikTok no mesmo dia do Reel do IG.</li>
-          </ol>
-        </div>
-        <div class="op-section">
-          <h4>Critério de sucesso</h4>
-          <div class="checks">
-            <div class="check"><span class="boxy"></span><span>5 vídeos publicados.</span></div>
-            <div class="check"><span class="boxy"></span><span>Conta configurada como creator.</span></div>
+        <div class="nav-section" data-phase-nav="3">
+          <button class="phase-toggle" type="button">
+            <span class="label"><span class="phase-dot" style="background:var(--phase-3)"></span>Fase 3 · Monetização</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="phase-links">
+            <a class="sidebar-link" href="#fase-3">Visão geral</a>
+            <a class="sidebar-link" href="#op-08">OP-08 Primeiro Produto Digital</a>
+            <a class="sidebar-link" href="#op-09">OP-09 Ativação de Parcerias Pagas</a>
+            <a class="sidebar-link" href="#op-10">OP-10 YouTube — Primeiros 4 Vídeos</a>
           </div>
         </div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">Nenhuma</span></div></div>
-      </div>
 
-      <div class="op-card phase-1">
-        <div class="op-top">
-          <div><div class="op-code">OP-03</div><div class="op-title">Setup Linktree / Landing Page</div></div>
-          <div class="time-pill">2 horas</div>
-        </div>
-        <div class="op-summary">Criar um hub de links com captura de email para virar porta de entrada de todos os CTAs do perfil.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge frank">Frank</span><span class="badge marco">Marco</span><span class="badge emili">Emili</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">Página live com e-book, WhatsApp, TikTok e contato comercial</div></div>
-          <div class="meta-box"><div class="meta-label">Ferramenta</div><div class="meta-value">Carrd.co ou Linktree + Mailchimp/ConvertKit</div></div>
-        </div>
-        <div class="op-section">
-          <h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Criar conta no Linktree ou Carrd.co (R$0-19/mês).</li>
-            <li><span class="num">2</span>Montar 4 links: e-book, WhatsApp, TikTok e email comercial.</li>
-            <li><span class="num">3</span>Integrar formulário de captura com Mailchimp free ou ConvertKit free.</li>
-            <li><span class="num">4</span>Colocar a URL na bio do Instagram.</li>
-          </ol>
-        </div>
-        <div class="op-section">
-          <h4>Critério de sucesso</h4>
-          <div class="checks">
-            <div class="check"><span class="boxy"></span><span>Link na bio gerando cliques.</span></div>
-            <div class="check"><span class="boxy"></span><span>Formulário capturando emails de forma consistente.</span></div>
+        <div class="nav-section" data-phase-nav="4">
+          <button class="phase-toggle" type="button">
+            <span class="label"><span class="phase-dot" style="background:var(--phase-4)"></span>Fase 4 · Escala</span>
+            <span class="chevron">▾</span>
+          </button>
+          <div class="phase-links">
+            <a class="sidebar-link" href="#fase-4">Visão geral</a>
+            <a class="sidebar-link" href="#op-11">OP-11 Mini-Curso</a>
+            <a class="sidebar-link" href="#op-12">OP-12 Pinterest Automatizado</a>
+            <a class="sidebar-link" href="#op-13">OP-13 Produto Físico — Teste</a>
           </div>
         </div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">OP-04</span></div></div>
-      </div>
 
-      <div class="op-card phase-1">
-        <div class="op-top">
-          <div><div class="op-code">OP-04</div><div class="op-title">Criação do Lead Magnet (E-book)</div></div>
-          <div class="time-pill">1-2h + 30min revisão</div>
-        </div>
-        <div class="op-summary">Produzir um PDF gratuito com receitas reais da Emili para transformar audiência em leads.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge frank">Frank</span><span class="badge marco">Marco</span><span class="badge emili">Emili</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">PDF “10 Receitas Saudáveis com 8 Ingredientes ou Menos”</div></div>
-          <div class="meta-box"><div class="meta-label">Ferramenta</div><div class="meta-value">Instagram API + Canva/HTML + Google Drive</div></div>
-        </div>
-        <div class="op-section">
-          <h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Extrair 10 melhores receitas dos captions dos posts da Emili via API.</li>
-            <li><span class="num">2</span>Estruturar título, ingredientes, modo de preparo e foto para cada receita.</li>
-            <li><span class="num">3</span>Diagramar no Canva ou gerar HTML → PDF.</li>
-            <li><span class="num">4</span>Incluir capa, sumário, bio da Emili e CTA final para produto futuro.</li>
-            <li><span class="num">5</span>Hospedar no Google Drive com link público.</li>
-          </ol>
-        </div>
-        <div class="op-section">
-          <h4>Critério de sucesso</h4>
-          <div class="checks">
-            <div class="check"><span class="boxy"></span><span>PDF profissional com 10 receitas reais.</span></div>
-            <div class="check"><span class="boxy"></span><span>Material pronto para download e distribuição.</span></div>
+        <div class="nav-section">
+          <div class="phase-links" style="padding-left:0">
+            <a class="sidebar-link" href="#timeline">Timeline — 12 semanas</a>
           </div>
         </div>
-        <div class="note">Nota crítica: as receitas devem ser <b>REAIS</b>, extraídas dos posts dela. Nada inventado.</div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">Nenhuma</span></div></div>
+      </nav>
+
+      <div class="sidebar-footer">
+        Audiência altamente engajada (8,61%), frequência líder do nicho, zero monetização. Plano de 12 semanas para ativar captura + monetização digital + cross-platform.
       </div>
     </div>
-  </div>
+  </aside>
 
-  <div id="p-fase2" class="panel">
-    <div class="phase-head">
-      <div>
-        <h2>Fase 2 — Captura</h2>
-        <div class="phase-sub">Semanas 3-4. Objetivo: aumentar contato diário, profissionalizar oferta comercial e rodar a primeira máquina simples de geração de leads.</div>
+  <main>
+    <header class="doc-header" id="topo" data-phase="1">
+      <h1>Plano Operacional — Emili Zaremba</h1>
+      <div class="doc-subtitle">13 operações · 4 fases · 12 semanas</div>
+      <div class="stats-bar">
+        <div class="stat-item"><span class="label">Seguidores</span><span class="value">28.866</span></div>
+        <div class="stat-item"><span class="label">Engajamento</span><span class="value" style="color:var(--phase-1)">8,61%</span></div>
+        <div class="stat-item"><span class="label">Monetização atual</span><span class="value">R$0</span></div>
+        <div class="stat-item"><span class="label">Meta 90d</span><span class="value" style="color:var(--phase-3)">R$3k/mês</span></div>
       </div>
-      <div class="phase-pill">Semana 3-4</div>
-    </div>
-    <div class="ops-grid">
-      <div class="op-card phase-2">
-        <div class="op-top"><div><div class="op-code">OP-05</div><div class="op-title">Implementar Stories Diários</div></div><div class="time-pill">15-20 min/dia</div></div>
-        <div class="op-summary">Aumentar conexão, frequência de toque e tempo de tela com rotina simples e repetível.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge emili">Emili</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">Rotina de 2-3 stories por dia</div></div>
-          <div class="meta-box"><div class="meta-label">Ferramenta</div><div class="meta-value">Instagram Stories + Canva</div></div>
-        </div>
-        <div class="op-section">
-          <h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Story 1: bastidor da receita do dia.</li>
-            <li><span class="num">2</span>Story 2: enquete ou “isso ou aquilo”.</li>
-            <li><span class="num">3</span>Story 3 (opcional): lifestyle ou bastidor pessoal.</li>
-            <li><span class="num">4</span>1x por semana: box de perguntas sobre próximas receitas.</li>
-          </ol>
-        </div>
-        <div class="op-section"><h4>Templates</h4><ul class="op-list"><li>Criar 3-4 templates no Canva com identidade visual consistente.</li></ul></div>
-        <div class="op-section"><h4>Critério de sucesso</h4><div class="checks"><div class="check"><span class="boxy"></span><span>Taxa de resposta nos stories acima de 3%.</span></div><div class="check"><span class="boxy"></span><span>Views acima de 20% da base de seguidores.</span></div></div></div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">Nenhuma</span></div></div>
-      </div>
+    </header>
 
-      <div class="op-card phase-2">
-        <div class="op-top"><div><div class="op-code">OP-06</div><div class="op-title">Mídia Kit</div></div><div class="time-pill">1 hora</div></div>
-        <div class="op-summary">Transformar prova social em um documento comercial objetivo para prospecção de parcerias pagas.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge frank">Frank</span><span class="badge marco">Marco</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">PDF 1 página com números, audiência, alcance e pricing</div></div>
-          <div class="meta-box"><div class="meta-label">Ferramenta</div><div class="meta-value">Canva ou HTML → PDF</div></div>
-        </div>
-        <div class="op-section">
-          <h4>Conteúdo obrigatório</h4>
-          <ul class="op-list">
-            <li>Seguidores: 28.866 (e crescendo).</li>
-            <li>Engajamento: 8,61%.</li>
-            <li>Formato principal: Reels (75%).</li>
-            <li>Público: mulheres 25-45, interessadas em alimentação saudável, Brasil.</li>
-            <li>Preços sugeridos: Story R$300, Reels R$800, pacote 3 posts R$2.000.</li>
-            <li>Cases: Pão Pita (26k likes) + parcerias anteriores.</li>
-          </ul>
-        </div>
-        <div class="op-section"><h4>Critério de sucesso</h4><div class="checks"><div class="check"><span class="boxy"></span><span>Documento profissional pronto para envio por email a qualquer marca.</span></div></div></div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">Nenhuma</span></div></div>
-      </div>
+    <section class="executive-summary" id="resumo" data-phase="1">
+      <h2>Resumo executivo</h2>
+      <p>Emili já opera no topo do nicho em consistência e resposta da audiência: <strong>8,61% de engajamento</strong> contra <strong>0,68%</strong> da média competitiva, <strong>5,6 posts/semana</strong> e um modelo de conteúdo fortemente puxado por <strong>Reels (75%)</strong>. O gargalo não é atenção. O gargalo é transformar atenção em <strong>captura, ativos próprios e receita</strong>. O contexto confirmado hoje é claro: formato 75% Reels · 25% Carousel, presença cross-platform limitada só ao Instagram, parcerias já existentes com <strong>@boxviva</strong>, <strong>@duxhumanhealth</strong> e <strong>@fuginialimentos</strong>, um pico de prova social com <strong>Pão Pita · 26.304 likes</strong> e uma bio atual ainda subaproveitada: “Receitas fáceis usando 8 ingredientes ou menos”. A direção do plano é simples: primeiro reposicionar a marca e montar infraestrutura mínima, depois ativar captura, em seguida monetização digital e publi, e por fim escalar canais e ticket sem inflar complexidade operacional.</p>
+    </section>
 
-      <div class="op-card phase-2">
-        <div class="op-top"><div><div class="op-code">OP-07</div><div class="op-title">Primeira Campanha de Captura</div></div><div class="time-pill">5 min/dia extra</div></div>
-        <div class="op-summary">Rodar a primeira campanha simples focada em gerar 500 leads em 30 dias usando o e-book como isca.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge emili">Emili</span><span class="badge frank">Frank</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">500 emails ou contatos WhatsApp capturados</div></div>
-          <div class="meta-box"><div class="meta-label">Dependência operacional</div><div class="meta-value">Landing page + e-book ativos</div></div>
-        </div>
-        <div class="op-section">
-          <h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Publicar Post + Reel anunciando o e-book gratuito.</li>
-            <li><span class="num">2</span>Inserir CTA “link na bio” em todos os posts.</li>
-            <li><span class="num">3</span>Fazer story semanal lembrando do e-book.</li>
-            <li><span class="num">4</span>Responder DMs com link do e-book.</li>
-          </ol>
-        </div>
-        <div class="op-section"><h4>Critério de sucesso</h4><div class="checks"><div class="check"><span class="boxy"></span><span>500 leads capturados em 30 dias.</span></div></div></div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">OP-03</span><span class="badge dep">OP-04</span></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="p-fase3" class="panel">
-    <div class="phase-head">
-      <div>
-        <h2>Fase 3 — Monetização</h2>
-        <div class="phase-sub">Semanas 5-8. Objetivo: abrir duas frentes de receita — produto digital e publi — enquanto inicia expansão em YouTube.</div>
-      </div>
-      <div class="phase-pill">Semana 5-8</div>
-    </div>
-    <div class="ops-grid">
-      <div class="op-card phase-3">
-        <div class="op-top"><div><div class="op-code">OP-08</div><div class="op-title">Primeiro Produto Digital</div></div><div class="time-pill">1-2 semanas</div></div>
-        <div class="op-summary">Construir o primeiro ativo de receita recorrente com ticket de entrada e versão premium.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge marco">Marco</span><span class="badge frank">Frank</span><span class="badge emili">Emili</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">Receituário completo à venda</div></div>
-          <div class="meta-box"><div class="meta-label">Preço</div><div class="meta-value">R$47 entrada · R$97 premium com vídeos</div></div>
-        </div>
-        <div class="op-section"><h4>Produto</h4><ul class="op-list"><li>“Receituário Completo: 30 Receitas Saudáveis com 8 Ingredientes”.</li></ul></div>
-        <div class="op-section">
-          <h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Selecionar 30 melhores receitas.</li>
-            <li><span class="num">2</span>Documentar ingredientes, preparo, dicas, foto e variações.</li>
-            <li><span class="num">3</span>Na versão premium, incluir vídeo curto de cada receita.</li>
-            <li><span class="num">4</span>Hospedar na Hotmart ou Kiwify.</li>
-            <li><span class="num">5</span>Montar página de vendas com prova social e depoimentos.</li>
-          </ol>
-        </div>
-        <div class="op-section"><h4>Critério de sucesso</h4><div class="checks"><div class="check"><span class="boxy"></span><span>50 vendas no primeiro mês = R$2.350-4.850.</span></div></div></div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">OP-04</span><span class="badge dep">Lista de leads</span></div></div>
-      </div>
-
-      <div class="op-card phase-3">
-        <div class="op-top"><div><div class="op-code">OP-09</div><div class="op-title">Ativação de Parcerias Pagas</div></div><div class="time-pill">1h/semana</div></div>
-        <div class="op-summary">Abrir frente de publipost com base em mídia kit, histórico de engajamento e marcas do próprio universo da Emili.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge marco">Marco</span><span class="badge emili">Emili</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">2-3 parcerias pagas por mês</div></div>
-          <div class="meta-box"><div class="meta-label">Faixa ideal</div><div class="meta-value">R$500 mínimo · R$800-1.500 ideal</div></div>
-        </div>
-        <div class="op-section"><h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Enviar mídia kit para 10 marcas do nicho.</li>
-            <li><span class="num">2</span>Prospectar farinhas especiais, adoçantes, proteínas, utensílios e ingredientes orgânicos.</li>
-            <li><span class="num">3</span>Ativar marcas que ela já usa: BoxViva, DUX e Fugini.</li>
-            <li><span class="num">4</span>Negociar mínimo de R$500 por post, ideal R$800-1.500.</li>
-            <li><span class="num">5</span>Entregar formato: 1 Reel com receita + 2 Stories.</li>
-          </ol>
-        </div>
-        <div class="op-section"><h4>Critério de sucesso</h4><div class="checks"><div class="check"><span class="boxy"></span><span>2 parcerias fechadas = R$1.000-3.000/mês.</span></div></div></div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">OP-06</span></div></div>
-      </div>
-
-      <div class="op-card phase-3">
-        <div class="op-top"><div><div class="op-code">OP-10</div><div class="op-title">YouTube — Primeiros 4 Vídeos</div></div><div class="time-pill">2-3h/vídeo</div></div>
-        <div class="op-summary">Expandir para conteúdo longo com foco em SEO, profundidade e reaproveitamento do repertório de receitas.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge emili">Emili</span><span class="badge frank">Frank</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">4 vídeos publicados</div></div>
-          <div class="meta-box"><div class="meta-label">Ferramenta</div><div class="meta-value">YouTube Studio + Canva</div></div>
-        </div>
-        <div class="op-section"><h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Criar canal @emilizaremba no YouTube.</li>
-            <li><span class="num">2</span>Gravar receitas completas de 8-12 minutos.</li>
-            <li><span class="num">3</span>Incluir intro curta, ingredientes na tela, processo completo e resultado final.</li>
-            <li><span class="num">4</span>Aplicar SEO em títulos, tags e descrições.</li>
-            <li><span class="num">5</span>Criar thumbnails profissionais e incluir links do e-book + Instagram.</li>
-          </ol>
-        </div>
-        <div class="op-section"><h4>Critério de sucesso</h4><div class="checks"><div class="check"><span class="boxy"></span><span>4 vídeos publicados e 1k views totais no primeiro mês.</span></div></div></div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">Nenhuma</span></div></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="p-fase4" class="panel">
-    <div class="phase-head">
-      <div>
-        <h2>Fase 4 — Escala</h2>
-        <div class="phase-sub">Semanas 9-12. Objetivo: empilhar novos canais de aquisição, testar ticket médio e validar possibilidades físicas sem perder simplicidade operacional.</div>
-      </div>
-      <div class="phase-pill">Semana 9-12</div>
-    </div>
-    <div class="ops-grid">
-      <div class="op-card phase-4">
-        <div class="op-top"><div><div class="op-code">OP-11</div><div class="op-title">Mini-Curso</div></div><div class="time-pill">Lançamento nas semanas 9-12</div></div>
-        <div class="op-summary">Subir ticket médio com um curso compacto focado em método e não só em receitas soltas.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge marco">Marco</span><span class="badge emili">Emili</span></div></div>
-          <div class="meta-box"><div class="meta-label">Produto</div><div class="meta-value">Panificação Saudável do Zero — Método 8 Ingredientes</div></div>
-          <div class="meta-box"><div class="meta-label">Preço</div><div class="meta-value">R$197-297</div></div>
-        </div>
-        <div class="op-section"><h4>Módulos sugeridos</h4>
-          <ul class="op-list">
-            <li>Ingredientes essenciais e substitutos saudáveis.</li>
-            <li>Pães: 5 receitas base.</li>
-            <li>Bolos e tortas: 5 receitas.</li>
-            <li>Coberturas e recheios saudáveis.</li>
-            <li>Doces rápidos: brigadeiro fit, mousse, pudim.</li>
-            <li>Como adaptar qualquer receita tradicional.</li>
-            <li>Bônus: planejamento semanal + lista de compras.</li>
-          </ul>
-        </div>
-        <div class="op-section"><h4>Critério de sucesso</h4><div class="checks"><div class="check"><span class="boxy"></span><span>30 vendas = R$5.910-8.910.</span></div></div></div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">OP-07</span><span class="badge dep">OP-08</span></div></div>
-      </div>
-
-      <div class="op-card phase-4">
-        <div class="op-top"><div><div class="op-code">OP-12</div><div class="op-title">Pinterest Automatizado</div></div><div class="time-pill">2h setup + passivo</div></div>
-        <div class="op-summary">Criar camada de tráfego orgânico passivo ligada ao site, e-book e futuros produtos.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge frank">Frank</span><span class="badge emili">Emili</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">20 pins/semana com link pro site/e-book</div></div>
-          <div class="meta-box"><div class="meta-label">Meta</div><div class="meta-value">500 cliques/mês após 60 dias</div></div>
-        </div>
-        <div class="op-section"><h4>Processo</h4>
-          <ol class="process-list">
-            <li><span class="num">1</span>Criar conta business no Pinterest.</li>
-            <li><span class="num">2</span>Para cada Reel/post, criar pin com foto, título e link.</li>
-            <li><span class="num">3</span>Automatizar via Tailwind ou fluxo manual enxuto.</li>
-            <li><span class="num">4</span>Organizar por categorias: receitas saudáveis, panificação fit e doces sem açúcar.</li>
-          </ol>
+    <section class="phase-block" id="fase-1" data-phase="1">
+      <div class="phase-intro">
+        <div class="phase-kicker" style="color:var(--phase-1)">Fase 1</div>
+        <h2>Fundação</h2>
+        <p>Semanas 1-2. Objetivo: reposicionar a marca, abrir canais auxiliares e criar a infraestrutura mínima de captura para transformar tráfego em base própria.</p>
+        <div class="phase-meta">
+          <span>Semanas 1-2</span>
+          <span>4 operações</span>
+          <span>Base de posicionamento + captura</span>
         </div>
       </div>
 
-      <div class="op-card phase-4">
-        <div class="op-top"><div><div class="op-code">OP-13</div><div class="op-title">Produto Físico — Teste</div></div><div class="time-pill">Teste pontual</div></div>
-        <div class="op-summary">Validar demanda por físico sem escalar operação antes da prova real de compra.</div>
-        <div class="meta-grid">
-          <div class="meta-box"><div class="meta-label">Responsável</div><div class="badges"><span class="badge emili">Emili</span><span class="badge marco">Marco</span></div></div>
-          <div class="meta-box"><div class="meta-label">Entregável</div><div class="meta-value">Primeiro lote vendido</div></div>
-          <div class="meta-box"><div class="meta-label">Critério</div><div class="meta-value">20 unidades vendidas no primeiro teste</div></div>
-        </div>
-        <div class="op-section"><h4>Opções</h4>
-          <div class="options-grid">
-            <div class="option-card"><b>A)</b> Kit de ingredientes saudáveis + receita impressa (R$89-149)</div>
-            <div class="option-card"><b>B)</b> Box mensal de doces/pães (R$99-199/mês)</div>
-            <div class="option-card"><b>C)</b> Encomendas de Páscoa/Natal (R$50-200)</div>
+      <article class="operation phase-1" id="op-01" data-phase="1">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-01</span>Operação</div>
+            <h2>Reposicionamento de Bio</h2>
+            <div class="op-meta-line">Fase 1 — Fundação · Marco + Emili · 15 minutos</div>
           </div>
+          <button class="op-toggle" type="button">Recolher</button>
         </div>
-        <div class="op-section"><h4>Processo</h4><ul class="op-list"><li>Testar com stories “quem compraria?” → pré-venda → produção.</li></ul></div>
-        <div class="op-section"><h4>Dependência</h4><div class="badges"><span class="badge dep">Fases 1-2 completas</span></div></div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Bio que comunica nicho + diferencial + CTA em 150 caracteres.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag marco">Marco</span><span class="tag emili">Emili</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>3 opções de bio testadas.</p></div>
+          <div class="info-group"><h3>Ferramenta</h3><p>Instagram app.</p></div>
+          <div class="info-group"><h3>Opções propostas</h3><div class="options-list"><div class="option-item"><strong>A)</strong> Confeitaria saudável com 8 ingredientes ou menos 🍞 E-book grátis 👇</div><div class="option-item"><strong>B)</strong> Pão e doces que parecem pecado — mas não são 🧁 Receitas grátis 👇</div><div class="option-item"><strong>C)</strong> Receitas fit de confeitaria profissional ✨ Baixe o e-book 👇</div></div></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>Bio inclui nicho claro.</span></div><div class="check-item"><span class="checkbox"></span><span>Bio explicita o diferencial.</span></div><div class="check-item"><span class="checkbox"></span><span>CTA aponta para link com ação clara.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>Nenhuma.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>15 minutos.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-1" id="op-02" data-phase="1">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-02</span>Operação</div>
+            <h2>Ativação TikTok</h2>
+            <div class="op-meta-line">Fase 1 — Fundação · Emili + Frank · 30 min setup + 5 min/dia</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Abrir presença no TikTok usando o estoque de conteúdo que já performa no Instagram.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag emili">Emili</span><span class="tag frank">Frank</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>Conta criada + 5 primeiros Reels repostados.</p></div>
+          <div class="info-group"><h3>Ferramenta</h3><p>TikTok app + CapCut.</p></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Criar conta @emilizaremba no TikTok.</li><li>Copiar a bio do Instagram com ajuste para plataforma.</li><li>Baixar os 5 Reels com maior engajamento.</li><li>Postar 1 por dia nos primeiros 5 dias.</li><li>A partir da semana 2, postar no TikTok no mesmo dia do Reel do IG.</li></ol></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>5 vídeos publicados.</span></div><div class="check-item"><span class="checkbox"></span><span>Conta configurada como creator.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>Nenhuma.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>30 min setup + 5 min/dia.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-1" id="op-03" data-phase="1">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-03</span>Operação</div>
+            <h2>Setup Linktree / Landing Page</h2>
+            <div class="op-meta-line">Fase 1 — Fundação · Frank + Marco + Emili · 2 horas</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Criar um hub de links com captura de email para virar porta de entrada de todos os CTAs do perfil.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag frank">Frank</span><span class="tag marco">Marco</span><span class="tag emili">Emili</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>Página live com e-book, WhatsApp, TikTok e contato comercial.</p></div>
+          <div class="info-group"><h3>Ferramenta</h3><p>Carrd.co ou Linktree + Mailchimp/ConvertKit.</p></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Criar conta no Linktree ou Carrd.co (R$0-19/mês).</li><li>Montar 4 links: e-book, WhatsApp, TikTok e email comercial.</li><li>Integrar formulário de captura com Mailchimp free ou ConvertKit free.</li><li>Colocar a URL na bio do Instagram.</li></ol></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>Link na bio gerando cliques.</span></div><div class="check-item"><span class="checkbox"></span><span>Formulário capturando emails de forma consistente.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>OP-04.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>2 horas.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-1" id="op-04" data-phase="1">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-04</span>Operação</div>
+            <h2>Criação do Lead Magnet (E-book)</h2>
+            <div class="op-meta-line">Fase 1 — Fundação · Frank + Marco + Emili · 1-2h + 30min revisão</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Produzir um PDF gratuito com receitas reais da Emili para transformar audiência em leads.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag frank">Frank</span><span class="tag marco">Marco</span><span class="tag emili">Emili</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>PDF “10 Receitas Saudáveis com 8 Ingredientes ou Menos”.</p></div>
+          <div class="info-group"><h3>Ferramenta</h3><p>Instagram API + Canva/HTML + Google Drive.</p></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Extrair 10 melhores receitas dos captions dos posts da Emili via API.</li><li>Estruturar título, ingredientes, modo de preparo e foto para cada receita.</li><li>Diagramar no Canva ou gerar HTML → PDF.</li><li>Incluir capa, sumário, bio da Emili e CTA final para produto futuro.</li><li>Hospedar no Google Drive com link público.</li></ol></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>PDF profissional com 10 receitas reais.</span></div><div class="check-item"><span class="checkbox"></span><span>Material pronto para download e distribuição.</span></div></div></div>
+          <div class="callout-note">Nota crítica: as receitas devem ser <strong>REAIS</strong>, extraídas dos posts dela. Nada inventado.</div>
+          <div class="info-group"><h3>Dependências</h3><p>Nenhuma.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>1-2h + 30min revisão.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="phase-block" id="fase-2" data-phase="2">
+      <div class="phase-intro">
+        <div class="phase-kicker" style="color:var(--phase-2)">Fase 2</div>
+        <h2>Captura</h2>
+        <p>Semanas 3-4. Objetivo: aumentar contato diário, profissionalizar oferta comercial e rodar a primeira máquina simples de geração de leads.</p>
+        <div class="phase-meta">
+          <span>Semanas 3-4</span>
+          <span>3 operações</span>
+          <span>Contato diário + primeira máquina de leads</span>
+        </div>
+      </div>
+
+      <article class="operation phase-2" id="op-05" data-phase="2">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-05</span>Operação</div>
+            <h2>Implementar Stories Diários</h2>
+            <div class="op-meta-line">Fase 2 — Captura · Emili · 15-20 min/dia</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Aumentar conexão, frequência de toque e tempo de tela com rotina simples e repetível.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag emili">Emili</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>Rotina de 2-3 stories por dia.</p></div>
+          <div class="info-group"><h3>Ferramenta</h3><p>Instagram Stories + Canva.</p></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Story 1: bastidor da receita do dia.</li><li>Story 2: enquete ou “isso ou aquilo”.</li><li>Story 3 (opcional): lifestyle ou bastidor pessoal.</li><li>1x por semana: box de perguntas sobre próximas receitas.</li></ol></div>
+          <div class="info-group"><h3>Templates</h3><ul><li>Criar 3-4 templates no Canva com identidade visual consistente.</li></ul></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>Taxa de resposta nos stories acima de 3%.</span></div><div class="check-item"><span class="checkbox"></span><span>Views acima de 20% da base de seguidores.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>Nenhuma.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>15-20 min/dia.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-2" id="op-06" data-phase="2">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-06</span>Operação</div>
+            <h2>Mídia Kit</h2>
+            <div class="op-meta-line">Fase 2 — Captura · Frank + Marco · 1 hora</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Transformar prova social em um documento comercial objetivo para prospecção de parcerias pagas.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag frank">Frank</span><span class="tag marco">Marco</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>PDF 1 página com números, audiência, alcance e pricing.</p></div>
+          <div class="info-group"><h3>Ferramenta</h3><p>Canva ou HTML → PDF.</p></div>
+          <div class="info-group"><h3>Conteúdo obrigatório</h3><ul><li>Seguidores: 28.866 (e crescendo).</li><li>Engajamento: 8,61%.</li><li>Formato principal: Reels (75%).</li><li>Público: mulheres 25-45, interessadas em alimentação saudável, Brasil.</li><li>Preços sugeridos: Story R$300, Reels R$800, pacote 3 posts R$2.000.</li><li>Cases: Pão Pita (26k likes) + parcerias anteriores.</li></ul></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>Documento profissional pronto para envio por email a qualquer marca.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>Nenhuma.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>1 hora.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-2" id="op-07" data-phase="2">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-07</span>Operação</div>
+            <h2>Primeira Campanha de Captura</h2>
+            <div class="op-meta-line">Fase 2 — Captura · Emili + Frank · 5 min/dia extra</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Rodar a primeira campanha simples focada em gerar 500 leads em 30 dias usando o e-book como isca.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag emili">Emili</span><span class="tag frank">Frank</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>500 emails ou contatos WhatsApp capturados.</p></div>
+          <div class="info-group"><h3>Dependência operacional</h3><p>Landing page + e-book ativos.</p></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Publicar Post + Reel anunciando o e-book gratuito.</li><li>Inserir CTA “link na bio” em todos os posts.</li><li>Fazer story semanal lembrando do e-book.</li><li>Responder DMs com link do e-book.</li></ol></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>500 leads capturados em 30 dias.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>OP-03 + OP-04.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>5 min/dia extra.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="phase-block" id="fase-3" data-phase="3">
+      <div class="phase-intro">
+        <div class="phase-kicker" style="color:var(--phase-3)">Fase 3</div>
+        <h2>Monetização</h2>
+        <p>Semanas 5-8. Objetivo: abrir duas frentes de receita — produto digital e publi — enquanto inicia expansão em YouTube.</p>
+        <div class="phase-meta">
+          <span>Semanas 5-8</span>
+          <span>3 operações</span>
+          <span>Produto digital + publi + conteúdo longo</span>
+        </div>
+      </div>
+
+      <article class="operation phase-3" id="op-08" data-phase="3">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-08</span>Operação</div>
+            <h2>Primeiro Produto Digital</h2>
+            <div class="op-meta-line">Fase 3 — Monetização · Marco + Frank + Emili · 1-2 semanas</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Construir o primeiro ativo de receita recorrente com ticket de entrada e versão premium.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag marco">Marco</span><span class="tag frank">Frank</span><span class="tag emili">Emili</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>Receituário completo à venda.</p></div>
+          <div class="info-group"><h3>Preço</h3><p>R$47 entrada · R$97 premium com vídeos.</p></div>
+          <div class="info-group"><h3>Produto</h3><ul><li>“Receituário Completo: 30 Receitas Saudáveis com 8 Ingredientes”.</li></ul></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Selecionar 30 melhores receitas.</li><li>Documentar ingredientes, preparo, dicas, foto e variações.</li><li>Na versão premium, incluir vídeo curto de cada receita.</li><li>Hospedar na Hotmart ou Kiwify.</li><li>Montar página de vendas com prova social e depoimentos.</li></ol></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>50 vendas no primeiro mês = R$2.350-4.850.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>OP-04 + Lista de leads.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>1-2 semanas.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-3" id="op-09" data-phase="3">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-09</span>Operação</div>
+            <h2>Ativação de Parcerias Pagas</h2>
+            <div class="op-meta-line">Fase 3 — Monetização · Marco + Emili · 1h/semana</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Abrir frente de publipost com base em mídia kit, histórico de engajamento e marcas do próprio universo da Emili.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag marco">Marco</span><span class="tag emili">Emili</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>2-3 parcerias pagas por mês.</p></div>
+          <div class="info-group"><h3>Faixa ideal</h3><p>R$500 mínimo · R$800-1.500 ideal.</p></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Enviar mídia kit para 10 marcas do nicho.</li><li>Prospectar farinhas especiais, adoçantes, proteínas, utensílios e ingredientes orgânicos.</li><li>Ativar marcas que ela já usa: BoxViva, DUX e Fugini.</li><li>Negociar mínimo de R$500 por post, ideal R$800-1.500.</li><li>Entregar formato: 1 Reel com receita + 2 Stories.</li></ol></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>2 parcerias fechadas = R$1.000-3.000/mês.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>OP-06.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>1h/semana.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-3" id="op-10" data-phase="3">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-10</span>Operação</div>
+            <h2>YouTube — Primeiros 4 Vídeos</h2>
+            <div class="op-meta-line">Fase 3 — Monetização · Emili + Frank · 2-3h/vídeo</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Expandir para conteúdo longo com foco em SEO, profundidade e reaproveitamento do repertório de receitas.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag emili">Emili</span><span class="tag frank">Frank</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>4 vídeos publicados.</p></div>
+          <div class="info-group"><h3>Ferramenta</h3><p>YouTube Studio + Canva.</p></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Criar canal @emilizaremba no YouTube.</li><li>Gravar receitas completas de 8-12 minutos.</li><li>Incluir intro curta, ingredientes na tela, processo completo e resultado final.</li><li>Aplicar SEO em títulos, tags e descrições.</li><li>Criar thumbnails profissionais e incluir links do e-book + Instagram.</li></ol></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>4 vídeos publicados e 1k views totais no primeiro mês.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>Nenhuma.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>2-3h/vídeo.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="phase-block" id="fase-4" data-phase="4">
+      <div class="phase-intro">
+        <div class="phase-kicker" style="color:var(--phase-4)">Fase 4</div>
+        <h2>Escala</h2>
+        <p>Semanas 9-12. Objetivo: empilhar novos canais de aquisição, testar ticket médio e validar possibilidades físicas sem perder simplicidade operacional.</p>
+        <div class="phase-meta">
+          <span>Semanas 9-12</span>
+          <span>3 operações</span>
+          <span>Novos canais + ticket + teste físico</span>
+        </div>
+      </div>
+
+      <article class="operation phase-4" id="op-11" data-phase="4">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-11</span>Operação</div>
+            <h2>Mini-Curso</h2>
+            <div class="op-meta-line">Fase 4 — Escala · Marco + Emili · Lançamento nas semanas 9-12</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Subir ticket médio com um curso compacto focado em método e não só em receitas soltas.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag marco">Marco</span><span class="tag emili">Emili</span></div></div>
+          <div class="info-group"><h3>Produto</h3><p>Panificação Saudável do Zero — Método 8 Ingredientes.</p></div>
+          <div class="info-group"><h3>Preço</h3><p>R$197-297.</p></div>
+          <div class="info-group"><h3>Módulos sugeridos</h3><ul><li>Ingredientes essenciais e substitutos saudáveis.</li><li>Pães: 5 receitas base.</li><li>Bolos e tortas: 5 receitas.</li><li>Coberturas e recheios saudáveis.</li><li>Doces rápidos: brigadeiro fit, mousse, pudim.</li><li>Como adaptar qualquer receita tradicional.</li><li>Bônus: planejamento semanal + lista de compras.</li></ul></div>
+          <div class="info-group"><h3>Critério de sucesso</h3><div class="checklist"><div class="check-item"><span class="checkbox"></span><span>30 vendas = R$5.910-8.910.</span></div></div></div>
+          <div class="info-group"><h3>Dependências</h3><p>OP-07 + OP-08.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>Lançamento nas semanas 9-12.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-4" id="op-12" data-phase="4">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-12</span>Operação</div>
+            <h2>Pinterest Automatizado</h2>
+            <div class="op-meta-line">Fase 4 — Escala · Frank + Emili · 2h setup + passivo</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Criar camada de tráfego orgânico passivo ligada ao site, e-book e futuros produtos.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag frank">Frank</span><span class="tag emili">Emili</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>20 pins/semana com link pro site/e-book.</p></div>
+          <div class="info-group"><h3>Meta</h3><p>500 cliques/mês após 60 dias.</p></div>
+          <div class="info-group"><h3>Processo</h3><ol><li>Criar conta business no Pinterest.</li><li>Para cada Reel/post, criar pin com foto, título e link.</li><li>Automatizar via Tailwind ou fluxo manual enxuto.</li><li>Organizar por categorias: receitas saudáveis, panificação fit e doces sem açúcar.</li></ol></div>
+          <div class="info-group"><h3>Dependências</h3><p>Não especificadas.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>2h setup + passivo.</p></div>
+        </div>
+      </article>
+
+      <article class="operation phase-4" id="op-13" data-phase="4">
+        <div class="op-header">
+          <div class="op-title-wrap">
+            <div class="op-badge"><span class="pill">OP-13</span>Operação</div>
+            <h2>Produto Físico — Teste</h2>
+            <div class="op-meta-line">Fase 4 — Escala · Emili + Marco · Teste pontual</div>
+          </div>
+          <button class="op-toggle" type="button">Recolher</button>
+        </div>
+        <div class="op-body">
+          <div class="info-group"><h3>Objetivo</h3><p>Validar demanda por físico sem escalar operação antes da prova real de compra.</p></div>
+          <div class="info-group"><h3>Responsável</h3><div class="inline-tags"><span class="tag emili">Emili</span><span class="tag marco">Marco</span></div></div>
+          <div class="info-group"><h3>Entregável</h3><p>Primeiro lote vendido.</p></div>
+          <div class="info-group"><h3>Critério</h3><p>20 unidades vendidas no primeiro teste.</p></div>
+          <div class="info-group"><h3>Opções</h3><div class="options-list"><div class="option-item"><strong>A)</strong> Kit de ingredientes saudáveis + receita impressa (R$89-149)</div><div class="option-item"><strong>B)</strong> Box mensal de doces/pães (R$99-199/mês)</div><div class="option-item"><strong>C)</strong> Encomendas de Páscoa/Natal (R$50-200)</div></div></div>
+          <div class="info-group"><h3>Processo</h3><ul><li>Testar com stories “quem compraria?” → pré-venda → produção.</li></ul></div>
+          <div class="info-group"><h3>Dependências</h3><p>Fases 1-2 completas.</p></div>
+          <div class="info-group"><h3>Tempo estimado</h3><p>Teste pontual.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="timeline-section" id="timeline" data-phase="4">
+      <h2>Timeline — 12 semanas</h2>
+      <p>Mapa de execução com agrupamento por fase, responsáveis principais, tempo estimado e dependências-chave.</p>
+      <div class="timeline">
+        <article class="week-item" style="--week-color:var(--phase-1)">
+          <div class="week-top"><h3>Semana 1</h3><div class="week-phase">Fase 1 — Fundação</div></div>
+          <div class="week-ops">OPs ativas: OP-01 · OP-02 · OP-03 · OP-04</div>
+          <div class="week-meta">Responsáveis: Marco · Emili · Frank · Tempo: 15 min → 2h · Dependência-chave: OP-03 depende de OP-04.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-1)">
+          <div class="week-top"><h3>Semana 2</h3><div class="week-phase">Fase 1 — Fundação</div></div>
+          <div class="week-ops">OPs ativas: OP-01 · OP-02 · OP-03 · OP-04</div>
+          <div class="week-meta">Consolidação da infraestrutura mínima de captura e ajuste fino da presença cross-platform.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-2)">
+          <div class="week-top"><h3>Semana 3</h3><div class="week-phase">Fase 2 — Captura</div></div>
+          <div class="week-ops">OPs ativas: OP-05 · OP-06 · OP-07</div>
+          <div class="week-meta">Responsáveis: Emili · Frank · Marco · Tempo: 5 min/dia → 1h · Dependência-chave: OP-07 depende de OP-03 + OP-04.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-2)">
+          <div class="week-top"><h3>Semana 4</h3><div class="week-phase">Fase 2 — Captura</div></div>
+          <div class="week-ops">OPs ativas: OP-05 · OP-06 · OP-07</div>
+          <div class="week-meta">Profissionalização da oferta comercial e repetição da campanha de captura para consolidar a máquina simples de leads.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-3)">
+          <div class="week-top"><h3>Semana 5</h3><div class="week-phase">Fase 3 — Monetização</div></div>
+          <div class="week-ops">OPs ativas: OP-08 · OP-09 · OP-10</div>
+          <div class="week-meta">Responsáveis: Marco · Frank · Emili · Tempo: 1h/semana → 2 semanas · Dependência-chave: OP-08 depende de OP-04 + leads · OP-09 depende de OP-06.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-3)">
+          <div class="week-top"><h3>Semana 6</h3><div class="week-phase">Fase 3 — Monetização</div></div>
+          <div class="week-ops">OPs ativas: OP-08 · OP-09 · OP-10</div>
+          <div class="week-meta">Construção do primeiro ativo de receita e início da expansão em YouTube.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-3)">
+          <div class="week-top"><h3>Semana 7</h3><div class="week-phase">Fase 3 — Monetização</div></div>
+          <div class="week-ops">OPs ativas: OP-08 · OP-09 · OP-10</div>
+          <div class="week-meta">Iteração de oferta, prospecção contínua e publicação do repertório inicial de vídeos longos.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-3)">
+          <div class="week-top"><h3>Semana 8</h3><div class="week-phase">Fase 3 — Monetização</div></div>
+          <div class="week-ops">OPs ativas: OP-08 · OP-09 · OP-10</div>
+          <div class="week-meta">Fechamento da janela de monetização inicial e preparação para subir ticket médio na fase seguinte.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-4)">
+          <div class="week-top"><h3>Semana 9</h3><div class="week-phase">Fase 4 — Escala</div></div>
+          <div class="week-ops">OPs ativas: OP-11 · OP-12 · OP-13</div>
+          <div class="week-meta">Responsáveis: Marco · Emili · Frank · Tempo: setup 2h → lançamento 4 semanas · Dependência-chave: OP-11 depende de OP-07 + OP-08 · OP-13 depende do aquecimento das fases 1-2.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-4)">
+          <div class="week-top"><h3>Semana 10</h3><div class="week-phase">Fase 4 — Escala</div></div>
+          <div class="week-ops">OPs ativas: OP-11 · OP-12 · OP-13</div>
+          <div class="week-meta">Subida de ticket com mini-curso e ativação de tráfego passivo via Pinterest.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-4)">
+          <div class="week-top"><h3>Semana 11</h3><div class="week-phase">Fase 4 — Escala</div></div>
+          <div class="week-ops">OPs ativas: OP-11 · OP-12 · OP-13</div>
+          <div class="week-meta">Teste de validação física mantendo simplicidade operacional e sem escalar antes de prova real de compra.</div>
+        </article>
+        <article class="week-item" style="--week-color:var(--phase-4)">
+          <div class="week-top"><h3>Semana 12</h3><div class="week-phase">Fase 4 — Escala</div></div>
+          <div class="week-ops">OPs ativas: OP-11 · OP-12 · OP-13</div>
+          <div class="week-meta">Fechamento do ciclo de 90 dias. Leitura estratégica: o plano não pede aumento de produção de conteúdo. Pede <strong>alocação melhor do conteúdo que já funciona</strong>. Primeiro converte atenção em base própria, depois abre receita leve, e só então escala canal e ticket.</div>
+        </article>
+      </div>
+      <div class="footer-note">Leitura estratégica: o plano não pede aumento de produção de conteúdo. Pede <strong>alocação melhor do conteúdo que já funciona</strong>. Primeiro converte atenção em base própria, depois abre receita leve, e só então escala canal e ticket.</div>
+    </section>
+  </main>
+
+  <aside class="toc-wrap" id="tocWrap">
+    <div class="toc" id="tocPanel">
+      <div class="toc-card">
+        <div class="toc-title">Nesta seção</div>
+        <div id="tocList"></div>
+      </div>
+      <div class="phase-mini-card" id="phaseMetaCard">
+        <div class="toc-title">Meta</div>
+        <h3>Fase 1 — Fundação</h3>
+        <p>4 OPs · Semanas 1-2</p>
+        <p>Progresso do plano: 31%</p>
       </div>
     </div>
-  </div>
-
-  <div id="p-timeline" class="panel">
-    <div class="phase-head">
-      <div>
-        <h2>Timeline — 12 semanas</h2>
-        <div class="phase-sub">Mapa de execução com agrupamento por fase, responsáveis principais, tempo estimado e dependências-chave.</div>
-      </div>
-      <div class="phase-pill">12 semanas</div>
-    </div>
-
-    <div class="timeline-shell">
-      <div class="timeline-bar">
-        <div class="section-title">Visão semanal</div>
-        <div class="week-grid">
-          <div class="week phase-1"><div class="w-label">Semana</div><div class="w-num">1</div><div class="w-phase">Fundação</div></div>
-          <div class="week phase-1"><div class="w-label">Semana</div><div class="w-num">2</div><div class="w-phase">Fundação</div></div>
-          <div class="week phase-2"><div class="w-label">Semana</div><div class="w-num">3</div><div class="w-phase">Captura</div></div>
-          <div class="week phase-2"><div class="w-label">Semana</div><div class="w-num">4</div><div class="w-phase">Captura</div></div>
-          <div class="week phase-3"><div class="w-label">Semana</div><div class="w-num">5</div><div class="w-phase">Monetização</div></div>
-          <div class="week phase-3"><div class="w-label">Semana</div><div class="w-num">6</div><div class="w-phase">Monetização</div></div>
-          <div class="week phase-3"><div class="w-label">Semana</div><div class="w-num">7</div><div class="w-phase">Monetização</div></div>
-          <div class="week phase-3"><div class="w-label">Semana</div><div class="w-num">8</div><div class="w-phase">Monetização</div></div>
-          <div class="week phase-4"><div class="w-label">Semana</div><div class="w-num">9</div><div class="w-phase">Escala</div></div>
-          <div class="week phase-4"><div class="w-label">Semana</div><div class="w-num">10</div><div class="w-phase">Escala</div></div>
-          <div class="week phase-4"><div class="w-label">Semana</div><div class="w-num">11</div><div class="w-phase">Escala</div></div>
-          <div class="week phase-4"><div class="w-label">Semana</div><div class="w-num">12</div><div class="w-phase">Escala</div></div>
-        </div>
-        <div class="legend">
-          <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>Fase 1</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Fase 2</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>Fase 3</div>
-          <div class="legend-item"><span class="legend-dot" style="background:var(--purple)"></span>Fase 4</div>
-        </div>
-      </div>
-
-      <div class="timeline-cards">
-        <div class="t-card">
-          <h3>Semana 1-2 — Fundação</h3>
-          <div class="t-ops"><span class="t-op">OP-01</span><span class="t-op">OP-02</span><span class="t-op">OP-03</span><span class="t-op">OP-04</span></div>
-          <div class="t-foot">
-            <span class="badge marco">Marco</span><span class="badge emili">Emili</span><span class="badge frank">Frank</span>
-            <span class="badge dep">Tempo: 15 min → 2h</span>
-            <span class="badge dep">Dependências: OP-03 depende de OP-04</span>
-          </div>
-        </div>
-        <div class="t-card">
-          <h3>Semana 3-4 — Captura</h3>
-          <div class="t-ops"><span class="t-op">OP-05</span><span class="t-op">OP-06</span><span class="t-op">OP-07</span></div>
-          <div class="t-foot">
-            <span class="badge emili">Emili</span><span class="badge frank">Frank</span><span class="badge marco">Marco</span>
-            <span class="badge dep">Tempo: 5 min/dia → 1h</span>
-            <span class="badge dep">Dependências: OP-07 depende de OP-03 + OP-04</span>
-          </div>
-        </div>
-        <div class="t-card">
-          <h3>Semana 5-8 — Monetização</h3>
-          <div class="t-ops"><span class="t-op">OP-08</span><span class="t-op">OP-09</span><span class="t-op">OP-10</span></div>
-          <div class="t-foot">
-            <span class="badge marco">Marco</span><span class="badge frank">Frank</span><span class="badge emili">Emili</span>
-            <span class="badge dep">Tempo: 1h/semana → 2 semanas</span>
-            <span class="badge dep">Dependências: OP-08 depende de OP-04 + leads · OP-09 depende de OP-06</span>
-          </div>
-        </div>
-        <div class="t-card">
-          <h3>Semana 9-12 — Escala</h3>
-          <div class="t-ops"><span class="t-op">OP-11</span><span class="t-op">OP-12</span><span class="t-op">OP-13</span></div>
-          <div class="t-foot">
-            <span class="badge marco">Marco</span><span class="badge emili">Emili</span><span class="badge frank">Frank</span>
-            <span class="badge dep">Tempo: setup 2h → lançamento 4 semanas</span>
-            <span class="badge dep">Dependências: OP-11 depende de OP-07 + OP-08 · OP-13 depende do aquecimento das fases 1-2</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-note">Leitura estratégica: o plano não pede aumento de produção de conteúdo. Pede <b>alocação melhor do conteúdo que já funciona</b>. Primeiro converte atenção em base própria, depois abre receita leve, e só então escala canal e ticket.</div>
-  </div>
+  </aside>
 </div>
 
 <script>
-function pad(n){return String(n).padStart(2,'0');}
-function getBRT(){return new Date(new Date().toLocaleString('en-US',{timeZone:'America/Sao_Paulo'}));}
-function updateClock(){const d=getBRT();document.getElementById('clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+' BRT';}
-setInterval(updateClock,10000);updateClock();
-function switchTab(name){
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  document.getElementById('p-'+name).classList.add('on');
-  const order={fase1:0,fase2:1,fase3:2,fase4:3,timeline:4};
-  document.querySelectorAll('.tab')[order[name]].classList.add('on');
+const phaseData = {
+  1: { title: 'Fase 1 — Fundação', stats: '4 OPs · Semanas 1-2', progress: 'Progresso do plano: 31%', color: getComputedStyle(document.documentElement).getPropertyValue('--phase-1').trim() },
+  2: { title: 'Fase 2 — Captura', stats: '3 OPs · Semanas 3-4', progress: 'Progresso do plano: 54%', color: getComputedStyle(document.documentElement).getPropertyValue('--phase-2').trim() },
+  3: { title: 'Fase 3 — Monetização', stats: '3 OPs · Semanas 5-8', progress: 'Progresso do plano: 77%', color: getComputedStyle(document.documentElement).getPropertyValue('--phase-3').trim() },
+  4: { title: 'Fase 4 — Escala', stats: '3 OPs · Semanas 9-12', progress: 'Progresso do plano: 100%', color: getComputedStyle(document.documentElement).getPropertyValue('--phase-4').trim() }
+};
+
+const tocMap = {
+  'op-01': ['Objetivo', 'Responsável', 'Entregável', 'Ferramenta', 'Opções propostas', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-02': ['Objetivo', 'Responsável', 'Entregável', 'Ferramenta', 'Processo', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-03': ['Objetivo', 'Responsável', 'Entregável', 'Ferramenta', 'Processo', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-04': ['Objetivo', 'Responsável', 'Entregável', 'Ferramenta', 'Processo', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-05': ['Objetivo', 'Responsável', 'Entregável', 'Ferramenta', 'Processo', 'Templates', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-06': ['Objetivo', 'Responsável', 'Entregável', 'Ferramenta', 'Conteúdo obrigatório', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-07': ['Objetivo', 'Responsável', 'Entregável', 'Dependência operacional', 'Processo', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-08': ['Objetivo', 'Responsável', 'Entregável', 'Preço', 'Produto', 'Processo', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-09': ['Objetivo', 'Responsável', 'Entregável', 'Faixa ideal', 'Processo', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-10': ['Objetivo', 'Responsável', 'Entregável', 'Ferramenta', 'Processo', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-11': ['Objetivo', 'Responsável', 'Produto', 'Preço', 'Módulos sugeridos', 'Critério de sucesso', 'Dependências', 'Tempo estimado'],
+  'op-12': ['Objetivo', 'Responsável', 'Entregável', 'Meta', 'Processo', 'Dependências', 'Tempo estimado'],
+  'op-13': ['Objetivo', 'Responsável', 'Entregável', 'Critério', 'Opções', 'Processo', 'Dependências', 'Tempo estimado'],
+  'timeline': ['Semanas 1-12', 'OPs ativas por semana', 'Dependências-chave', 'Leitura estratégica']
+};
+
+const readingProgress = document.getElementById('readingProgress');
+const phaseMetaCard = document.getElementById('phaseMetaCard');
+const tocList = document.getElementById('tocList');
+const sidebarLinks = [...document.querySelectorAll('.sidebar-link')];
+const sections = [...document.querySelectorAll('main section, main article, header.doc-header')];
+const operations = [...document.querySelectorAll('.operation')];
+const menuToggle = document.getElementById('menuToggle');
+const tocToggle = document.getElementById('tocToggle');
+const sidebarWrap = document.getElementById('sidebarWrap');
+const tocWrap = document.getElementById('tocWrap');
+const mobileOverlay = document.getElementById('mobileOverlay');
+
+function setPhaseUI(phase){
+  const data = phaseData[phase] || phaseData[1];
+  readingProgress.style.backgroundColor = data.color;
+  phaseMetaCard.innerHTML = `
+    <div class="toc-title">Meta</div>
+    <h3>${data.title}</h3>
+    <p>${data.stats}</p>
+    <p>${data.progress}</p>
+  `;
 }
+
+function renderToc(targetId){
+  const items = tocMap[targetId] || ['Objetivo', 'Processo', 'Critério de sucesso'];
+  tocList.innerHTML = items.map((item, index) => `<a href="#${targetId}">${index + 1}. ${item}</a>`).join('');
+  const first = tocList.querySelector('a');
+  if(first) first.classList.add('active');
+}
+
+function updateProgress(){
+  const scrollTop = window.scrollY;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = maxScroll > 0 ? (scrollTop / maxScroll) * 100 : 0;
+  readingProgress.style.width = `${Math.min(progress, 100)}%`;
+}
+
+function setActiveSidebar(id){
+  sidebarLinks.forEach(link => {
+    const active = link.getAttribute('href') === `#${id}`;
+    link.classList.toggle('active', active);
+    if(active){
+      const section = link.closest('.nav-section');
+      if(section) section.classList.remove('collapsed');
+    }
+  });
+}
+
+const visibleObserver = new IntersectionObserver((entries) => {
+  const visible = entries
+    .filter(entry => entry.isIntersecting)
+    .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+  if(!visible) return;
+
+  const id = visible.target.id;
+  const phase = visible.target.dataset.phase || '1';
+  setActiveSidebar(id);
+  setPhaseUI(phase);
+  if(id.startsWith('op-') || id === 'timeline') renderToc(id);
+}, { rootMargin: '-20% 0px -55% 0px', threshold: [0.1, 0.3, 0.6] });
+
+sections.forEach(section => {
+  if(section.id) visibleObserver.observe(section);
+});
+
+const tocHeadingObserver = new IntersectionObserver((entries) => {
+  const tocLinks = [...tocList.querySelectorAll('a')];
+  if(!tocLinks.length) return;
+  const current = tocLinks[0];
+  tocLinks.forEach(link => link.classList.remove('active'));
+  current.classList.add('active');
+}, { threshold: 0.2 });
+
+tocHeadingObserver.observe(document.body);
+
+window.addEventListener('scroll', updateProgress, { passive:true });
+updateProgress();
+renderToc('op-01');
+setPhaseUI('1');
+setActiveSidebar('fase-1');
+
+[...document.querySelectorAll('.phase-toggle')].forEach(button => {
+  button.addEventListener('click', () => {
+    button.parentElement.classList.toggle('collapsed');
+  });
+});
+
+operations.forEach(op => {
+  const button = op.querySelector('.op-toggle');
+  button.addEventListener('click', () => {
+    op.classList.toggle('collapsed');
+    button.textContent = op.classList.contains('collapsed') ? 'Expandir' : 'Recolher';
+  });
+});
+
+function closeMobilePanels(){
+  document.body.classList.remove('menu-open');
+  tocWrap.style.display = window.innerWidth <= 980 ? 'none' : '';
+}
+
+menuToggle?.addEventListener('click', () => {
+  document.body.classList.toggle('menu-open');
+  if(document.body.classList.contains('menu-open')) tocWrap.style.display = 'none';
+});
+
+tocToggle?.addEventListener('click', () => {
+  if(window.innerWidth > 980) return;
+  const open = tocWrap.style.display === 'block';
+  document.body.classList.remove('menu-open');
+  tocWrap.style.display = open ? 'none' : 'block';
+  if(!open){
+    tocWrap.style.position = 'fixed';
+    tocWrap.style.right = '16px';
+    tocWrap.style.left = '16px';
+    tocWrap.style.top = '64px';
+    tocWrap.style.zIndex = '85';
+  }
+});
+
+mobileOverlay?.addEventListener('click', closeMobilePanels);
+sidebarLinks.forEach(link => link.addEventListener('click', closeMobilePanels));
+window.addEventListener('resize', () => {
+  if(window.innerWidth > 980){
+    tocWrap.style.display = '';
+    tocWrap.style.position = '';
+    tocWrap.style.right = '';
+    tocWrap.style.left = '';
+    tocWrap.style.top = '';
+    tocWrap.style.zIndex = '';
+    document.body.classList.remove('menu-open');
+  } else if(tocWrap.style.display === 'block') {
+    tocWrap.style.position = 'fixed';
+  }
+});
 </script>
 </body>
 </html>
