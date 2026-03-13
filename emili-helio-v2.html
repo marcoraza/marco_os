@@ -27,7 +27,7 @@
     --text-muted: #8892a4;
     --card-bg: rgba(255, 255, 255, 0.72);
     --card-border: rgba(255, 255, 255, 0.9);
-    --header-h: 60px;
+    --header-h: 92px;
     --sidebar-w: 200px;
   }
 
@@ -52,9 +52,29 @@
     border-bottom: 1px solid rgba(0,0,0,0.06);
     z-index: 100;
     display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    gap: 0;
+  }
+
+  .header-row1 {
+    display: flex;
     align-items: center;
     padding: 0 24px;
-    gap: 24px;
+    gap: 16px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  .header-row2 {
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 10px;
+    height: 44px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    overflow: hidden;
   }
 
   .header-brand {
@@ -98,12 +118,113 @@
     color: var(--text-muted);
   }
 
+  /* Progress compact (mobile: X/13 in row 1) */
+  .header-progress-compact {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+  }
+  .hpc-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+  }
+  .hpc-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--navy);
+  }
+
+  /* Global progress bar (desktop row 2) */
+  .header-global-progress {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .hgp-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .hgp-done-count {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--navy);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .hgp-bar-wrap {
+    width: 80px;
+    height: 4px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .hgp-bar {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--fase1) 0%, var(--fase2) 33%, var(--fase3) 66%, var(--fase4) 100%);
+    width: 0%;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+  .hgp-pct {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    min-width: 32px;
+  }
+
+  /* Person filter */
+  .header-person-filter {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+  }
+  .person-filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+    margin-right: 2px;
+  }
+  .person-filter-btn {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(255,255,255,0.5);
+    color: #4a5068;
+    transition: all 0.15s;
+    white-space: nowrap;
+    min-height: 28px;
+  }
+  .person-filter-btn.active {
+    background: var(--navy);
+    color: white;
+    border-color: transparent;
+  }
+  .person-filter-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.85);
+    border-color: rgba(0,0,0,0.18);
+  }
+
   .header-phases {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex: 1;
-    justify-content: flex-end;
   }
 
   .header-phase-bar {
@@ -141,6 +262,67 @@
     color: var(--text-muted);
     min-width: 28px;
     text-align: right;
+  }
+
+  /* KPI editable values */
+  .kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--navy);
+    cursor: text;
+    min-width: 20px;
+    display: inline-block;
+    border-bottom: 1px dashed rgba(59,130,246,0.35);
+    padding-bottom: 1px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .kpi-value:focus {
+    outline: none;
+    border-bottom: 2px solid #3B82F6;
+    background: rgba(59,130,246,0.04);
+    border-radius: 3px;
+    padding: 1px 3px;
+  }
+
+  /* Mobile phase chips */
+  .mobile-phase-chips {
+    display: none;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 8px 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    position: sticky;
+    top: var(--header-h);
+    z-index: 45;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .mobile-phase-chips::-webkit-scrollbar { display: none; }
+  .mobile-phase-chip {
+    padding: 5px 13px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    background: rgba(255,255,255,0.7);
+    color: var(--text-body);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+  }
+  .mobile-phase-chip.active {
+    color: white;
+    border-color: transparent;
   }
 
   /* ─── LAYOUT ─── */
@@ -750,11 +932,146 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
 
-  /* ─── RESPONSIVE ─── */
-  @media (max-width: 700px) {
-    #sidebar { display: none; }
-    .cards-grid { grid-template-columns: 1fr; }
-    .header-phases { display: none; }
+  /* ─── RESPONSIVE — MOBILE FIRST ─── */
+
+  /* Tablet */
+  @media (max-width: 1024px) {
+    .header-phase-bar .mini-progress { width: 52px; }
+    .hgp-bar-wrap { width: 60px; }
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    :root { --header-h: 106px; }
+
+    .header-row1 { padding: 0 16px; gap: 10px; }
+    .header-row2 {
+      padding: 6px 16px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      height: auto;
+      min-height: 58px;
+      flex-wrap: nowrap;
+      gap: 6px;
+    }
+    .header-row2::-webkit-scrollbar { display: none; }
+
+    /* Hide stats on mobile to save space */
+    .header-stats { display: none; }
+    .header-divider { display: none; }
+
+    /* Show compact progress in row 1 */
+    .header-progress-compact { display: flex; }
+
+    /* Hide desktop progress bar (shown in compact form) */
+    .header-global-progress { display: none; }
+
+    /* Phase mini-bars: 2x2 grid on mobile */
+    .header-phases {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px 8px;
+      flex-shrink: 0;
+    }
+    .header-phase-bar { gap: 3px; }
+    .header-phase-bar .mini-progress { width: 44px; }
+    .mini-progress-pct { min-width: 22px; font-size: 9px; }
+
+    /* Person filter in row 2 */
+    .header-person-filter { margin-left: 0; gap: 4px; }
+    .person-filter-label { display: none; }
+    .person-filter-btn { font-size: 11px; padding: 3px 8px; min-height: 30px; }
+
+    /* Tab bar: horizontally scrollable */
+    .tab-bar {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      flex-wrap: nowrap;
+      padding: 0 12px;
+      margin: -20px -16px 20px -16px;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-item { font-size: 13px; padding: 12px 14px 10px; white-space: nowrap; }
+
+    /* Sidebar: hidden */
+    #sidebar { display: none !important; }
+
+    /* Mobile phase chips: shown */
+    .mobile-phase-chips { display: flex; }
+
+    /* Cards: 1 column */
+    .cards-grid { grid-template-columns: 1fr !important; }
+
+    /* Card padding */
+    .op-card { padding: 14px 14px 14px 14px; }
+
+    /* Status circle touch target */
+    .status-circle {
+      position: relative;
+    }
+    .status-circle::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+    }
+
+    /* Person tabs smaller */
+    .person-tab { font-size: 12px !important; padding: 3px 10px !important; }
+
+    /* Expanded content: no horizontal overflow */
+    .op-expanded { overflow-x: hidden; }
+    .op-expanded table, .ctx-table, .evt-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* Buttons touch target */
+    .op-btn { min-height: 38px; }
+    .person-filter-btn, .op-btn, .ctx-btn, .modal-copy-btn { touch-action: manipulation; }
+
+    /* Modal fullscreen */
+    .modal-overlay { align-items: flex-end; }
+    .modal-box {
+      max-width: 100%;
+      width: 100%;
+      max-height: 88vh;
+      border-radius: 12px 12px 0 0;
+      transform: translateY(8px);
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+
+    /* Main padding */
+    #main { padding: 20px 16px 48px; }
+
+    /* Phase title smaller */
+    .phase-title { font-size: 32px; }
+
+    /* Competitor cards: 1 col */
+    .cr-cards-grid { grid-template-columns: 1fr !important; }
+    .cr-opp-grid { grid-template-columns: 1fr !important; }
+
+    /* Tables with scroll */
+    .cr-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* Event cards: 1 col */
+    .evt-cards-row { grid-template-columns: 1fr !important; }
+
+    /* Prevent any horizontal overflow */
+    body { overflow-x: hidden; }
+    #layout { overflow-x: hidden; }
+
+    /* Body font min */
+    body { font-size: 14px; }
+  }
+
+  @media (max-width: 480px) {
+    .header-row1 { padding: 0 12px; }
+    .header-row2 { padding: 5px 12px; }
+    #main { padding: 16px 12px 48px; }
+    .tab-bar { margin: -20px -12px 16px -12px; }
   }
 
   /* ─── TAB BAR ─── */
@@ -1997,17 +2314,39 @@
 
 <!-- HEADER -->
 <header id="header">
-  <div class="header-brand">Emili Zaremba</div>
-  <div class="header-divider"></div>
-  <div class="header-stats">
-    <span class="header-followers">28.8K</span>
-    <span class="header-followers-label">seguidores</span>
-    <svg class="header-arrow" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+  <!-- Row 1: brand + stats + compact progress (mobile) -->
+  <div class="header-row1">
+    <div class="header-brand">Emili Zaremba</div>
+    <div class="header-divider"></div>
+    <div class="header-stats">
+      <span class="header-followers">28.8K</span>
+      <span class="header-followers-label">seguidores</span>
+      <svg class="header-arrow" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <!-- Compact progress (mobile only) -->
+    <div class="header-progress-compact" id="headerProgressCompact">
+      <span class="hpc-text">Plano <span id="hpc-done" class="hpc-num">0</span>/<span class="hpc-num">13</span></span>
+    </div>
   </div>
-  <div class="header-phases" id="headerPhases">
-    <!-- injected by JS -->
+  <!-- Row 2: global progress + phase mini-bars + person filter -->
+  <div class="header-row2">
+    <!-- Global progress (desktop) -->
+    <div class="header-global-progress" id="headerGlobalProgress">
+      <span class="hgp-label">Plano</span>
+      <span class="hgp-done-count" id="hgpCount">0 / 13</span>
+      <div class="hgp-bar-wrap"><div class="hgp-bar" id="hgpBar"></div></div>
+      <span class="hgp-pct" id="hgpPct">0%</span>
+    </div>
+    <!-- Phase mini-bars -->
+    <div class="header-phases" id="headerPhases">
+      <!-- injected by JS -->
+    </div>
+    <!-- Person filter -->
+    <div class="header-person-filter" id="headerPersonFilter">
+      <!-- injected by JS -->
+    </div>
   </div>
 </header>
 
@@ -2508,9 +2847,9 @@
           <div class="evt-card-countdown" id="countdown-gratuito" style="color:var(--fase1);">—</div>
           <div class="evt-card-countdown-label">dias para o evento</div>
           <div class="evt-card-kpis">
-            <div class="evt-kpi-item">Inscritas: <strong>—</strong></div>
-            <div class="evt-kpi-item">Presenca: <strong>—</strong></div>
-            <div class="evt-kpi-item">Conversao: <strong>—</strong></div>
+            <div class="evt-kpi-item">Inscritas: <span contenteditable="true" class="kpi-value" id="kpi-gratuito-inscritas" data-kpi="gratuito.inscritas">—</span></div>
+            <div class="evt-kpi-item">Presenca: <span contenteditable="true" class="kpi-value" id="kpi-gratuito-presenca" data-kpi="gratuito.presenca">—</span></div>
+            <div class="evt-kpi-item">Conversao: <span contenteditable="true" class="kpi-value" id="kpi-gratuito-conversao" data-kpi="gratuito.conversao">—</span></div>
           </div>
         </div>
 
@@ -2531,8 +2870,8 @@
           <div class="evt-card-countdown" id="countdown-pago" style="color:var(--fase3);margin-top:12px;">—</div>
           <div class="evt-card-countdown-label">dias para o evento</div>
           <div class="evt-card-kpis">
-            <div class="evt-kpi-item">Vagas vendidas: <strong>—</strong></div>
-            <div class="evt-kpi-item">Receita: <strong>—</strong></div>
+            <div class="evt-kpi-item">Vagas vendidas: <span contenteditable="true" class="kpi-value" id="kpi-pago-vagas" data-kpi="pago.vagas">—</span></div>
+            <div class="evt-kpi-item">Receita: <span contenteditable="true" class="kpi-value" id="kpi-pago-receita" data-kpi="pago.receita">—</span></div>
           </div>
         </div>
 
@@ -3141,6 +3480,66 @@ const OP_PEOPLE = {
   }
 };
 
+// ─── OP PARTICIPANTS ─────────────────────────────────────────────────────────
+
+const OP_PARTICIPANTS = {
+  op01: ['Marco','Emili'],
+  op02: ['Emili','Frank'],
+  op03: ['Frank','Marco','Emili'],
+  op04: ['Frank','Emili'],
+  op05: ['Emili'],
+  op06: ['Frank','Marco'],
+  op07: ['Emili','Frank'],
+  op08: ['Marco','Frank','Emili'],
+  op09: ['Marco','Emili'],
+  op10: ['Emili','Frank'],
+  op11: ['Marco','Frank','Emili'],
+  op12: ['Frank','Emili'],
+  op13: ['Emili']
+};
+
+let activePersonFilter = localStorage.getItem('emili-person-filter') || 'Todos';
+
+function renderPersonFilter() {
+  const container = document.getElementById('headerPersonFilter');
+  if (!container) return;
+  const people = ['Todos','Emili','Marco','Frank'];
+  container.innerHTML = '<span class="person-filter-label">Visao por pessoa</span>' +
+    people.map(p =>
+      `<button class="person-filter-btn${activePersonFilter === p ? ' active' : ''}" onclick="setPersonFilter('${p}')">${p}</button>`
+    ).join('');
+}
+
+function setPersonFilter(person) {
+  activePersonFilter = person;
+  localStorage.setItem('emili-person-filter', person);
+  renderPersonFilter();
+  applyPersonFilter();
+}
+
+function applyPersonFilter() {
+  const allCards = document.querySelectorAll('.op-card');
+  allCards.forEach(card => {
+    const opId = card.dataset.op;
+    if (!opId) return;
+    if (activePersonFilter === 'Todos') {
+      card.style.opacity = '';
+      card.style.pointerEvents = '';
+      // restore done state opacity
+      if (card.dataset.state === 'done') card.style.opacity = '0.65';
+    } else {
+      const participants = OP_PARTICIPANTS[opId] || [];
+      if (participants.includes(activePersonFilter)) {
+        card.style.opacity = card.dataset.state === 'done' ? '0.65' : '';
+        card.style.pointerEvents = '';
+      } else {
+        card.style.opacity = '0.2';
+        card.style.pointerEvents = 'none';
+      }
+    }
+  });
+}
+
 // ─── STATE ──────────────────────────────────────────────────────────────────
 
 const STATE_KEY = 'emili-ops-state';
@@ -3496,6 +3895,8 @@ function updateAllProgress() {
     const hpct = document.getElementById(`header-pct-${phase.id}`);
     if (hpct) hpct.textContent = pct + '%';
   });
+  updateGlobalProgress();
+  applyPersonFilter();
 }
 
 // ─── SIDEBAR ────────────────────────────────────────────────────────────────
@@ -3542,13 +3943,69 @@ function renderHeader() {
       <span class="mini-progress-pct" id="header-pct-${phase.id}">${pct}%</span>
     </div>`;
   }).join('');
+  renderPersonFilter();
+  updateGlobalProgress();
+}
+
+function updateGlobalProgress() {
+  // Count all OPs with status "done"
+  let total = 0;
+  PHASES.forEach(p => { total += p.ops.length; });
+  let done = 0;
+  PHASES.forEach(p => {
+    p.ops.forEach(opId => {
+      if (getOpState(opId) === 'done') done++;
+    });
+  });
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  // Desktop bar
+  const bar = document.getElementById('hgpBar');
+  if (bar) bar.style.width = pct + '%';
+  const pctEl = document.getElementById('hgpPct');
+  if (pctEl) pctEl.textContent = pct + '%';
+  const countEl = document.getElementById('hgpCount');
+  if (countEl) countEl.textContent = done + ' / ' + total;
+
+  // Mobile compact
+  const mobileEl = document.getElementById('hpc-done');
+  if (mobileEl) mobileEl.textContent = done;
+}
+
+// ─── MOBILE PHASE CHIPS ──────────────────────────────────────────────────────
+
+function renderMobilePhaseChips() {
+  const chipsHTML = '<div class="mobile-phase-chips" id="mobilePhaseChips">' +
+    PHASES.map(phase =>
+      `<div class="mobile-phase-chip" id="mchip-${phase.id}" data-phase="${phase.id}"
+        style="background:${phase.color}20; color:${phase.color}; border-color:${phase.color}40;"
+        onclick="scrollToPhase('${phase.id}'); setMobileChipActive('${phase.id}')">${phase.name}</div>`
+    ).join('') + '</div>';
+  return chipsHTML;
+}
+
+function setMobileChipActive(phaseId) {
+  document.querySelectorAll('.mobile-phase-chip').forEach(c => {
+    const pid = c.dataset.phase;
+    const phase = PHASES.find(p => p.id === pid);
+    if (!phase) return;
+    if (pid === phaseId) {
+      c.style.background = phase.color;
+      c.style.color = 'white';
+      c.style.borderColor = 'transparent';
+    } else {
+      c.style.background = phase.color + '20';
+      c.style.color = phase.color;
+      c.style.borderColor = phase.color + '40';
+    }
+  });
 }
 
 // ─── MAIN CONTENT ────────────────────────────────────────────────────────────
 
 function renderMain() {
   const main = document.getElementById('panel-plano');
-  main.innerHTML = PHASES.map(phase => {
+  const phaseSections = PHASES.map(phase => {
     const pct = phaseProgress(phase.id);
     const cardsHTML = phase.ops.map(opId => renderCard(opId)).join('');
     return `<section class="phase-section" id="section-${phase.id}" data-phase="${phase.id}">
@@ -3565,6 +4022,7 @@ function renderMain() {
       <div class="cards-grid">${cardsHTML}</div>
     </section>`;
   }).join('');
+  main.innerHTML = renderMobilePhaseChips() + phaseSections;
 }
 
 // ─── STAGGER FADE-IN ─────────────────────────────────────────────────────────
@@ -3586,7 +4044,10 @@ function initIntersectionObserver() {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const phaseId = entry.target.dataset.phase;
-        if (phaseId) setSidebarActive(phaseId);
+        if (phaseId) {
+          setSidebarActive(phaseId);
+          setMobileChipActive(phaseId);
+        }
       }
     });
   }, { threshold: 0.2, rootMargin: '-60px 0px 0px 0px' });
@@ -3633,6 +4094,7 @@ function switchTab(tab) {
     window.scrollTo({ top: 60, behavior: 'smooth' });
     initEvtCountdowns();
     initEvtChecklist();
+    initEventKpis();
   }
 }
 
@@ -3992,6 +4454,61 @@ function renderContextSection(opId) {
   return '<div class="ctx-section"><span class="ctx-label">Contexto</span>' + html + '</div>';
 }
 
+// ─── EVENT KPIs ───────────────────────────────────────────────────────────────
+
+const KPI_KEY = 'emili-event-kpis';
+
+function loadEventKpis() {
+  try {
+    const raw = localStorage.getItem(KPI_KEY);
+    return raw ? JSON.parse(raw) : {
+      gratuito: { inscritas: '—', presenca: '—', conversao: '—' },
+      pago: { vagas: '—', receita: '—' }
+    };
+  } catch {
+    return {
+      gratuito: { inscritas: '—', presenca: '—', conversao: '—' },
+      pago: { vagas: '—', receita: '—' }
+    };
+  }
+}
+
+function saveEventKpis() {
+  const data = {
+    gratuito: {
+      inscritas: (document.getElementById('kpi-gratuito-inscritas') || {}).innerText || '—',
+      presenca: (document.getElementById('kpi-gratuito-presenca') || {}).innerText || '—',
+      conversao: (document.getElementById('kpi-gratuito-conversao') || {}).innerText || '—'
+    },
+    pago: {
+      vagas: (document.getElementById('kpi-pago-vagas') || {}).innerText || '—',
+      receita: (document.getElementById('kpi-pago-receita') || {}).innerText || '—'
+    }
+  };
+  localStorage.setItem(KPI_KEY, JSON.stringify(data));
+}
+
+function initEventKpis() {
+  const data = loadEventKpis();
+  const ids = [
+    ['kpi-gratuito-inscritas', data.gratuito.inscritas],
+    ['kpi-gratuito-presenca', data.gratuito.presenca],
+    ['kpi-gratuito-conversao', data.gratuito.conversao],
+    ['kpi-pago-vagas', data.pago.vagas],
+    ['kpi-pago-receita', data.pago.receita]
+  ];
+  ids.forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.innerText = val;
+      el.addEventListener('blur', saveEventKpis);
+      el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+      });
+    }
+  });
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
 function init() {
@@ -4002,9 +4519,11 @@ function init() {
   staggerCards();
   initIntersectionObserver();
   updateAllProgress();
+  applyPersonFilter();
   // Pre-compute countdowns so they're ready when tab opens
   initEvtCountdowns();
   initEvtChecklist();
+  initEventKpis();
 }
 
 document.addEventListener('DOMContentLoaded', init);
