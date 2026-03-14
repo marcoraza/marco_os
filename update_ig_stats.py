@@ -115,7 +115,11 @@ def fetch_instagram_stats() -> dict:
     if viral_likes is None or viral_likes <= 0:
         raise ValueError(f"Não encontrei likes válidos para o viral {VIRAL_CODE}")
 
-    engagement = round(((total_likes + total_comments) / count / followers) * 100, 2)
+    # Calcular engagement EXCLUINDO o viral (outlier)
+    non_viral_likes = total_likes - (viral_likes or 0)
+    non_viral_comments = total_comments
+    non_viral_count = max(count - 1, 1)
+    engagement = round(((non_viral_likes + non_viral_comments) / non_viral_count / followers) * 100, 2)
     if engagement <= 0:
         raise ValueError(f"Engagement inválido: {engagement}")
 
