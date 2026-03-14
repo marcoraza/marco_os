@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#e8f4ff">
+<meta name="color-scheme" content="light">
 <title>Emili Zaremba — Mission Control</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,6 +37,7 @@
 
   body {
     font-family: 'Inter', sans-serif;
+    padding-top: env(safe-area-inset-top);
     background: linear-gradient(160deg, #e8f4ff 0%, #fef8f0 60%, #fdeee0 100%);
     min-height: 100vh;
     color: var(--navy);
@@ -55,6 +58,8 @@
     flex-direction: column;
     align-items: stretch;
     padding: 0;
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
     gap: 0;
   }
 
@@ -152,6 +157,7 @@
     white-space: nowrap;
   }
   .hgp-done-count {
+    font-variant-numeric: tabular-nums;
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
     color: var(--navy);
@@ -167,6 +173,7 @@
     flex-shrink: 0;
   }
   .hgp-bar {
+    font-variant-numeric: tabular-nums;
     height: 100%;
     border-radius: 2px;
     background: linear-gradient(90deg, var(--fase1) 0%, var(--fase2) 33%, var(--fase3) 66%, var(--fase4) 100%);
@@ -174,6 +181,7 @@
     transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
   }
   .hgp-pct {
+    font-variant-numeric: tabular-nums;
     font-size: 11px;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text-muted);
@@ -207,7 +215,7 @@
     border: 1px solid rgba(0,0,0,0.1);
     background: rgba(255,255,255,0.5);
     color: #4a5068;
-    transition: all 0.15s;
+    transition: background 0.15s ease, color 0.15s ease;
     white-space: nowrap;
     min-height: 28px;
   }
@@ -257,6 +265,7 @@
   }
 
   .mini-progress-pct {
+    font-variant-numeric: tabular-nums;
     font-size: 10px;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text-muted);
@@ -266,6 +275,7 @@
 
   /* KPI editable values */
   .kpi-value {
+    font-variant-numeric: tabular-nums;
     font-family: 'JetBrains Mono', monospace;
     font-size: 1.1rem;
     font-weight: 600;
@@ -275,11 +285,9 @@
     display: inline-block;
     border-bottom: 1px dashed rgba(59,130,246,0.35);
     padding-bottom: 1px;
-    outline: none;
     transition: border-color 0.15s;
   }
   .kpi-value:focus {
-    outline: none;
     border-bottom: 2px solid #3B82F6;
     background: rgba(59,130,246,0.04);
     border-radius: 3px;
@@ -289,6 +297,8 @@
   /* Mobile phase chips */
   .mobile-phase-chips {
     display: none;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
     gap: 6px;
     overflow-x: auto;
     padding: 8px 16px;
@@ -314,7 +324,7 @@
     background: rgba(255,255,255,0.7);
     color: var(--text-body);
     font-family: 'Inter', sans-serif;
-    transition: all 0.15s;
+    transition: background 0.15s ease, color 0.15s ease;
     flex-shrink: 0;
     min-height: 32px;
     display: flex;
@@ -340,6 +350,7 @@
     top: var(--header-h);
     height: calc(100vh - var(--header-h));
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 32px 0 32px 24px;
     display: flex;
     flex-direction: column;
@@ -384,7 +395,7 @@
     gap: 12px;
     padding: 10px 0;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: opacity 0.15s ease;
   }
 
   .sidebar-node:hover { opacity: 0.8; }
@@ -430,6 +441,7 @@
   }
 
   .sidebar-node-weeks {
+    font-variant-numeric: tabular-nums;
     font-size: 10px;
     color: var(--text-muted);
     font-family: 'JetBrains Mono', monospace;
@@ -470,6 +482,7 @@
   }
 
   .phase-title {
+    text-wrap: balance;
     font-family: 'Instrument Serif', serif;
     font-size: 42px;
     line-height: 1;
@@ -522,6 +535,7 @@
   }
 
   .phase-progress-label {
+    font-variant-numeric: tabular-nums;
     font-size: 12px;
     font-family: 'JetBrains Mono', monospace;
     color: var(--text-muted);
@@ -698,6 +712,8 @@
 
   /* Card title */
   .op-title {
+    overflow-wrap: break-word;
+    word-break: break-word;
     font-size: 14px;
     font-weight: 600;
     font-family: 'Mango Dream', sans-serif;
@@ -884,7 +900,7 @@
     border: 1px solid rgba(0,0,0,0.1);
     background: rgba(255,255,255,0.5);
     color: #4a5068;
-    transition: all 0.15s ease;
+    transition: background 0.15s ease, color 0.15s ease;
   }
   .person-tab.active {
     background: var(--person-tab-color, #3B82F6);
@@ -931,6 +947,44 @@
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+
+
+  button:focus-visible, [tabindex]:focus-visible, a:focus-visible, [contenteditable]:focus-visible {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) { outline: none; }
+
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #1a1f36;
+    color: white;
+    padding: 8px 16px;
+    z-index: 10000;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    border-radius: 0 0 8px 0;
+  }
+  .skip-link:focus { top: 0; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+  button, [onclick], [tabindex], a, [contenteditable], .person-tab, .person-filter-btn, .op-card, .sidebar-node {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 
   /* ─── RESPONSIVE — MOBILE FIRST ─── */
 
@@ -1030,7 +1084,6 @@
 
     /* Buttons touch target */
     .op-btn { min-height: 38px; }
-    .person-filter-btn, .op-btn, .ctx-btn, .modal-copy-btn { touch-action: manipulation; }
 
     /* Modal fullscreen */
     .modal-overlay { align-items: flex-end; }
@@ -1155,6 +1208,7 @@
   }
 
   .cr-section-heading {
+    text-wrap: balance;
     font-family: 'Instrument Serif', serif;
     font-size: 34px;
     line-height: 1.1;
@@ -1250,6 +1304,7 @@
   }
 
   .cr-eng-high {
+    font-variant-numeric: tabular-nums;
     color: #059669;
     font-weight: 600;
     font-family: 'JetBrains Mono', monospace;
@@ -1257,6 +1312,7 @@
   }
 
   .cr-eng-normal {
+    font-variant-numeric: tabular-nums;
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
     color: var(--text-body);
@@ -1553,7 +1609,7 @@
     color: var(--text-body);
     cursor: pointer;
     font-family: 'Mango Dream', sans-serif;
-    transition: all 0.15s;
+    transition: background 0.15s ease, color 0.15s ease;
     margin-bottom: 8px;
   }
   .ctx-btn:hover { background: white; border-color: rgba(0,0,0,0.22); }
@@ -1623,7 +1679,7 @@
     color: var(--text-body);
     cursor: pointer;
     font-family: 'Mango Dream', sans-serif;
-    transition: all 0.15s;
+    transition: background 0.15s ease, color 0.15s ease;
   }
   .bio-use-btn:hover { background: white; }
   .bio-use-btn.copied { color: #059669; border-color: #059669; }
@@ -1729,7 +1785,6 @@
 
   /* ─── CONTENTEDITABLE ─── */
   [contenteditable="true"] {
-    outline: none;
     border-bottom: 1px dashed rgba(59,130,246,0.4);
     padding-bottom: 2px;
     cursor: text;
@@ -1931,6 +1986,7 @@
   }
   .evt-card-meta strong { color: var(--navy); }
   .evt-card-countdown {
+    font-variant-numeric: tabular-nums;
     font-size: 22px;
     font-weight: 700;
     font-family: 'JetBrains Mono', monospace;
@@ -2055,7 +2111,7 @@
     padding: 16px 20px;
     cursor: pointer;
     user-select: none;
-    transition: background 0.15s;
+    transition: background 0.15s ease;
     border-left: 3px solid transparent;
   }
   .evt-accordion-header:hover { background: rgba(0,0,0,0.02); }
@@ -2239,7 +2295,6 @@
     color: var(--text-body);
     line-height: 1.6;
     border-bottom: 1px dashed rgba(0,0,0,0.1);
-    outline: none;
     min-height: 1.6em;
     padding-bottom: 3px;
     word-break: break-word;
@@ -2581,6 +2636,7 @@
   </style>
 </head>
 <body>
+<a href="#main-content" class="skip-link">Ir para conteudo principal</a>
 
 <!-- HEADER -->
 <header id="header">
@@ -2591,7 +2647,7 @@
     <div class="header-stats">
       <span class="header-followers">28.8K</span>
       <span class="header-followers-label">seguidores</span>
-      <svg class="header-arrow" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg aria-hidden="true" class="header-arrow" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M3 11L11 3M11 3H5M11 3V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
@@ -2631,13 +2687,16 @@
   </nav>
 
   <!-- MAIN -->
-  <main id="main">
+  <main id="main" tabindex="-1"><div id="main-content"></div>
+
+    <div id="status-announcer" class="sr-only" aria-live="polite"></div>
+    <h1 class="sr-only">Emili Zaremba — Plano Operacional</h1>
 
     <!-- TAB BAR -->
-    <div class="tab-bar">
-      <div class="tab-item active" id="tab-btn-plano" onclick="switchTab('plano')">Plano Operacional</div>
-      <div class="tab-item" id="tab-btn-pesquisa" onclick="switchTab('pesquisa')">Pesquisa Competitiva</div>
-      <div class="tab-item" id="tab-btn-evento" onclick="switchTab('evento')">Evento</div>
+    <div class="tab-bar" role="tablist" aria-label="Secoes principais">
+      <div class="tab-item active" id="tab-btn-plano" role="tab" tabindex="0" aria-selected="true" onclick="switchTab('plano')">Plano Operacional</div>
+      <div class="tab-item" id="tab-btn-pesquisa" role="tab" tabindex="0" aria-selected="false" onclick="switchTab('pesquisa')">Pesquisa Competitiva</div>
+      <div class="tab-item" id="tab-btn-evento" role="tab" tabindex="0" aria-selected="false" onclick="switchTab('evento')">Evento</div>
     </div>
 
     <!-- PANEL: PLANO OPERACIONAL -->
@@ -3062,7 +3121,7 @@
 
           <div class="evt-timeline-node-wrap">
             <div class="evt-timeline-node evt-node-past" title="Aquecimento" style="border-color:#6B7280;">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7.5L5.5 10.5L11.5 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <div class="evt-node-label">Aquecimento</div>
             <div class="evt-node-date">16/mar</div>
@@ -3070,7 +3129,7 @@
 
           <div class="evt-timeline-node-wrap">
             <div class="evt-timeline-node evt-node-next evt-node-pulse" id="evtNodeInscricoes" style="border-color:var(--fase1); color:var(--fase1);">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="3.5" fill="var(--fase1)"/></svg>
+              <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="3.5" fill="var(--fase1)"/></svg>
             </div>
             <div class="evt-node-label" style="color:var(--fase1);">Inscricoes</div>
             <div class="evt-node-date">23/mar</div>
@@ -3151,64 +3210,64 @@
       <div class="evt-checklist-wrap">
         <div class="evt-checklist-title">O que falta fazer</div>
         <ul class="evt-checklist" id="evtChecklist">
-          <li class="evt-check-item" data-idx="0" onclick="toggleEvtCheck(0)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="0" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(0)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Nome aprovado</span>
           </li>
-          <li class="evt-check-item" data-idx="1" onclick="toggleEvtCheck(1)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="1" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(1)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">LP publicada</span>
           </li>
-          <li class="evt-check-item" data-idx="2" onclick="toggleEvtCheck(2)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="2" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(2)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Formulario funcionando</span>
           </li>
-          <li class="evt-check-item" data-idx="3" onclick="toggleEvtCheck(3)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="3" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(3)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Grupo WhatsApp criado</span>
           </li>
-          <li class="evt-check-item" data-idx="4" onclick="toggleEvtCheck(4)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="4" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(4)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Zoom configurado</span>
           </li>
-          <li class="evt-check-item" data-idx="5" onclick="toggleEvtCheck(5)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="5" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(5)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Emails configurados</span>
           </li>
-          <li class="evt-check-item" data-idx="6" onclick="toggleEvtCheck(6)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="6" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(6)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Mensagens de WhatsApp prontas</span>
           </li>
-          <li class="evt-check-item" data-idx="7" onclick="toggleEvtCheck(7)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="7" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(7)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Calendario de conteudo pronto</span>
           </li>
-          <li class="evt-check-item" data-idx="8" onclick="toggleEvtCheck(8)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="8" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(8)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Criativos de midia aprovados</span>
           </li>
-          <li class="evt-check-item" data-idx="9" onclick="toggleEvtCheck(9)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="9" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(9)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Roteiro da Emily fechado</span>
           </li>
-          <li class="evt-check-item" data-idx="10" onclick="toggleEvtCheck(10)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="10" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(10)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Links revisados</span>
           </li>
-          <li class="evt-check-item" data-idx="11" onclick="toggleEvtCheck(11)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="11" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(11)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Pitch do evento pago pronto</span>
           </li>
-          <li class="evt-check-item" data-idx="12" onclick="toggleEvtCheck(12)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="12" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(12)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Checkout do pago pronto</span>
           </li>
-          <li class="evt-check-item" data-idx="13" onclick="toggleEvtCheck(13)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="13" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(13)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Replay configurado</span>
           </li>
-          <li class="evt-check-item" data-idx="14" onclick="toggleEvtCheck(14)">
-            <div class="evt-check-box"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <li class="evt-check-item" data-idx="14" tabindex="0" role="checkbox" aria-checked="false" onclick="toggleEvtCheck(14)">
+            <div class="evt-check-box"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" class="evt-check-svg" style="display:none;"><path d="M1.5 5.5L4 8L8.5 2.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <span class="evt-check-text">Follow-up 72h pronto</span>
           </li>
         </ul>
@@ -3219,10 +3278,10 @@
 
         <!-- Bloco 1: Estrategia & Oferta -->
         <div class="evt-accordion" id="acc-estrategia">
-          <div class="evt-accordion-header" onclick="toggleEvtAcc('acc-estrategia')" style="border-left-color:var(--fase1);">
+          <div class="evt-accordion-header" tabindex="0" role="button" onclick="toggleEvtAcc('acc-estrategia')" style="border-left-color:var(--fase1);">
             <div class="evt-accordion-icon" style="background:var(--fase1);"></div>
             <div class="evt-accordion-label">Estrategia &amp; Oferta</div>
-            <svg class="evt-accordion-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg aria-hidden="true" class="evt-accordion-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="evt-accordion-body">
 
@@ -3230,7 +3289,7 @@
             <div class="evt-sub-acc" id="sub-tese">
               <div class="evt-sub-acc-header" onclick="toggleEvtSub('sub-tese')">
                 <span class="evt-sub-label">Tese do Evento</span>
-                <svg class="evt-sub-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 5L6.5 9L10.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg aria-hidden="true" class="evt-sub-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 5L6.5 9L10.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
               <div class="evt-sub-acc-body">
                 <div class="evt-msg-central">"Nao e so tirar gluten, lactose e acucar. E saber reconstruir o bolo para que ele funcione de verdade."</div>
@@ -3248,7 +3307,7 @@
             <div class="evt-sub-acc" id="sub-oferta">
               <div class="evt-sub-acc-header" onclick="toggleEvtSub('sub-oferta')">
                 <span class="evt-sub-label">Oferta</span>
-                <svg class="evt-sub-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 5L6.5 9L10.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg aria-hidden="true" class="evt-sub-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 5L6.5 9L10.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
               <div class="evt-sub-acc-body">
                 <div class="evt-section-label">Nome oficial</div>
@@ -3272,7 +3331,7 @@
             <div class="evt-sub-acc" id="sub-agenda">
               <div class="evt-sub-acc-header" onclick="toggleEvtSub('sub-agenda')">
                 <span class="evt-sub-label">Agenda da Manha</span>
-                <svg class="evt-sub-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 5L6.5 9L10.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg aria-hidden="true" class="evt-sub-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 5L6.5 9L10.5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
               <div class="evt-sub-acc-body">
                 <table class="evt-table">
@@ -3295,10 +3354,10 @@
 
         <!-- Bloco 2: Aquisicao -->
         <div class="evt-accordion" id="acc-aquisicao">
-          <div class="evt-accordion-header" onclick="toggleEvtAcc('acc-aquisicao')" style="border-left-color:var(--fase2);">
+          <div class="evt-accordion-header" tabindex="0" role="button" onclick="toggleEvtAcc('acc-aquisicao')" style="border-left-color:var(--fase2);">
             <div class="evt-accordion-icon" style="background:var(--fase2);"></div>
             <div class="evt-accordion-label">Aquisicao</div>
-            <svg class="evt-accordion-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg aria-hidden="true" class="evt-accordion-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="evt-accordion-body">
 
@@ -3361,10 +3420,10 @@
 
         <!-- Bloco 3: Experiencia -->
         <div class="evt-accordion" id="acc-experiencia">
-          <div class="evt-accordion-header" onclick="toggleEvtAcc('acc-experiencia')" style="border-left-color:var(--fase3);">
+          <div class="evt-accordion-header" tabindex="0" role="button" onclick="toggleEvtAcc('acc-experiencia')" style="border-left-color:var(--fase3);">
             <div class="evt-accordion-icon" style="background:var(--fase3);"></div>
             <div class="evt-accordion-label">Experiencia</div>
-            <svg class="evt-accordion-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg aria-hidden="true" class="evt-accordion-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="evt-accordion-body">
 
@@ -3404,10 +3463,10 @@
 
         <!-- Bloco 4: Conversao -->
         <div class="evt-accordion" id="acc-conversao">
-          <div class="evt-accordion-header" onclick="toggleEvtAcc('acc-conversao')" style="border-left-color:var(--fase4);">
+          <div class="evt-accordion-header" tabindex="0" role="button" onclick="toggleEvtAcc('acc-conversao')" style="border-left-color:var(--fase4);">
             <div class="evt-accordion-icon" style="background:var(--fase4);"></div>
             <div class="evt-accordion-label">Conversao</div>
-            <svg class="evt-accordion-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg aria-hidden="true" class="evt-accordion-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="evt-accordion-body">
 
@@ -3475,9 +3534,9 @@
 </div>
 
 <!-- MODAL -->
-<div id="modal-overlay" class="modal-overlay" onclick="closeModal()">
+<div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" onclick="closeModal()">
   <div class="modal-box" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <button class="modal-close" aria-label="Fechar" onclick="closeModal()">&times;</button>
     <div id="modal-title" class="modal-title"></div>
     <div id="modal-body" class="modal-body"></div>
   </div>
@@ -3769,6 +3828,16 @@ const OP_PARTICIPANTS = {
 };
 
 let activePersonFilter = localStorage.getItem('emili-person-filter') || 'Todos';
+let currentTab = 'plano';
+let modalTrapHandler = null;
+
+function syncUrlState() {
+  var params = new URLSearchParams(location.search);
+  params.set('tab', currentTab);
+  if (activePersonFilter && activePersonFilter !== 'Todos') params.set('filter', activePersonFilter.toLowerCase());
+  else params.delete('filter');
+  history.replaceState(null, '', '?' + params.toString());
+}
 
 function renderPersonFilter() {
   const container = document.getElementById('headerPersonFilter');
@@ -3785,6 +3854,7 @@ function setPersonFilter(person) {
   localStorage.setItem('emili-person-filter', person);
   renderPersonFilter();
   applyPersonFilter();
+  syncUrlState();
 }
 
 function applyPersonFilter() {
@@ -3846,6 +3916,8 @@ function cycleState(opId) {
   saveState(appState);
   updateCard(opId);
   updateAllProgress();
+  var announcer = document.getElementById('status-announcer');
+  if (announcer) announcer.textContent = 'OP-' + opId.replace('op', '') + ' alterado para ' + stateBadgeLabel(next);
 }
 
 function toggleSubtask(opId, idx) {
@@ -3906,7 +3978,7 @@ function renderPeopleTabs(opId, color) {
 
   const tabsHTML = names.map(name => {
     const isActive = name === defaultPerson;
-    return `<button class="person-tab ${isActive ? 'active' : ''}" data-person="${name}" onclick="event.stopPropagation(); switchPersonTab('${opId}', '${name}', '${color}')" style="${isActive ? `--person-tab-color:${color};` : ''}">${name}</button>`;
+    return `<button class="person-tab ${isActive ? 'active' : ''}" data-person="${name}" onclick="event.stopPropagation(); switchPersonTab('${opId}', '${name}', '${color}')" aria-selected="${isActive ? 'true' : 'false'}" style="${isActive ? `--person-tab-color:${color};` : ''}">${name}</button>`;
   }).join('');
 
   const defaultTasks = people[defaultPerson] || [];
@@ -3926,6 +3998,7 @@ function switchPersonTab(opId, person, color) {
     tabsContainer.querySelectorAll('.person-tab').forEach(btn => {
       const isActive = btn.dataset.person === person;
       btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
       if (isActive) {
         btn.style.setProperty('--person-tab-color', color);
       } else {
@@ -3946,19 +4019,19 @@ function switchPersonTab(opId, person, color) {
 
 // SVG icons
 function svgCheck() {
-  return `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 function svgX() {
-  return `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 7.5l5-5M7.5 7.5l-5-5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  return `<svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2.5 7.5l5-5M7.5 7.5l-5-5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>`;
 }
 
 function svgCheckSmall() {
-  return `<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `<svg aria-hidden="true" width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l2 2 3-3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
 function calendarIcon() {
-  return `<svg class="phase-week-icon" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="2" width="10" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h10" stroke="currentColor" stroke-width="1.2"/><path d="M4 1v2M8 1v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+  return `<svg aria-hidden="true" class="phase-week-icon" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="2" width="10" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5h10" stroke="currentColor" stroke-width="1.2"/><path d="M4 1v2M8 1v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
 }
 
 // ─── RENDER ─────────────────────────────────────────────────────────────────
@@ -4001,7 +4074,7 @@ function renderCard(opId) {
   const subtasksHTML = op.subtasks.map((st, i) => {
     const checked = subtasks[i];
     return `<li class="op-subtask">
-      <div class="subtask-check ${checked ? 'checked' : ''}" id="stask-${opId}-${i}" onclick="event.stopPropagation(); toggleSubtask('${opId}', ${i})" style="${checked ? `background:${color};border-color:${color};` : ''}">${checked ? svgCheckSmall() : ''}</div>
+      <div class="subtask-check ${checked ? 'checked' : ''}" id="stask-${opId}-${i}" tabindex="0" role="checkbox" aria-checked="${checked ? 'true' : 'false'}" onclick="event.stopPropagation(); toggleSubtask('${opId}', ${i})" style="${checked ? `background:${color};border-color:${color};` : ''}">${checked ? svgCheckSmall() : ''}</div>
       <span style="${checked ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">${st}</span>
     </li>`;
   }).join('');
@@ -4014,7 +4087,7 @@ function renderCard(opId) {
   const badgeLabel = stateBadgeLabel(state);
   const timeHTML = op.time ? `<span class="op-time">${op.time}</span>` : '';
 
-  return `<div class="op-card" id="card-${opId}" data-op="${opId}" data-state="${state}" data-phase="${phase?.id}" ${cardStyle} onclick="toggleCard('${opId}')">
+  return `<div class="op-card" id="card-${opId}" data-op="${opId}" data-state="${state}" data-phase="${phase?.id}" tabindex="0" role="button" ${cardStyle} onclick="toggleCard('${opId}')">
     <div class="card-top">
       ${renderStatusCircle(opId)}
       <span class="op-code">${op.code}</span>
@@ -4029,8 +4102,8 @@ function renderCard(opId) {
     <div class="op-expanded" id="expanded-${opId}">
       <div class="op-expand-divider"></div>
       <div class="op-objective"><strong>Objetivo</strong>${op.objective}</div>
-      ${opId === 'op07' ? '<a class="op-event-link" onclick="switchTab(\'evento\'); scrollToBlock(\'aquisicao\')">Ver campanha do evento &rarr;</a>' : ''}
-      ${opId === 'op08' ? '<a class="op-event-link" onclick="switchTab(\'evento\'); scrollToBlock(\'conversao\')">Ver plano do produto &rarr;</a>' : ''}
+      ${opId === 'op07' ? '<a class="op-event-link" href="#evento" role="link" onclick="switchTab(\'evento\'); scrollToBlock(\'aquisicao\')">Ver campanha do evento &rarr;</a>' : ''}
+      ${opId === 'op08' ? '<a class="op-event-link" href="#evento" role="link" onclick="switchTab(\'evento\'); scrollToBlock(\'conversao\')">Ver plano do produto &rarr;</a>' : ''}
       ${depHTML}
       ${renderPeopleTabs(opId, color)}
       ${renderContextSection(opId)}
@@ -4115,6 +4188,8 @@ function setOpState(opId, newState) {
   saveState(appState);
   updateCard(opId);
   updateAllProgress();
+  var announcer = document.getElementById('status-announcer');
+  if (announcer) announcer.textContent = 'OP-' + opId.replace('op', '') + ' alterado para ' + stateBadgeLabel(newState);
 }
 
 function toggleCard(opId) {
@@ -4131,6 +4206,7 @@ function renderSubtaskCheck(opId, idx) {
   const subtasks = getSubtasks(opId);
   const checked = subtasks[idx];
   el.className = `subtask-check ${checked ? 'checked' : ''}`;
+  el.setAttribute('aria-checked', checked ? 'true' : 'false');
   el.style.background = checked ? color : '';
   el.style.borderColor = checked ? color : '';
   el.innerHTML = checked ? svgCheckSmall() : '';
@@ -4175,7 +4251,7 @@ function renderSidebar() {
   const track = document.getElementById('sidebarTrack');
   track.innerHTML = PHASES.map(phase => {
     const pct = phaseProgress(phase.id);
-    return `<div class="sidebar-node" id="snode-${phase.id}" data-phase="${phase.id}" onclick="scrollToPhase('${phase.id}')">
+    return `<div class="sidebar-node" id="snode-${phase.id}" data-phase="${phase.id}" tabindex="0" role="button" onclick="scrollToPhase('${phase.id}')">
       <div class="sidebar-node-circle" style="background:${phase.color};">${phase.num}</div>
       <div class="sidebar-node-info">
         <div class="sidebar-node-name">${phase.name}</div>
@@ -4247,7 +4323,7 @@ function updateGlobalProgress() {
 function renderMobilePhaseChips() {
   const chipsHTML = '<div class="mobile-phase-chips" id="mobilePhaseChips">' +
     PHASES.map(phase =>
-      `<div class="mobile-phase-chip" id="mchip-${phase.id}" data-phase="${phase.id}"
+      `<div class="mobile-phase-chip" id="mchip-${phase.id}" data-phase="${phase.id}" tabindex="0" role="button"
         style="background:${phase.color}20; color:${phase.color}; border-color:${phase.color}40;"
         onclick="scrollToPhase('${phase.id}'); setMobileChipActive('${phase.id}')">${phase.name}</div>`
     ).join('') + '</div>';
@@ -4328,6 +4404,7 @@ function initIntersectionObserver() {
 // ─── TAB SWITCHING ────────────────────────────────────────────────────────────
 
 function switchTab(tab) {
+  currentTab = tab;
   const planoPanel = document.getElementById('panel-plano');
   const pesquisaPanel = document.getElementById('panel-pesquisa');
   const eventoPanel = document.getElementById('panel-evento');
@@ -4345,6 +4422,9 @@ function switchTab(tab) {
 
   // Remove per-tab body classes
   document.body.classList.remove('tab-plano', 'tab-pesquisa', 'tab-evento');
+  [planoBtn, pesquisaBtn, eventoBtn].forEach(function(btn) {
+    btn.setAttribute('aria-selected', btn.id === 'tab-btn-' + tab ? 'true' : 'false');
+  });
 
   if (tab === 'plano') {
     planoPanel.classList.remove('hidden');
@@ -4366,6 +4446,7 @@ function switchTab(tab) {
     initEvtChecklist();
     initEventKpis();
   }
+  syncUrlState();
 }
 
 function scrollToBlock(blockId) {
@@ -4405,6 +4486,7 @@ function initEvtChecklist() {
   items.forEach((item, i) => {
     if (saved[i]) {
       item.classList.add('checked');
+      item.setAttribute('aria-checked', 'true');
       const svg = item.querySelector('.evt-check-svg');
       if (svg) svg.style.display = '';
     }
@@ -4415,6 +4497,7 @@ function toggleEvtCheck(idx) {
   const item = document.querySelector(`#evtChecklist .evt-check-item[data-idx="${idx}"]`);
   if (!item) return;
   item.classList.toggle('checked');
+  item.setAttribute('aria-checked', item.classList.contains('checked') ? 'true' : 'false');
   const svg = item.querySelector('.evt-check-svg');
   if (svg) svg.style.display = item.classList.contains('checked') ? '' : 'none';
   // Persist
@@ -4486,13 +4569,31 @@ const MODAL_CONTENT = {
 function openModal(key) {
   var content = MODAL_CONTENT[key];
   if (!content) return;
+  var modal = document.getElementById('modal-overlay');
   document.getElementById('modal-title').textContent = content.title;
   document.getElementById('modal-body').innerHTML = content.html;
-  document.getElementById('modal-overlay').classList.add('open');
+  modal.classList.add('open');
+  if (modalTrapHandler) document.removeEventListener('keydown', modalTrapHandler);
+  modalTrapHandler = function(e) {
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (e.key === 'Tab') {
+      var focusable = modal.querySelectorAll('button, [tabindex]:not([tabindex="-1"]), a, input, [contenteditable]');
+      if (!focusable.length) return;
+      var first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  };
+  document.addEventListener('keydown', modalTrapHandler);
+  var closeBtn = modal.querySelector('.modal-close');
+  if (closeBtn) closeBtn.focus();
 }
 
 function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
+  var modal = document.getElementById('modal-overlay');
+  modal.classList.remove('open');
+  if (modalTrapHandler) document.removeEventListener('keydown', modalTrapHandler);
+  modalTrapHandler = null;
   setTimeout(function() { document.getElementById('modal-body').innerHTML = ''; }, 200);
 }
 
@@ -4796,7 +4897,26 @@ function init() {
   initEventKpis();
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    var el = e.target;
+    if (el.matches('[tabindex="0"]') || el.matches('[role="button"]')) {
+      e.preventDefault();
+      el.click();
+    }
+  }
+});
+
+window.addEventListener('DOMContentLoaded', function() {
+  init();
+  var params = new URLSearchParams(location.search);
+  if (params.get('tab')) switchTab(params.get('tab'));
+  if (params.get('filter')) {
+    var filter = params.get('filter');
+    var normalized = filter.charAt(0).toUpperCase() + filter.slice(1).toLowerCase();
+    setPersonFilter(normalized);
+  }
+});
 </script>
 </body>
 </html>
