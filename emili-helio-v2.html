@@ -4087,7 +4087,7 @@ function renderCard(opId) {
   const badgeLabel = stateBadgeLabel(state);
   const timeHTML = op.time ? `<span class="op-time">${op.time}</span>` : '';
 
-  return `<div class="op-card" id="card-${opId}" data-op="${opId}" data-state="${state}" data-phase="${phase?.id}" tabindex="0" role="button" ${cardStyle} onclick="toggleCard('${opId}')">
+  return `<div class="op-card" id="card-${opId}" data-op="${opId}" data-state="${state}" data-phase="${phase?.id}" tabindex="0" role="button" ${cardStyle} onclick="toggleCard('${opId}', event)">
     <div class="card-top">
       ${renderStatusCircle(opId)}
       <span class="op-code">${op.code}</span>
@@ -4192,7 +4192,8 @@ function setOpState(opId, newState) {
   if (announcer) announcer.textContent = 'OP-' + opId.replace('op', '') + ' alterado para ' + stateBadgeLabel(newState);
 }
 
-function toggleCard(opId) {
+function toggleCard(opId, e) {
+  if (e && e.target.closest('.op-expanded')) return;
   const card = document.getElementById(`card-${opId}`);
   if (!card) return;
   card.classList.toggle('expanded');
