@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Badge, Card, Icon, SectionLabel, StatusDot, showToast } from './ui';
 import { cn } from '../utils/cn';
+import AgentDashboard from './agents/AgentDashboard';
 import {
   statusDot,
   KANBAN_ORDER,
@@ -537,6 +538,7 @@ export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCo
 
       {/* ─── BODY ─── */}
       <div className="flex-grow overflow-y-auto p-5 space-y-5">
+        <AgentDashboard agents={agents} executions={allExecutions} recentDispatches={recentDispatches} />
 
         {/* ─── AGENT GRID + WORKLOAD ─── */}
         <div>
