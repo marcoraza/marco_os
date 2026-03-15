@@ -1,7 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import type { StoredNote } from '../data/models';
-import { Icon, Card, SectionLabel } from './ui';
+import { Icon, Card, SectionLabel, FormModal, showToast, JourneyOverlay, JourneyTriggerButton, DataBadge, EmptyState } from './ui';
 import { cn } from '../utils/cn';
+import { braindumpFields } from '../lib/formConfigs';
+import { syncToNotion } from '../lib/notionSync';
+import { useSectionSetup } from '../hooks/useSectionSetup';
+import { notesJourneyConfig } from '../lib/journeyConfigs/notes';
+import { extractNoteTags, filterNotes, getRelatedNotes, type NoteListMode } from '../lib/notesWorkflows';
 
 interface NotesPanelProps {
   notes: StoredNote[];
@@ -9,37 +14,242 @@ interface NotesPanelProps {
   activeProjectId: string;
 }
 
+// ─── Simple markdown → HTML renderer ─────────────────────────────────────────
+function renderMarkdown(md: string): string {
+  const html = md
+    // Code blocks (```...```)
+    .replace(/```([\s\S]*?)```/g, '<pre class="bg-bg-base border border-border-panel rounded p-3 text-xs font-mono overflow-x-auto my-2"><code>$1</code></pre>')
+    // Inline code (`...`)
+    .replace(/`([^`]+)`/g, '<code class="bg-bg-base border border-border-panel rounded px-1.5 py-0.5 text-xs font-mono">$1</code>')
+    // Headers
+    .replace(/^### (.+)$/gm, '<h3 class="text-sm font-bold text-text-primary mt-3 mb-1">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 class="text-base font-bold text-text-primary mt-4 mb-1">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 class="text-lg font-bold text-text-primary mt-4 mb-2">$1</h1>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>')
+    // Italic
+    .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
+    // Strikethrough
+    .replace(/~~(.+?)~~/g, '<del class="line-through text-text-secondary">$1</del>')
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-accent-blue underline hover:text-accent-blue/80">$1</a>')
+    // Unordered lists
+    .replace(/^[-*] (.+)$/gm, '<li class="ml-4 list-disc text-sm">$1</li>')
+    // Ordered lists
+    .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 list-decimal text-sm">$1</li>')
+    // Horizontal rule
+    .replace(/^---$/gm, '<hr class="border-border-panel my-3" />')
+    // Blockquote
+    .replace(/^> (.+)$/gm, '<blockquote class="border-l-2 border-accent-blue pl-3 text-text-secondary italic my-2">$1</blockquote>')
+    // Line breaks (double newline → paragraph gap)
+    .replace(/\n\n/g, '<div class="h-3"></div>')
+    // Single newlines → br
+    .replace(/\n/g, '<br />');
+
+  return html;
+}
+
+// ─── Toolbar actions ─────────────────────────────────────────────────────────
+type FormatAction = 'bold' | 'italic' | 'heading' | 'code' | 'list' | 'link' | 'strikethrough' | 'quote';
+
+function applyFormat(
+  textarea: HTMLTextAreaElement,
+  action: FormatAction,
+  updateBody: (body: string) => void,
+) {
+  const { selectionStart: start, selectionEnd: end, value } = textarea;
+  const selected = value.slice(start, end);
+  let replacement = '';
+  let cursorOffset = 0;
+
+  switch (action) {
+    case 'bold':
+      replacement = `**${selected || 'texto'}**`;
+      cursorOffset = selected ? replacement.length : 2;
+      break;
+    case 'italic':
+      replacement = `*${selected || 'texto'}*`;
+      cursorOffset = selected ? replacement.length : 1;
+      break;
+    case 'heading':
+      replacement = `## ${selected || 'Título'}`;
+      cursorOffset = replacement.length;
+      break;
+    case 'code':
+      replacement = selected.includes('\n') ? `\`\`\`\n${selected || 'código'}\n\`\`\`` : `\`${selected || 'código'}\``;
+      cursorOffset = selected ? replacement.length : (selected.includes('\n') ? 4 : 1);
+      break;
+    case 'list':
+      replacement = selected
+        ? selected.split('\n').map(line => `- ${line}`).join('\n')
+        : '- item';
+      cursorOffset = replacement.length;
+      break;
+    case 'link':
+      replacement = `[${selected || 'texto'}](url)`;
+      cursorOffset = selected ? replacement.length - 1 : 1;
+      break;
+    case 'strikethrough':
+      replacement = `~~${selected || 'texto'}~~`;
+      cursorOffset = selected ? replacement.length : 2;
+      break;
+    case 'quote':
+      replacement = selected
+        ? selected.split('\n').map(line => `> ${line}`).join('\n')
+        : '> citação';
+      cursorOffset = replacement.length;
+      break;
+  }
+
+  const newValue = value.slice(0, start) + replacement + value.slice(end);
+  updateBody(newValue);
+
+  // Restore cursor position after React re-render
+  requestAnimationFrame(() => {
+    textarea.focus();
+    const newPos = start + cursorOffset;
+    textarea.setSelectionRange(newPos, newPos);
+  });
+}
+
+const TOOLBAR_ITEMS: { action: FormatAction; icon: string; label: string }[] = [
+  { action: 'bold', icon: 'format_bold', label: 'Negrito' },
+  { action: 'italic', icon: 'format_italic', label: 'Itálico' },
+  { action: 'strikethrough', icon: 'strikethrough_s', label: 'Riscado' },
+  { action: 'heading', icon: 'title', label: 'Título' },
+  { action: 'code', icon: 'code', label: 'Código' },
+  { action: 'list', icon: 'format_list_bulleted', label: 'Lista' },
+  { action: 'quote', icon: 'format_quote', label: 'Citação' },
+  { action: 'link', icon: 'link', label: 'Link' },
+];
+
+// ─── Component ───────────────────────────────────────────────────────────────
 const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectId }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState('');
-  const autosaveRef = useRef<ReturnType<typeof setTimeout>>();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [listMode, setListMode] = useState<NoteListMode>(() => {
+    if (typeof window === 'undefined') return 'all';
+    return (localStorage.getItem('notes-list-mode') as NoteListMode) || 'all';
+  });
+  const [showListMobile, setShowListMobile] = useState(true);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [isBrainDumpFormOpen, setIsBrainDumpFormOpen] = useState(false);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const { isSetupDone, markDone } = useSectionSetup('notes');
+  const [showJourney, setShowJourney] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const projectNotes = notes.filter(n => !n.projectId || n.projectId === activeProjectId);
-  const selected = projectNotes.find(n => n.id === selectedId);
+  const handleBrainDumpSubmit = async (data: Record<string, unknown>) => {
+    const title = String(data.name || 'Nota sem titulo');
+    const body = String(data.content || '');
+    const tipo = String(data.tipo || 'ideia');
+    const now = new Date().toISOString();
+    const id = crypto?.randomUUID?.() ?? `note-${Date.now()}`;
+    const note: StoredNote = {
+      id,
+      title: `[${tipo.toUpperCase()}] ${title}`,
+      body,
+      createdAt: now,
+      updatedAt: now,
+      projectId: activeProjectId,
+      tags: extractNoteTags({ title, body, tags: [] }),
+      starred: false,
+      linkedNoteIds: [],
+    };
+    setNotes(prev => [note, ...prev]);
+    setSelectedId(id);
+    setPreviewMode(false);
+    showToast('Nota criada!');
+    syncToNotion('create-brain-dump', data);
+  };
+
+  const projectNotes = useMemo(
+    () => (notes ?? []).filter(n => !n.projectId || n.projectId === activeProjectId),
+    [activeProjectId, notes]
+  );
+  const filteredNotes = useMemo(
+    () => filterNotes(projectNotes, searchQuery, listMode),
+    [listMode, projectNotes, searchQuery]
+  );
+  const selected = filteredNotes.find(n => n.id === selectedId) ?? projectNotes.find(n => n.id === selectedId);
+  const selectedTags = selected ? extractNoteTags(selected) : [];
+  const relatedNotes = useMemo(
+    () => (selected ? getRelatedNotes(projectNotes, selected) : []),
+    [projectNotes, selected]
+  );
 
   const createNote = () => {
     const title = newTitle.trim() || 'Nota sem título';
     const now = new Date().toISOString();
     const id = crypto?.randomUUID?.() ?? `note-${Date.now()}`;
-    const note: StoredNote = { id, title, body: '', createdAt: now, updatedAt: now, projectId: activeProjectId };
+    const note: StoredNote = { id, title, body: '', createdAt: now, updatedAt: now, projectId: activeProjectId, tags: [], starred: false, linkedNoteIds: [] };
     setNotes(prev => [note, ...prev]);
     setSelectedId(id);
     setNewTitle('');
+    setPreviewMode(false);
+    setShowListMobile(false);
+    showToast('Nota pronta para editar');
   };
 
-  const updateBody = (body: string) => {
+  const updateBody = useCallback((body: string) => {
     if (!selectedId) return;
-    if (autosaveRef.current) clearTimeout(autosaveRef.current);
-    // Update immediately in state for responsiveness
-    setNotes(prev => prev.map(n => n.id === selectedId ? { ...n, body, updatedAt: new Date().toISOString() } : n));
-  };
+    setSaveState('saving');
+    setNotes(prev => prev.map(n => n.id === selectedId ? {
+      ...n,
+      body,
+      tags: extractNoteTags({ title: n.title, body, tags: n.tags }),
+      updatedAt: new Date().toISOString(),
+    } : n));
+  }, [selectedId, setNotes]);
+
+  const updateTitle = useCallback((title: string) => {
+    if (!selectedId) return;
+    setSaveState('saving');
+    setNotes(prev => prev.map(n => n.id === selectedId ? {
+      ...n,
+      title,
+      tags: extractNoteTags({ title, body: n.body, tags: n.tags }),
+      updatedAt: new Date().toISOString(),
+    } : n));
+  }, [selectedId, setNotes]);
+
+  React.useEffect(() => {
+    if (saveState !== 'saving') return;
+    const timer = window.setTimeout(() => setSaveState('saved'), 350);
+    return () => window.clearTimeout(timer);
+  }, [saveState]);
+
+  React.useEffect(() => {
+    if (saveState !== 'saved') return;
+    const timer = window.setTimeout(() => setSaveState('idle'), 1200);
+    return () => window.clearTimeout(timer);
+  }, [saveState]);
+
+  React.useEffect(() => {
+    localStorage.setItem('notes-list-mode', listMode);
+  }, [listMode]);
 
   const deleteNote = (id: string) => {
-    setNotes(prev => prev.filter(n => n.id !== id));
+    setNotes(prev => (prev ?? []).filter(n => n.id !== id));
     if (selectedId === id) setSelectedId(null);
   };
 
+  const toggleStar = useCallback((id: string) => {
+    setNotes((prev) => prev.map((note) => note.id === id ? { ...note, starred: !note.starred, updatedAt: new Date().toISOString() } : note));
+  }, [setNotes]);
+
   return (
+    <>
+      {showJourney && (
+        <JourneyOverlay
+          config={notesJourneyConfig}
+          isOpen={showJourney}
+          onClose={() => setShowJourney(false)}
+          onComplete={() => { markDone(); setShowJourney(false); }}
+        />
+      )}
+
     <div className="flex flex-col h-full overflow-hidden p-4 gap-4">
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
@@ -47,8 +257,15 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
           <Icon name="sticky_note_2" size="lg" className="text-accent-orange" />
           <div>
             <SectionLabel className="text-[12px] text-text-primary tracking-[0.1em]">Notas</SectionLabel>
-            <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest">{projectNotes.length} notas</p>
+            <p className="text-[9px] text-text-secondary font-bold uppercase tracking-widest">{filteredNotes.length}/{projectNotes.length} notas</p>
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <DataBadge isReal={projectNotes.length > 0} lastSync={selected?.updatedAt ?? null} />
+          <JourneyTriggerButton
+            isConfigured={isSetupDone}
+            onClick={() => setShowJourney(true)}
+          />
         </div>
       </div>
 
@@ -63,28 +280,94 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
           className="flex-1 bg-bg-base border border-border-panel rounded-md px-3 py-2 text-[11px] text-text-primary focus:outline-none focus:border-accent-orange/50 transition-colors placeholder:text-text-secondary/40"
         />
         <button
+          disabled={!newTitle.trim()}
           onClick={createNote}
-          className="px-3 py-2 bg-accent-orange/10 border border-accent-orange/30 rounded-md text-accent-orange text-[10px] font-bold uppercase hover:bg-accent-orange/20 transition-colors"
+          className={cn(
+            'px-3 py-2 rounded-md text-[10px] font-bold uppercase transition-colors',
+            newTitle.trim()
+              ? 'bg-accent-orange/10 border border-accent-orange/30 text-accent-orange hover:bg-accent-orange/20'
+              : 'bg-surface border border-border-panel text-text-secondary/40 cursor-not-allowed'
+          )}
         >
           <Icon name="add" size="sm" />
         </button>
+        <button
+          onClick={() => setIsBrainDumpFormOpen(true)}
+          className="px-3 py-2 bg-accent-blue/10 border border-accent-blue/30 rounded-md text-accent-blue text-[10px] font-bold uppercase hover:bg-accent-blue/20 transition-colors"
+        >
+          Brain dump
+        </button>
+      </div>
+
+      <div className="flex gap-2 shrink-0">
+        <div className="relative flex-1">
+          <Icon name="search" size="sm" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Buscar nota, ideia ou trecho..."
+            className="w-full bg-bg-base border border-border-panel rounded-md pl-9 pr-3 py-2 text-[11px] text-text-primary focus:outline-none focus:border-accent-orange/40 transition-colors placeholder:text-text-secondary/40"
+          />
+        </div>
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="px-3 py-2 border border-border-panel rounded-md text-[10px] font-bold uppercase text-text-secondary hover:text-text-primary transition-colors"
+          >
+            Limpar
+          </button>
+        )}
+      </div>
+
+      <div className="flex gap-2 shrink-0 flex-wrap">
+        {([
+          { id: 'all', label: 'Todas' },
+          { id: 'starred', label: 'Favoritas' },
+          { id: 'recent', label: 'Recentes' },
+        ] as const).map((mode) => (
+          <button
+            key={mode.id}
+            onClick={() => setListMode(mode.id)}
+            className={cn(
+              'rounded-sm border px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest transition-colors',
+              listMode === mode.id
+                ? 'border-accent-orange/30 bg-accent-orange/10 text-accent-orange'
+                : 'border-border-panel text-text-secondary hover:text-text-primary'
+            )}
+          >
+            {mode.label}
+          </button>
+        ))}
       </div>
 
       <div className="flex-1 flex gap-4 overflow-hidden min-h-0">
         {/* Notes List */}
-        <div className="w-64 shrink-0 overflow-y-auto space-y-2">
+        <div className={cn(
+          'md:w-64 md:shrink-0 overflow-y-auto space-y-2',
+          showListMobile ? 'w-full' : 'hidden md:block'
+        )}>
           {projectNotes.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Icon name="note_stack" size="lg" className="text-text-secondary/30 mb-2" />
-              <p className="text-[10px] font-bold text-text-secondary/40 uppercase tracking-widest">Nenhuma nota</p>
-              <p className="text-[8px] text-text-secondary/25 mt-1">Crie sua primeira nota acima</p>
-            </div>
+            <EmptyState
+              icon="note_stack"
+              title="Nenhuma nota"
+              description="Crie sua primeira nota ou use o brain dump para capturar rapido."
+              className="py-12"
+            />
           )}
-          {projectNotes.map(note => (
+          {projectNotes.length > 0 && filteredNotes.length === 0 && (
+            <EmptyState
+              icon="search_off"
+              title="Nenhuma nota bate com a busca"
+              description="Ajuste os termos para encontrar a nota ou ideia desejada."
+              className="py-12"
+            />
+          )}
+          {filteredNotes.map(note => (
             <Card
               key={note.id}
               interactive
-              onClick={() => setSelectedId(note.id)}
+              onClick={() => { setSelectedId(note.id); setShowListMobile(false); setPreviewMode(false); }}
               className={cn(
                 'p-3 group',
                 selectedId === note.id && 'border-accent-orange/40 bg-accent-orange/5'
@@ -94,13 +377,31 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
                 <div className="min-w-0">
                   <p className="text-[11px] font-bold text-text-primary truncate">{note.title}</p>
                   <p className="text-[9px] text-text-secondary mt-1 line-clamp-2">{note.body || 'Vazia'}</p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {extractNoteTags(note).slice(0, 3).map((tag) => (
+                      <span key={tag} className="rounded-sm border border-border-panel px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest text-text-secondary">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
                   <p className="text-[8px] text-text-secondary/50 mt-1">
                     {new Date(note.updatedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
                 <button
+                  onClick={e => { e.stopPropagation(); toggleStar(note.id); }}
+                  className={cn(
+                    'shrink-0 p-1 transition-colors',
+                    note.starred ? 'text-accent-orange' : 'text-text-secondary hover:text-accent-orange'
+                  )}
+                  aria-label="Favoritar nota"
+                >
+                  <Icon name={note.starred ? 'star' : 'star_outline'} size="sm" />
+                </button>
+                <button
                   onClick={e => { e.stopPropagation(); deleteNote(note.id); }}
-                  className="opacity-0 group-hover:opacity-100 text-text-secondary hover:text-accent-red transition-all shrink-0"
+                  className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-text-secondary hover:text-accent-red transition-all shrink-0 p-1"
+                  aria-label="Excluir nota"
                 >
                   <Icon name="delete" size="sm" />
                 </button>
@@ -109,38 +410,144 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, setNotes, activeProjectI
           ))}
         </div>
 
-        {/* Editor */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Editor / Preview */}
+        <div className={cn(
+          'flex-1 flex flex-col min-w-0',
+          !showListMobile ? 'w-full' : 'hidden md:flex'
+        )}>
           {selected ? (
             <>
               <div className="flex items-center gap-2 mb-2 shrink-0">
+                <button
+                  onClick={() => setShowListMobile(true)}
+                  className="md:hidden text-text-secondary hover:text-text-primary p-1 min-h-[40px] min-w-[40px] flex items-center justify-center"
+                  aria-label="Voltar para lista"
+                >
+                  <Icon name="arrow_back" size="sm" />
+                </button>
                 <input
                   type="text"
                   value={selected.title}
-                  onChange={e => {
-                    const val = e.target.value;
-                    setNotes(prev => prev.map(n => n.id === selectedId ? { ...n, title: val, updatedAt: new Date().toISOString() } : n));
-                  }}
+                  onChange={e => updateTitle(e.target.value)}
                   className="flex-1 bg-transparent border-none text-sm font-bold text-text-primary focus:outline-none"
                 />
-                <span className="text-[8px] text-text-secondary/50 shrink-0">autosave</span>
+                <button
+                  onClick={() => toggleStar(selected.id)}
+                  className={cn(
+                    'p-1.5 rounded-sm transition-colors shrink-0',
+                    selected.starred ? 'text-accent-orange' : 'text-text-secondary hover:text-accent-orange'
+                  )}
+                  aria-label="Favoritar nota selecionada"
+                >
+                  <Icon name={selected.starred ? 'star' : 'star_outline'} size="sm" />
+                </button>
+                {/* Edit/Preview toggle */}
+                <div className="flex items-center p-0.5 bg-bg-base rounded-sm border border-border-panel shrink-0">
+                  <button
+                    onClick={() => setPreviewMode(false)}
+                    className={cn(
+                      'px-2 py-1 rounded-sm text-[9px] font-bold uppercase tracking-wider transition-colors',
+                      !previewMode ? 'bg-surface text-accent-orange border border-border-panel/40 shadow-sm' : 'text-text-secondary hover:text-text-primary'
+                    )}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => setPreviewMode(true)}
+                    className={cn(
+                      'px-2 py-1 rounded-sm text-[9px] font-bold uppercase tracking-wider transition-colors',
+                      previewMode ? 'bg-surface text-accent-blue border border-border-panel/40 shadow-sm' : 'text-text-secondary hover:text-text-primary'
+                    )}
+                  >
+                    Preview
+                  </button>
+                </div>
+                <span className="text-[8px] text-text-secondary/50 shrink-0">
+                  {saveState === 'saving' ? 'salvando...' : saveState === 'saved' ? 'salvo' : 'autosave'}
+                </span>
               </div>
-              <textarea
-                value={selected.body}
-                onChange={e => updateBody(e.target.value)}
-                placeholder="Escreva aqui…"
-                className="flex-1 bg-bg-base border border-border-panel rounded-md p-4 text-sm text-text-primary resize-none focus:outline-none focus:border-accent-orange/30 transition-colors placeholder:text-text-secondary/30 leading-relaxed"
-              />
+
+              {(selectedTags.length > 0 || relatedNotes.length > 0) && (
+                <div className="mb-2 flex flex-wrap items-center gap-2 shrink-0">
+                  {selectedTags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => setSearchQuery(`#${tag}`)}
+                      className="rounded-sm border border-border-panel px-2 py-1 text-[8px] font-bold uppercase tracking-widest text-text-secondary hover:text-text-primary"
+                    >
+                      #{tag}
+                    </button>
+                  ))}
+                  {relatedNotes.slice(0, 3).map((note) => (
+                    <button
+                      key={note.id}
+                      onClick={() => {
+                        setSelectedId(note.id);
+                        setPreviewMode(false);
+                      }}
+                      className="rounded-sm border border-accent-blue/20 bg-accent-blue/5 px-2 py-1 text-[8px] font-bold uppercase tracking-widest text-accent-blue hover:bg-accent-blue/10"
+                    >
+                      [[{note.title}]]
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Toolbar (edit mode only) */}
+              {!previewMode && (
+                <div className="flex items-center gap-0.5 mb-2 p-1 bg-bg-base border border-border-panel rounded-md shrink-0 overflow-x-auto">
+                  {TOOLBAR_ITEMS.map(item => (
+                    <button
+                      key={item.action}
+                      onClick={() => {
+                        if (textareaRef.current) {
+                          applyFormat(textareaRef.current, item.action, updateBody);
+                        }
+                      }}
+                      title={item.label}
+                      className="p-1.5 rounded-sm text-text-secondary hover:text-text-primary hover:bg-surface transition-colors shrink-0"
+                    >
+                      <Icon name={item.icon} size="sm" />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {previewMode ? (
+                <div
+                  className="flex-1 bg-bg-base border border-border-panel rounded-md p-4 text-sm text-text-primary overflow-y-auto leading-relaxed prose-sm"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(selected.body || '<span class="text-text-secondary/30 italic">Nada para exibir</span>') }}
+                />
+              ) : (
+                <textarea
+                  ref={textareaRef}
+                  value={selected.body}
+                  onChange={e => updateBody(e.target.value)}
+                  placeholder="Escreva aqui… (suporta **markdown**)"
+                  className="flex-1 bg-bg-base border border-border-panel rounded-md p-4 text-sm text-text-primary resize-none focus:outline-none focus:border-accent-orange/30 transition-colors placeholder:text-text-secondary/30 leading-relaxed font-mono"
+                />
+              )}
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <Icon name="edit_note" size="lg" className="text-text-secondary/20 mb-2" />
-              <p className="text-[10px] text-text-secondary/30 font-bold uppercase tracking-widest">Selecione uma nota</p>
-            </div>
+            <EmptyState
+              icon="edit_note"
+              title="Selecione uma nota"
+              description="Crie uma nota nova ou abra um brain dump para capturar rapido."
+              className="flex-1"
+            />
           )}
         </div>
       </div>
+
+      <FormModal
+        title="Novo Brain Dump"
+        fields={braindumpFields}
+        isOpen={isBrainDumpFormOpen}
+        onClose={() => setIsBrainDumpFormOpen(false)}
+        onSubmit={handleBrainDumpSubmit}
+      />
     </div>
+    </>
   );
 };
 

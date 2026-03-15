@@ -1,0 +1,849 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Badge, Card, Icon, SectionLabel, StatusDot, showToast } from './ui';
+import { cn } from '../utils/cn';
+import AgentDashboard from './agents/AgentDashboard';
+import {
+  statusDot,
+  KANBAN_ORDER,
+  executionBadge,
+  formatTokens,
+  type KanbanStatus,
+} from '../data/agentMockData';
+import type { View } from '../lib/appTypes';
+import {
+  useAgents,
+  useKanban,
+  useExecutions,
+  useDispatch,
+  useConnectionState,
+  useOpenClawActions,
+  useTokenUsages,
+} from '../contexts/OpenClawContext';
+import { summarizeDelegationQueue, type DelegationQueueItem } from '../lib/productSignals';
+
+interface AgentCommandCenterProps {
+  onAgentClick: (agentId: string) => void;
+  onNavigate: (view: View) => void;
+}
+
+interface MissionTemplate {
+  id: string;
+  label: string;
+  mission: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+interface RecentDispatch {
+  agentId: string;
+  mission: string;
+  priority: 'high' | 'medium' | 'low';
+  createdAt: string;
+}
+
+const DELEGATION_QUEUE_KEY = 'agent-delegation-queue';
+
+const missionTemplates: MissionTemplate[] = [
+  {
+    id: 'daily-triage',
+    label: 'Triagem',
+    mission: 'Faça a triagem das pendencias recentes, destaque bloqueios e proponha as proximas acoes.',
+    priority: 'medium',
+  },
+  {
+    id: 'ship-fix',
+    label: 'Ship Fix',
+    mission: 'Identifique a causa raiz, implemente a correcao e valide com lint, typecheck, test e build.',
+    priority: 'high',
+  },
+  {
+    id: 'health-check',
+    label: 'Health Check',
+    mission: 'Revise o estado atual do dominio, reporte riscos operacionais e sugira a proxima intervencao.',
+    priority: 'low',
+  },
+];
+
+const roleTemplateMap: Record<string, MissionTemplate[]> = {
+  coordinator: [
+    missionTemplates[0],
+    { id: 'weekly-orchestration', label: 'Orquestrar', mission: 'Reordene prioridades do sistema, redistribua carga entre agentes e reporte gargalos.', priority: 'high' },
+  ],
+  'sub-agent': [
+    missionTemplates[1],
+    { id: 'ship-scope', label: 'Executar', mission: 'Pegue a próxima entrega do backlog, implemente a mudança e registre evidências do resultado.', priority: 'high' },
+  ],
+  integration: [
+    missionTemplates[2],
+    { id: 'sync-audit', label: 'Sync Audit', mission: 'Audite integrações e sincronizações recentes, destacando dados faltantes e inconsistências.', priority: 'medium' },
+  ],
+};
+
+export default function AgentCommandCenter({ onAgentClick, onNavigate }: AgentCommandCenterProps) {
+  const { agents } = useAgents();
+  const allTasks = useKanban();
+  const allExecutions = useExecutions();
+  const tokenUsages = useTokenUsages();
+  const { dispatch: sendDispatch } = useDispatch();
+  const { dispatchMission } = useOpenClawActions();
+  const { isLive } = useConnectionState();
+
+  // Dispatch form
+  const [missionText, setMissionText] = useState('');
+  const [selectedAgent, setSelectedAgent] = useState(agents[0]?.id || '');
+  const [isDispatching, setIsDispatching] = useState(false);
+  const [missionPriority, setMissionPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  const [dispatchFeedback, setDispatchFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [agentQuery, setAgentQuery] = useState('');
+  const [agentFilter, setAgentFilter] = useState<'all' | 'online' | 'busy'>('all');
+  const [recentDispatches, setRecentDispatches] = useState<RecentDispatch[]>([]);
+  const [delegationQueue, setDelegationQueue] = useState<DelegationQueueItem[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem('agent-recent-dispatches');
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as RecentDispatch[];
+      if (Array.isArray(parsed)) {
+        setRecentDispatches(parsed.slice(0, 5));
+      }
+    } catch {
+      // Ignore invalid local state and keep the panel usable.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(DELEGATION_QUEUE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as DelegationQueueItem[];
+      if (Array.isArray(parsed)) {
+        setDelegationQueue(parsed.slice(0, 12));
+      }
+    } catch {
+      // Keep queue empty if local state is invalid.
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem('agent-recent-dispatches', JSON.stringify(recentDispatches.slice(0, 5)));
+  }, [recentDispatches]);
+
+  useEffect(() => {
+    window.localStorage.setItem(DELEGATION_QUEUE_KEY, JSON.stringify(delegationQueue.slice(0, 12)));
+  }, [delegationQueue]);
+
+  const updateDelegationItem = (itemId: string, updater: (item: DelegationQueueItem) => DelegationQueueItem) => {
+    setDelegationQueue((current) => current.map((item) => item.id === itemId ? updater(item) : item));
+  };
+
+  const queueMission = () => {
+    if (!missionText.trim()) return;
+    const queuedItem: DelegationQueueItem = {
+      id: crypto.randomUUID(),
+      agentId: selectedAgent,
+      mission: missionText.trim(),
+      priority: missionPriority,
+      status: 'pending',
+      createdAt: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setDelegationQueue((current) => [queuedItem, ...current].slice(0, 12));
+    setDispatchFeedback({ type: 'success', message: 'Missão adicionada à fila de delegação.' });
+    showToast('Missão adicionada à fila', 'info');
+  };
+
+  const dispatchQueueItem = async (item: DelegationQueueItem) => {
+    setSelectedAgent(item.agentId);
+    setMissionPriority(item.priority);
+    setMissionText(item.mission);
+    setDispatchFeedback(null);
+    try {
+      const ok = await dispatchMission(item.agentId, item.mission, item.priority);
+      if (!ok) {
+        await sendDispatch(item.agentId, item.mission, item.priority);
+      }
+      updateDelegationItem(item.id, (current) => ({ ...current, status: 'sent' }));
+      setRecentDispatches((current) => [
+        { agentId: item.agentId, mission: item.mission, priority: item.priority, createdAt: item.createdAt },
+        ...current,
+      ].slice(0, 5));
+      setDispatchFeedback({ type: 'success', message: 'Missão da fila enviada com sucesso.' });
+      showToast('Missão da fila enviada');
+    } catch {
+      updateDelegationItem(item.id, (current) => ({ ...current, status: 'failed' }));
+      setDispatchFeedback({ type: 'error', message: 'Falha ao enviar missão da fila.' });
+    }
+  };
+
+  const handleDispatch = async () => {
+    if (!missionText.trim()) return;
+    setIsDispatching(true);
+    setDispatchFeedback(null);
+    try {
+      // Try API dispatch first (returns bool), fall back to gateway dispatch
+      const ok = await dispatchMission(selectedAgent, missionText, missionPriority);
+      if (!ok) {
+        // API not configured or failed — fall back to gateway
+        await sendDispatch(selectedAgent, missionText, missionPriority);
+      }
+      const agentName = agents.find(agent => agent.id === selectedAgent)?.name ?? 'agente';
+      const createdAt = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      setRecentDispatches((current) => [
+        { agentId: selectedAgent, mission: missionText.trim(), priority: missionPriority, createdAt },
+        ...current,
+      ].slice(0, 5));
+      setMissionText('');
+      setDispatchFeedback({ type: 'success', message: `Missao enviada para ${agentName}.` });
+      showToast(`Missao enviada para ${agentName}`);
+    } catch {
+      setDispatchFeedback({ type: 'error', message: 'Nao foi possivel enviar a missao.' });
+    } finally {
+      setIsDispatching(false);
+    }
+  };
+
+  // Aggregates
+  const onlineCount = useMemo(() => agents.filter(a => a.status !== 'offline').length, [agents]);
+  const totalTokensToday = useMemo(
+    () => tokenUsages.reduce((sum, t) => sum + t.todayTokensIn + t.todayTokensOut, 0),
+    [tokenUsages]
+  );
+  const totalCostToday = useMemo(
+    () => tokenUsages.reduce((sum, t) => sum + t.todayCostUSD, 0),
+    [tokenUsages]
+  );
+
+  // Per-agent task counts
+  const agentWorkload = useMemo(() => {
+    const workload: Record<string, Record<KanbanStatus, number>> = {};
+    for (const agent of agents) {
+      workload[agent.id] = { backlog: 0, 'em-progresso': 0, revisao: 0, concluido: 0 };
+    }
+    for (const t of (allTasks ?? [])) {
+      if (workload[t.agentId] && workload[t.agentId][t.status] !== undefined) {
+        workload[t.agentId][t.status]++;
+      }
+    }
+    return workload;
+  }, [agents, allTasks]);
+
+  const filteredAgents = useMemo(() => {
+    return agents.filter((agent) => {
+      const matchesQuery = `${agent.name} ${agent.model ?? ''}`.toLowerCase().includes(agentQuery.trim().toLowerCase());
+      if (!matchesQuery) return false;
+      if (agentFilter === 'online') return agent.status === 'online' || agent.status === 'busy';
+      if (agentFilter === 'busy') return agent.status === 'busy';
+      return true;
+    });
+  }, [agents, agentFilter, agentQuery]);
+
+  const agentOps = useMemo(() => {
+    return filteredAgents.map((agent) => {
+      const executions = allExecutions.filter((execution) => execution.agentId === agent.id);
+      const latestDispatch = recentDispatches.find((dispatch) => dispatch.agentId === agent.id) ?? null;
+      return {
+        agent,
+        running: executions.filter((execution) => execution.status === 'running').length,
+        failed: executions.filter((execution) => execution.status === 'failed').length,
+        completed: executions.filter((execution) => execution.status === 'completed').length,
+        latestDispatch,
+      };
+    });
+  }, [allExecutions, filteredAgents, recentDispatches]);
+
+  const getAgentTokensToday = (agentId: string) => {
+    const u = (tokenUsages ?? []).find(t => t.agentId === agentId);
+    return u ? (u.todayTokensIn ?? 0) + (u.todayTokensOut ?? 0) : 0;
+  };
+
+  // Execution pipeline
+  const executionPipeline = useMemo(() => {
+    return (allExecutions ?? []).slice(0, 12).map(exec => {
+      const badge = executionBadge[exec.status] ?? { variant: 'neutral' as const, label: exec.status };
+      return { ...exec, badge };
+    });
+  }, [allExecutions]);
+
+  // Mission queue (active tasks grouped)
+  const safeTasks = allTasks ?? [];
+  const activeMissions = useMemo(() => {
+    return safeTasks
+      .filter(t => t.status === 'em-progresso' || t.status === 'revisao')
+      .slice(0, 8);
+  }, [safeTasks]);
+
+  const backlogCount = useMemo(() => safeTasks.filter(t => t.status === 'backlog').length, [safeTasks]);
+  const inProgressCount = useMemo(() => safeTasks.filter(t => t.status === 'em-progresso').length, [safeTasks]);
+  const reviewCount = useMemo(() => safeTasks.filter(t => t.status === 'revisao').length, [safeTasks]);
+  const doneCount = useMemo(() => safeTasks.filter(t => t.status === 'concluido').length, [safeTasks]);
+
+  const priorityColors = {
+    high: { bg: 'bg-accent-red/10', border: 'border-accent-red/30', text: 'text-accent-red', label: 'Alta' },
+    medium: { bg: 'bg-accent-orange/10', border: 'border-accent-orange/30', text: 'text-accent-orange', label: 'Média' },
+    low: { bg: 'bg-accent-blue/10', border: 'border-accent-blue/30', text: 'text-accent-blue', label: 'Baixa' },
+  };
+  const selectedAgentRole = agents.find((agent) => agent.id === selectedAgent)?.role ?? 'sub-agent';
+  const visibleTemplates = roleTemplateMap[selectedAgentRole] ?? missionTemplates;
+  const delegationSummary = useMemo(() => summarizeDelegationQueue(delegationQueue), [delegationQueue]);
+
+  const applyTemplate = (template: MissionTemplate) => {
+    setMissionText(template.mission);
+    setMissionPriority(template.priority);
+    setDispatchFeedback(null);
+  };
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* ─── HEADER ─── */}
+      <div className="p-5 border-b border-border-panel bg-bg-base shrink-0">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-md bg-brand-mint/10 border border-brand-mint/20 flex items-center justify-center text-brand-mint shrink-0">
+              <Icon name="hub" size="md" />
+            </div>
+            <div>
+              <h1 className="text-sm font-black text-text-primary">Mission Control</h1>
+              <p className="text-[8px] font-bold text-text-secondary uppercase tracking-widest mt-0.5">
+                GERENCIAMENTO DE AGENTES & MISSÕES
+              </p>
+            </div>
+            <div className="flex items-center gap-1 ml-2">
+              <span className={cn('w-2 h-2 rounded-full', isLive ? 'bg-brand-mint animate-pulse' : 'bg-text-secondary/30')} />
+              <span className="text-[8px] font-black uppercase tracking-widest text-text-secondary">
+                {isLive ? 'LIVE' : 'OFFLINE'}
+              </span>
+            </div>
+          </div>
+
+          {/* Pipeline stats */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-surface/50 border border-border-panel px-2.5 py-1.5 rounded-sm">
+              <span className="text-[8px] font-bold text-text-secondary uppercase">Backlog</span>
+              <span className="text-[9px] font-black text-accent-blue font-mono">{backlogCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-surface/50 border border-border-panel px-2.5 py-1.5 rounded-sm">
+              <span className="text-[8px] font-bold text-text-secondary uppercase">Em Prog.</span>
+              <span className="text-[9px] font-black text-accent-orange font-mono">{inProgressCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-surface/50 border border-border-panel px-2.5 py-1.5 rounded-sm">
+              <span className="text-[8px] font-bold text-text-secondary uppercase">REVISÃO</span>
+              <span className="text-[9px] font-black text-accent-purple font-mono">{reviewCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-surface/50 border border-border-panel px-2.5 py-1.5 rounded-sm">
+              <span className="text-[8px] font-bold text-text-secondary uppercase">Feito</span>
+              <span className="text-[9px] font-black text-brand-mint font-mono">{doneCount}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── DISPATCH BAR ─── */}
+        <div className="mt-4 p-3 bg-surface/30 border border-border-panel rounded-md space-y-3">
+          <div className="flex items-center gap-2">
+            <Icon name="send" size="xs" className="text-brand-mint" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-text-secondary">NOVA MISSÃO</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {visibleTemplates.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => applyTemplate(template)}
+                className="rounded-sm border border-border-panel bg-bg-base px-2.5 py-1.5 text-[8px] font-black uppercase tracking-widest text-text-secondary hover:border-brand-mint/30 hover:text-brand-mint transition-colors"
+              >
+                {template.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-stretch gap-2">
+            <input
+              type="text"
+              value={missionText}
+              onChange={(e) => setMissionText(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleDispatch()}
+              placeholder="Descreva a missão para o agente..."
+              className="flex-1 bg-bg-base border border-border-panel rounded-sm px-3 py-2 text-[10px] text-text-primary font-mono placeholder:text-text-secondary/30 focus:outline-none focus:border-brand-mint/30 transition-colors"
+            />
+            <select
+              value={selectedAgent}
+              onChange={(e) => setSelectedAgent(e.target.value)}
+              className="bg-bg-base border border-border-panel rounded-sm px-2 py-2 text-[9px] text-text-primary font-bold focus:outline-none cursor-pointer"
+            >
+              {agents.map(a => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+            <div className="flex bg-bg-base border border-border-panel rounded-sm overflow-hidden">
+              {(['high', 'medium', 'low'] as const).map(p => (
+                <button
+                  key={p}
+                  onClick={() => setMissionPriority(p)}
+                  className={cn(
+                    'px-2 py-2 text-[8px] font-black uppercase transition-colors',
+                    missionPriority === p
+                      ? `${priorityColors[p].bg} ${priorityColors[p].text} ${priorityColors[p].border}`
+                      : 'text-text-secondary/40 hover:text-text-secondary'
+                  )}
+                >
+                  {priorityColors[p].label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleDispatch}
+              disabled={!missionText.trim() || isDispatching}
+              className={cn(
+                'px-4 py-2 rounded-sm font-bold uppercase tracking-wider text-[9px] transition-all flex items-center gap-1.5 shrink-0',
+                missionText.trim() && !isDispatching
+                  ? 'bg-brand-mint/10 border border-brand-mint/30 text-brand-mint hover:bg-brand-mint/20'
+                  : 'bg-surface/50 border border-border-panel text-text-secondary/40 cursor-not-allowed'
+              )}
+            >
+              <Icon name={isDispatching ? 'autorenew' : 'rocket_launch'} size="xs" />
+              {isDispatching ? 'Enviando...' : 'Dispatch'}
+            </button>
+            <button
+              onClick={queueMission}
+              disabled={!missionText.trim()}
+              className={cn(
+                'px-3 py-2 rounded-sm font-bold uppercase tracking-wider text-[9px] transition-all flex items-center gap-1.5 shrink-0',
+                missionText.trim()
+                  ? 'bg-accent-blue/10 border border-accent-blue/30 text-accent-blue hover:bg-accent-blue/20'
+                  : 'bg-surface/50 border border-border-panel text-text-secondary/40 cursor-not-allowed'
+              )}
+            >
+              <Icon name="playlist_add" size="xs" />
+              Fila
+            </button>
+          </div>
+          {dispatchFeedback && (
+            <div
+              className={cn(
+                'rounded-sm border px-3 py-2 text-[10px] font-medium',
+                dispatchFeedback.type === 'success'
+                  ? 'border-brand-mint/30 bg-brand-mint/10 text-brand-mint'
+                  : 'border-accent-red/30 bg-accent-red/10 text-accent-red'
+              )}
+            >
+              {dispatchFeedback.message}
+            </div>
+          )}
+          {recentDispatches.length > 0 && (
+            <div className="space-y-2 rounded-sm border border-border-panel/70 bg-bg-base px-3 py-2">
+              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-text-secondary">
+                <Icon name="history" size="xs" />
+                <span>Envios Recentes</span>
+              </div>
+              <div className="space-y-1.5">
+                {recentDispatches.map((dispatch, index) => {
+                  const targetAgent = agents.find((agent) => agent.id === dispatch.agentId);
+                  return (
+                    <button
+                      key={`${dispatch.agentId}-${dispatch.createdAt}-${index}`}
+                      onClick={() => {
+                        setSelectedAgent(dispatch.agentId);
+                        setMissionText(dispatch.mission);
+                        setMissionPriority(dispatch.priority);
+                        setDispatchFeedback(null);
+                      }}
+                      className="flex w-full items-center justify-between gap-3 rounded-sm border border-border-panel/60 px-2.5 py-2 text-left hover:border-brand-mint/20 hover:bg-brand-mint/[0.03] transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-[10px] font-medium text-text-primary">{dispatch.mission}</p>
+                        <p className="mt-0.5 text-[8px] font-mono text-text-secondary">
+                          {targetAgent?.name ?? dispatch.agentId} · {dispatch.createdAt}
+                        </p>
+                      </div>
+                      <Badge variant={dispatch.priority === 'high' ? 'red' : dispatch.priority === 'medium' ? 'orange' : 'blue'} size="xs">
+                        {priorityColors[dispatch.priority].label}
+                      </Badge>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          <div className="space-y-2 rounded-sm border border-border-panel/70 bg-bg-base px-3 py-2">
+            <div className="flex items-center justify-between gap-3 text-[8px] font-black uppercase tracking-widest text-text-secondary">
+              <div className="flex items-center gap-2">
+                <Icon name="queue" size="xs" />
+                <span>Fila de Delegação</span>
+              </div>
+              <span>{delegationSummary.pending} pendente(s)</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="rounded-sm border border-border-panel/60 px-2 py-1.5">
+                <p className="text-[7px] uppercase tracking-widest text-text-secondary">Pend.</p>
+                <p className="mt-1 text-[10px] font-black font-mono text-accent-blue">{delegationSummary.pending}</p>
+              </div>
+              <div className="rounded-sm border border-border-panel/60 px-2 py-1.5">
+                <p className="text-[7px] uppercase tracking-widest text-text-secondary">Env.</p>
+                <p className="mt-1 text-[10px] font-black font-mono text-brand-mint">{delegationSummary.sent}</p>
+              </div>
+              <div className="rounded-sm border border-border-panel/60 px-2 py-1.5">
+                <p className="text-[7px] uppercase tracking-widest text-text-secondary">Done</p>
+                <p className="mt-1 text-[10px] font-black font-mono text-brand-mint">{delegationSummary.done}</p>
+              </div>
+              <div className="rounded-sm border border-border-panel/60 px-2 py-1.5">
+                <p className="text-[7px] uppercase tracking-widest text-text-secondary">Fail</p>
+                <p className="mt-1 text-[10px] font-black font-mono text-accent-red">{delegationSummary.failed}</p>
+              </div>
+            </div>
+            {delegationQueue.length === 0 ? (
+              <p className="text-[10px] text-text-secondary">Nenhuma missão na fila.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {delegationQueue.slice(0, 4).map((item) => {
+                  const targetAgent = agents.find((agent) => agent.id === item.agentId);
+                  return (
+                    <div key={item.id} className="rounded-sm border border-border-panel/60 px-2.5 py-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="truncate text-[10px] font-medium text-text-primary">{item.mission}</p>
+                          <p className="mt-0.5 text-[8px] font-mono text-text-secondary">
+                            {targetAgent?.name ?? item.agentId} · {item.createdAt}
+                          </p>
+                        </div>
+                        <Badge variant={item.priority === 'high' ? 'red' : item.priority === 'medium' ? 'orange' : 'blue'} size="xs">
+                          {item.status}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 flex gap-2">
+                        {item.status === 'pending' && (
+                          <button
+                            onClick={() => void dispatchQueueItem(item)}
+                            className="rounded-sm border border-brand-mint/30 px-2 py-1 text-[8px] font-black uppercase tracking-widest text-brand-mint hover:bg-brand-mint/10 transition-colors"
+                          >
+                            Enviar
+                          </button>
+                        )}
+                        <button
+                          onClick={() => updateDelegationItem(item.id, (current) => ({ ...current, status: 'done' }))}
+                          className="rounded-sm border border-border-panel px-2 py-1 text-[8px] font-black uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors"
+                        >
+                          Done
+                        </button>
+                        <button
+                          onClick={() => updateDelegationItem(item.id, (current) => ({ ...current, status: 'failed' }))}
+                          className="rounded-sm border border-border-panel px-2 py-1 text-[8px] font-black uppercase tracking-widest text-text-secondary hover:text-accent-red transition-colors"
+                        >
+                          Falhou
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── BODY ─── */}
+      <div className="flex-grow overflow-y-auto p-5 space-y-5">
+        <AgentDashboard agents={agents} executions={allExecutions} recentDispatches={recentDispatches} />
+
+        {/* ─── AGENT GRID + WORKLOAD ─── */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <SectionLabel icon="smart_toy">AGENTES — CARGA DE TRABALHO</SectionLabel>
+            <div className="flex items-center gap-2 bg-surface/50 border border-border-panel px-2.5 py-1.5 rounded-sm">
+              <StatusDot color="mint" glow />
+              <span className="text-[9px] font-bold text-text-secondary uppercase tracking-widest">{onlineCount}/{agents.length} Online</span>
+            </div>
+          </div>
+
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              value={agentQuery}
+              onChange={(e) => setAgentQuery(e.target.value)}
+              placeholder="Buscar agente..."
+              className="min-w-[220px] flex-1 bg-bg-base border border-border-panel rounded-sm px-3 py-2 text-[10px] text-text-primary font-mono placeholder:text-text-secondary/30 focus:outline-none focus:border-brand-mint/30 transition-colors"
+            />
+            {(['all', 'online', 'busy'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setAgentFilter(filter)}
+                className={cn(
+                  'px-2.5 py-2 rounded-sm border text-[8px] font-black uppercase tracking-widest transition-colors',
+                  agentFilter === filter
+                    ? 'border-brand-mint/30 bg-brand-mint/10 text-brand-mint'
+                    : 'border-border-panel text-text-secondary hover:text-text-primary'
+                )}
+              >
+                {filter === 'all' ? 'Todos' : filter === 'online' ? 'Online' : 'Busy'}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            {filteredAgents.map((agent) => {
+              const status = statusDot[agent.status];
+              const isOnline = agent.status === 'online' || agent.status === 'busy';
+              const tokensToday = getAgentTokensToday(agent.id);
+              const work = agentWorkload[agent.id] || { backlog: 0, 'em-progresso': 0, revisao: 0, concluido: 0 };
+              const totalTasks = Object.values(work).reduce((a, b) => a + b, 0);
+
+              return (
+                <Card
+                  key={agent.id}
+                  className="p-3 hover:border-brand-mint/30 transition-colors cursor-pointer group"
+                  onClick={() => onAgentClick(agent.id)}
+                >
+                  {/* Agent Identity */}
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <div className={cn(
+                      'size-8 rounded-md border flex items-center justify-center shrink-0',
+                      agent.role === 'coordinator'
+                        ? 'bg-accent-purple/10 border-accent-purple/20 text-accent-purple'
+                        : 'bg-brand-mint/10 border-brand-mint/20 text-brand-mint',
+                    )}>
+                      <Icon name={agent.icon || 'smart_toy'} size="md" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-[11px] font-black text-text-primary truncate group-hover:text-brand-mint transition-colors">{agent.name}</p>
+                        <StatusDot color={status.color} glow={isOnline} />
+                      </div>
+                      <p className="text-[8px] text-text-secondary font-mono truncate">{agent.model || '—'}</p>
+                    </div>
+                  </div>
+
+                  {/* Current Mission */}
+                  <div className="mb-3 px-2 py-1.5 bg-bg-base rounded-sm border border-border-panel/50">
+                    <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-0.5">MISSÃO ATUAL</p>
+                    <p className="text-[9px] text-text-primary font-medium truncate">{agent.currentMission || 'Idle — Aguardando'}</p>
+                  </div>
+
+                  {/* Workload Bar */}
+                  {totalTasks > 0 && (
+                    <div className="mb-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[7px] font-black uppercase tracking-widest text-text-secondary">Tarefas</span>
+                        <span className="text-[8px] font-mono text-text-secondary">{totalTasks}</span>
+                      </div>
+                      <div className="flex h-1.5 rounded-full overflow-hidden bg-bg-base">
+                        {KANBAN_ORDER.map((s) => {
+                          const pct = (work[s] / totalTasks) * 100;
+                          if (pct === 0) return null;
+                          const colors: Record<string, string> = {
+                            backlog: 'bg-accent-blue/60',
+                            'em-progresso': 'bg-accent-orange/60',
+                            revisao: 'bg-accent-purple/60',
+                            concluido: 'bg-brand-mint/60',
+                          };
+                          return <div key={s} className={cn(colors[s])} style={{ width: `${pct}%` }} />;
+                        })}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        {work['em-progresso'] > 0 && (
+                          <span className="text-[7px] font-bold text-accent-orange">{work['em-progresso']} ativa{work['em-progresso'] > 1 ? 's' : ''}</span>
+                        )}
+                        {work.revisao > 0 && (
+                          <span className="text-[7px] font-bold text-accent-purple">{work.revisao} revisão</span>
+                        )}
+                        {work.backlog > 0 && (
+                          <span className="text-[7px] font-bold text-accent-blue">{work.backlog} backlog</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Token usage */}
+                  <div className="flex items-center justify-between pt-2 border-t border-border-panel/30">
+                    <span className="text-[7px] font-bold text-text-secondary uppercase">Tokens hoje</span>
+                    <span className="text-[8px] font-mono text-text-secondary">{tokensToday > 0 ? formatTokens(tokensToday) : '—'}</span>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <SectionLabel icon="assistant_navigation">OPERAÇÃO DO DIA</SectionLabel>
+            <Badge variant="neutral" size="xs">{agentOps.length}</Badge>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {agentOps.map(({ agent, running, failed, completed, latestDispatch }) => (
+              <Card
+                key={`ops-${agent.id}`}
+                className="p-3 space-y-3 cursor-pointer hover:border-brand-mint/20 transition-colors"
+                onClick={() => onAgentClick(agent.id)}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-black text-text-primary">{agent.name}</p>
+                    <p className="text-[8px] font-mono text-text-secondary">{agent.currentMission || 'Sem missao ativa'}</p>
+                  </div>
+                  <StatusDot color={statusDot[agent.status].color} glow={agent.status !== 'offline'} />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2 py-1.5">
+                    <p className="text-[7px] font-black uppercase tracking-widest text-text-secondary">Rodando</p>
+                    <p className="mt-1 text-[11px] font-black font-mono text-accent-blue">{running}</p>
+                  </div>
+                  <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2 py-1.5">
+                    <p className="text-[7px] font-black uppercase tracking-widest text-text-secondary">Feitas</p>
+                    <p className="mt-1 text-[11px] font-black font-mono text-brand-mint">{completed}</p>
+                  </div>
+                  <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2 py-1.5">
+                    <p className="text-[7px] font-black uppercase tracking-widest text-text-secondary">Falhas</p>
+                    <p className="mt-1 text-[11px] font-black font-mono text-accent-red">{failed}</p>
+                  </div>
+                </div>
+                <div className="rounded-sm border border-border-panel/70 bg-bg-base px-2.5 py-2">
+                  <p className="text-[7px] font-black uppercase tracking-widest text-text-secondary">Último dispatch</p>
+                  <p className="mt-1 truncate text-[10px] text-text-primary">
+                    {latestDispatch?.mission ?? 'Nenhum envio recente'}
+                  </p>
+                  <p className="mt-0.5 text-[8px] font-mono text-text-secondary">
+                    {latestDispatch ? `${latestDispatch.createdAt} · ${priorityColors[latestDispatch.priority].label}` : 'Pronto para nova missão'}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* ─── ACTIVE MISSIONS + EXECUTION PIPELINE ─── */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+
+          {/* Active Missions */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <SectionLabel icon="flag">MISSÕES ATIVAS</SectionLabel>
+              <Badge variant="orange" size="xs">{activeMissions.length}</Badge>
+            </div>
+
+            <div className="space-y-2">
+              {activeMissions.length === 0 ? (
+                <Card className="p-6">
+                  <div className="flex flex-col items-center justify-center gap-2 text-text-secondary">
+                    <Icon name="check_circle" size="lg" />
+                    <span className="text-[10px]">Nenhuma missão ativa</span>
+                  </div>
+                </Card>
+              ) : (
+                activeMissions.map((mission) => {
+                  const agentName = agents.find(a => a.id === mission.agentId)?.name;
+                  const isReview = mission.status === 'revisao';
+                  return (
+                    <Card key={mission.id} className={cn('p-3 group', isReview && 'border-accent-purple/20')}>
+                      <div className="flex items-start gap-3">
+                        <div className={cn(
+                          'size-7 rounded-sm flex items-center justify-center shrink-0 mt-0.5',
+                          isReview ? 'bg-accent-purple/10 text-accent-purple' : 'bg-accent-orange/10 text-accent-orange'
+                        )}>
+                          <Icon name={isReview ? 'rate_review' : 'play_circle'} size="sm" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-medium text-text-primary leading-tight">{mission.title}</p>
+                          <div className="flex items-center gap-2 mt-1.5">
+                            {agentName && (
+                              <Badge variant="neutral" size="xs">
+                                <Icon name="smart_toy" className="text-[7px]" /> {agentName}
+                              </Badge>
+                            )}
+                            <Badge variant={isReview ? 'purple' : 'orange'} size="xs">
+                              {isReview ? 'Revisão' : 'Em Progresso'}
+                            </Badge>
+                          </div>
+                          {(mission.messages ?? []).length > 0 && (
+                            <p className="text-[8px] text-text-secondary mt-1.5 truncate">
+                              {(mission.messages ?? [])[((mission.messages ?? []).length) - 1]?.content}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-[7px] font-mono text-text-secondary shrink-0">{mission.createdAt}</span>
+                      </div>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Execution Pipeline */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <SectionLabel icon="bolt">PIPELINE DE EXECUÇÃO</SectionLabel>
+              <Badge variant="blue" size="xs">{allExecutions.length}</Badge>
+            </div>
+
+            <div className="space-y-1.5">
+              {executionPipeline.length === 0 ? (
+                <Card className="p-6">
+                  <div className="flex flex-col items-center justify-center gap-2 text-text-secondary">
+                    <Icon name="terminal" size="lg" />
+                    <span className="text-[10px]">Nenhuma execução registrada</span>
+                  </div>
+                </Card>
+              ) : (
+                executionPipeline.map((exec) => {
+                  const isRunning = exec.status === 'running';
+                  return (
+                    <Card key={exec.id} className={cn('p-2.5', isRunning && 'border-accent-blue/20 bg-accent-blue/[0.02]')}>
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative shrink-0">
+                          <Icon
+                            name={
+                              exec.status === 'running' ? 'play_circle'
+                              : exec.status === 'completed' ? 'check_circle'
+                              : exec.status === 'failed' ? 'error'
+                              : 'pending'
+                            }
+                            size="xs"
+                            className={cn(
+                              exec.status === 'running' ? 'text-accent-blue'
+                              : exec.status === 'completed' ? 'text-brand-mint'
+                              : exec.status === 'failed' ? 'text-accent-red'
+                              : 'text-accent-orange'
+                            )}
+                          />
+                          {isRunning && (
+                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-accent-blue animate-ping" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] text-text-primary leading-tight truncate">{exec.task}</p>
+                          <p className="text-[8px] text-text-secondary font-mono mt-0.5">{exec.agentName}</p>
+                        </div>
+                        {exec.duration && (
+                          <span className="text-[8px] font-mono text-text-secondary shrink-0">{exec.duration}</span>
+                        )}
+                        <Badge variant={exec.badge.variant} size="xs">{exec.badge.label}</Badge>
+                      </div>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ─── TOKEN OVERVIEW ─── */}
+        <div>
+          <SectionLabel icon="token" className="mb-3">CONSUMO DE RECURSOS</SectionLabel>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="p-3">
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">Tokens Hoje</p>
+              <p className="text-lg font-black text-text-primary font-mono">{formatTokens(totalTokensToday)}</p>
+            </Card>
+            <Card className="p-3">
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">Custo Hoje</p>
+              <p className="text-lg font-black text-text-primary font-mono">${totalCostToday.toFixed(2)}</p>
+            </Card>
+            <Card className="p-3">
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">Agentes Online</p>
+              <p className="text-lg font-black text-brand-mint font-mono">{onlineCount}<span className="text-text-secondary text-xs">/{agents.length}</span></p>
+            </Card>
+            <Card className="p-3">
+              <p className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-1">TOTAL MISSÕES</p>
+              <p className="text-lg font-black text-text-primary font-mono">{allTasks.length}</p>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

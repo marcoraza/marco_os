@@ -3,18 +3,18 @@ import { cn } from '../../utils/cn';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
-  hover?: boolean;       // hover:border-text-secondary/40
-  interactive?: boolean; // cursor-pointer + hover effects
+  hover?: boolean;
+  interactive?: boolean;
   className?: string;
 }
 
 export function Card({ children, hover = false, interactive = false, className, ...props }: CardProps) {
   return (
-    <div 
+    <div
       className={cn(
-        'bg-surface border border-border-card rounded-md',
-        hover && 'hover:border-text-secondary/40 transition-colors',
-        interactive && 'cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all',
+        'bg-surface border border-border-card rounded-md transition-colors',
+        hover && 'hover:border-text-secondary/40',
+        interactive && 'cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-transform',
         className
       )}
       {...props}

@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marco OS v2.2 - Guia Interativo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0D0D0F;
+            --header: #121212;
+            --surface: #1C1C1C;
+            --border: #2A2A2A;
+            --text: #E1E1E1;
+            --text-secondary: #8E8E93;
+            --mint: #00FF95;
+            --mint-10: rgba(0, 255, 149, 0.1);
+            --mint-30: rgba(0, 255, 149, 0.3);
+            --red: #FF3B30;
+            --orange: #FF9500;
+            --yellow: #FFCC00;
+            --blue: #007AFF;
+            --purple: #AF52DE;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--header);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            overflow-y: auto;
+            padding: 24px 16px;
+            z-index: 100;
+        }
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-icon {
+            width: 32px; height: 32px;
+            background: var(--mint-10);
+            border: 1px solid var(--mint-30);
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--mint);
+        }
+        .logo-text { font-weight: 800; font-size: 15px; letter-spacing: 0.02em; }
+        .nav-section { margin-bottom: 24px; }
+        .nav-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            padding-left: 12px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .nav-item:hover { background: var(--surface); border-color: var(--border); }
+        .nav-item.active { background: var(--mint-10); border-color: var(--mint-30); color: var(--mint); }
+        .nav-item .material-symbols-outlined { font-size: 18px; }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 40px 48px;
+            max-width: 1200px;
+        }
+        .section { margin-bottom: 64px; scroll-margin-top: 24px; }
+        .section-header { margin-bottom: 28px; }
+        .section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--mint);
+            margin-bottom: 6px;
+        }
+        .section-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+        .section-desc { font-size: 15px; color: var(--text-secondary); line-height: 1.6; }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+        .card-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+        .card-icon {
+            width: 44px; height: 44px;
+            background: var(--mint-10);
+            border: 1px solid var(--mint-30);
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--mint);
+            flex-shrink: 0;
+        }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .card-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+        }
+        .card-body { color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 2px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border: 1px solid;
+        }
+        .badge-new { background: var(--mint-10); border-color: var(--mint-30); color: var(--mint); }
+        .badge-refactor { background: rgba(255, 149, 0, 0.1); border-color: rgba(255, 149, 0, 0.3); color: var(--orange); }
+        .badge-exists { background: rgba(0, 122, 255, 0.1); border-color: rgba(0, 122, 255, 0.3); color: var(--blue); }
+        .badge-high { background: rgba(255, 59, 48, 0.1); border-color: rgba(255, 59, 48, 0.3); color: var(--red); }
+        .badge-medium { background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); color: var(--yellow); }
+        .badge-low { background: rgba(0, 122, 255, 0.1); border-color: rgba(0, 122, 255, 0.3); color: var(--blue); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: var(--mint-10);
+            border: 1px solid var(--mint-30);
+            color: var(--mint);
+            border-radius: 2px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn:hover { background: var(--mint-30); }
+
+        /* Progress Tracker */
+        .progress-tracker { display: flex; gap: 16px; margin-bottom: 32px; }
+        .progress-phase {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 16px;
+        }
+        .progress-phase.active { border-color: var(--mint); background: var(--mint-10); }
+        .progress-phase-number {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .progress-phase.active .progress-phase-number { color: var(--mint); }
+        .progress-phase-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+        .progress-phase-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+
+        /* Grid */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+        /* Callout */
+        .callout {
+            background: var(--surface);
+            border-left: 3px solid var(--mint);
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 2px;
+        }
+        .callout-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .callout-icon { color: var(--mint); font-size: 20px; }
+        .callout-author {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--mint);
+        }
+        .callout-text { font-size: 14px; line-height: 1.6; font-style: italic; }
+
+        /* Expandable Card */
+        .expandable-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .expandable-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .expandable-header:hover { background: rgba(255, 255, 255, 0.02); }
+        .expandable-header-left { display: flex; align-items: center; gap: 14px; flex: 1; }
+        .expandable-title { font-size: 14px; font-weight: 700; }
+        .expandable-meta { display: flex; align-items: center; gap: 10px; }
+        .expandable-icon { color: var(--text-secondary); font-size: 18px; transition: transform 0.2s; }
+        .expandable-card.expanded .expandable-icon { transform: rotate(180deg); }
+        .expandable-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .expandable-body-inner { padding: 0 20px 20px 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+        .expandable-card.expanded .expandable-body { max-height: 1000px; }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 32px; }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 12px; top: 8px; bottom: 8px;
+            width: 2px;
+            background: var(--border);
+        }
+        .timeline-item { position: relative; margin-bottom: 24px; }
+        .timeline-marker {
+            position: absolute;
+            left: -26px; top: 4px;
+            width: 12px; height: 12px;
+            background: var(--surface);
+            border: 2px solid var(--mint);
+            border-radius: 50%;
+        }
+        .timeline-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 16px;
+        }
+        .timeline-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+        .timeline-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+
+        /* Checkbox List */
+        .checklist { list-style: none; }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .checklist-item:last-child { border-bottom: none; }
+        .checkbox {
+            width: 16px; height: 16px;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+            position: relative;
+            transition: all 0.15s;
+        }
+        .checkbox:hover { border-color: var(--mint); }
+        .checkbox.checked { background: var(--mint-10); border-color: var(--mint); }
+        .checkbox.checked::after {
+            content: 'check';
+            font-family: 'Material Symbols Outlined';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--mint);
+            font-size: 12px;
+        }
+        .checklist-text { flex: 1; font-size: 13px; line-height: 1.5; }
+        .checkbox.checked + .checklist-text { text-decoration: line-through; color: var(--text-secondary); }
+
+        /* Color Swatch */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .color-swatch {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .color-swatch:hover { transform: translateY(-2px); }
+        .color-preview { height: 60px; border-bottom: 1px solid var(--border); }
+        .color-info { padding: 10px; }
+        .color-name {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 2px;
+        }
+        .color-value { font-size: 10px; color: var(--text-secondary); font-family: monospace; }
+
+        /* Component Example */
+        .component-example {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 24px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .data-table th, .data-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .data-table th {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            background: var(--surface);
+        }
+        .data-table tr:hover { background: var(--surface); }
+
+        /* Wireframe */
+        .wireframe {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 20px;
+            margin: 12px 0;
+        }
+        .wireframe-header {
+            height: 40px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 10px;
+        }
+        .wireframe-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+        .wireframe-card { height: 80px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; }
+
+        /* Diagram */
+        .diagram {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+        .diagram-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        .diagram-box {
+            background: var(--bg);
+            border: 1px solid var(--mint);
+            border-radius: 2px;
+            padding: 14px 24px;
+            min-width: 120px;
+            text-align: center;
+        }
+        .diagram-box-title { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+        .diagram-box-desc { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+        .diagram-arrow { color: var(--mint); font-size: 24px; }
+
+        /* Status Dot */
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-active { background: var(--mint); }
+        .status-warning { background: var(--yellow); }
+        .status-error { background: var(--red); }
+        .status-inactive { background: var(--text-secondary); }
+
+        /* Comparison */
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+        .comparison-side {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 20px;
+        }
+        .comparison-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .comparison-list { list-style: none; }
+        .comparison-list li { padding: 6px 0; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        .comparison-list .material-symbols-outlined { font-size: 16px; color: var(--text-secondary); }
+
+        /* Don't List */
+        .dont-list { list-style: none; }
+        .dont-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 59, 48, 0.05);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            border-radius: 2px;
+            margin-bottom: 6px;
+        }
+        .dont-icon { color: var(--red); font-size: 18px; flex-shrink: 0; }
+        .dont-text { font-size: 13px; }
+
+        /* Mobile */
+        @media (max-width: 1024px) {
+            .sidebar { width: 220px; }
+            .main-content { margin-left: 220px; padding: 32px; }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 20px 16px; }
+            .section-title { font-size: 26px; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .progress-tracker { flex-direction: column; }
+            .comparison { grid-template-columns: 1fr; }
+            .diagram-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"><span class="material-symbols-outlined">dashboard</span></div>
+                <div class="logo-text">MARCO OS v2.2</div>
+            </div>
+            <nav>
+                <div class="nav-section">
+                    <div class="nav-label">Fundamentos</div>
+                    <a href="#visao-geral" class="nav-item"><span class="material-symbols-outlined">lightbulb</span>Visao Geral</a>
+                    <a href="#o-que-existe" class="nav-item"><span class="material-symbols-outlined">inventory_2</span>O Que Ja Existe</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-label">Estrutura</div>
+                    <a href="#secoes" class="nav-item"><span class="material-symbols-outlined">grid_view</span>As 9 Secoes</a>
+                    <a href="#chat-panel" class="nav-item"><span class="material-symbols-outlined">chat</span>Chat Panel</a>
+                    <a href="#pipeline" class="nav-item"><span class="material-symbols-outlined">sync</span>Pipeline de Dados</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-label">Features</div>
+                    <a href="#features" class="nav-item"><span class="material-symbols-outlined">stars</span>11 Feature Ideas</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-label">Design & Roadmap</div>
+                    <a href="#design-system" class="nav-item"><span class="material-symbols-outlined">palette</span>Design System</a>
+                    <a href="#roadmap" class="nav-item"><span class="material-symbols-outlined">map</span>Roadmap</a>
+                    <a href="#questoes" class="nav-item"><span class="material-symbols-outlined">help</span>Questoes em Aberto</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-label">Claude Code</div>
+                    <a href="#mapa-notion" class="nav-item"><span class="material-symbols-outlined">table_chart</span>Mapa Notion</a>
+                    <a href="#claude-code-insights" class="nav-item"><span class="material-symbols-outlined">analytics</span>Insights</a>
+                    <a href="#claude-md" class="nav-item"><span class="material-symbols-outlined">description</span>CLAUDE.md</a>
+                    <a href="#horizon" class="nav-item"><span class="material-symbols-outlined">rocket_launch</span>Horizon</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Section 1: Visao Geral -->
+            <section id="visao-geral" class="section">
+                <div class="section-header">
+                    <div class="section-label">Fundamentos</div>
+                    <h1 class="section-title">Visao Geral</h1>
+                    <p class="section-desc">O Marco OS e o teu sistema operacional pessoal. Um lugar unico onde todos os aspectos da tua vida se encontram.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">psychology</span></div>
+                        <div>
+                            <h3 class="card-title">O Que E o Marco OS</h3>
+                            <div class="card-subtitle">Sistema Operacional Pessoal</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p>Um dashboard unificado que centraliza todas as areas da tua vida: financas, saude, aprendizado, projetos, network, notas e agentes de IA. Nao e so uma colecao de dados — e um sistema inteligente que te ajuda a tomar decisoes melhores atraves de contexto e automacao.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">problem</span></div>
+                        <div>
+                            <h3 class="card-title">Por Que Estamos Fazendo Isso</h3>
+                            <div class="card-subtitle">O Problema</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Informacao espalhada:</strong> Notion, planilhas, apps diversos, notas soltas. Nada conversa entre si.</p>
+                        <p style="margin-top: 10px;"><strong>Falta de contexto:</strong> Ver um numero isolado nao te diz nada. "Gastei 800" sem saber quanto tens e inutil.</p>
+                        <p style="margin-top: 10px;"><strong>Decisoes fragmentadas:</strong> Sem uma visao unificada, cada decisao e tomada no vacuo.</p>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Arquitetura em 3 Fases</h3>
+                <div class="progress-tracker">
+                    <div class="progress-phase active">
+                        <div class="progress-phase-number">Fase 1</div>
+                        <div class="progress-phase-title">Notion + JSON</div>
+                        <div class="progress-phase-desc">Usar o Notion como backend, sincronizar via API, frontend renderiza JSONs.</div>
+                    </div>
+                    <div class="progress-phase">
+                        <div class="progress-phase-number">Fase 2</div>
+                        <div class="progress-phase-title">Hybrid</div>
+                        <div class="progress-phase-desc">Dados criticos em Supabase, resto no Notion. Onboarding conversacional ativo.</div>
+                    </div>
+                    <div class="progress-phase">
+                        <div class="progress-phase-number">Fase 3</div>
+                        <div class="progress-phase-title">Full Supabase</div>
+                        <div class="progress-phase-desc">Banco proprio, real-time, mobile app nativo, sincronizacao cloud completa.</div>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <div class="callout-header">
+                        <span class="material-symbols-outlined callout-icon">campaign</span>
+                        <div class="callout-author">Frank</div>
+                    </div>
+                    <div class="callout-text">"Fase 1 com Notion e pragmatica. Fase 3 com Supabase e o destino. Nao pular etapas."</div>
+                </div>
+            </section>
+
+            <!-- Section 2: O Que Ja Existe -->
+            <section id="o-que-existe" class="section">
+                <div class="section-header">
+                    <div class="section-label">Inventario</div>
+                    <h1 class="section-title">O Que Ja Existe</h1>
+                    <p class="section-desc">Uma base solida ja esta construida. Vamos evoluir, nao recomecar do zero.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">code</span></div>
+                        <div>
+                            <h3 class="card-title">Stack Tecnica Atual</h3>
+                            <div class="card-subtitle">Tecnologias</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul style="list-style: none;">
+                            <li style="padding: 6px 0; display: flex; align-items: center; gap: 10px;"><span class="status-dot status-active"></span><strong>Next.js 14:</strong> App Router, Server Components</li>
+                            <li style="padding: 6px 0; display: flex; align-items: center; gap: 10px;"><span class="status-dot status-active"></span><strong>TypeScript:</strong> Type-safe</li>
+                            <li style="padding: 6px 0; display: flex; align-items: center; gap: 10px;"><span class="status-dot status-active"></span><strong>Tailwind CSS:</strong> Utility-first</li>
+                            <li style="padding: 6px 0; display: flex; align-items: center; gap: 10px;"><span class="status-dot status-active"></span><strong>Notion API:</strong> Backend</li>
+                            <li style="padding: 6px 0; display: flex; align-items: center; gap: 10px;"><span class="status-dot status-active"></span><strong>OpenClaw Gateway:</strong> Agent orchestration</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Componentes Existentes</h3>
+                <div class="grid-3">
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--blue);">dashboard</span>
+                            <strong style="font-size: 14px;">Layout</strong>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Sidebar fixa, navegacao, estrutura base</div>
+                    </div>
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--blue);">payments</span>
+                            <strong style="font-size: 14px;">Financas</strong>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Transacoes, contas, overview</div>
+                    </div>
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--blue);">favorite</span>
+                            <strong style="font-size: 14px;">Saude</strong>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Metricas de treino, sono, peso</div>
+                    </div>
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--blue);">event</span>
+                            <strong style="font-size: 14px;">Planejador</strong>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Tasks, calendario</div>
+                    </div>
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--blue);">people</span>
+                            <strong style="font-size: 14px;">CRM</strong>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Contatos, interacoes</div>
+                    </div>
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span class="material-symbols-outlined" style="color: var(--blue);">note</span>
+                            <strong style="font-size: 14px;">Notas</strong>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Captura e organizacao</div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Sidebar: Antes vs Depois</h3>
+                <div class="comparison">
+                    <div class="comparison-side">
+                        <div class="comparison-title">Atual (v1)</div>
+                        <ul class="comparison-list">
+                            <li><span class="material-symbols-outlined">dashboard</span> Dashboard</li>
+                            <li><span class="material-symbols-outlined">payments</span> Financas</li>
+                            <li><span class="material-symbols-outlined">favorite</span> Saude</li>
+                            <li><span class="material-symbols-outlined">event</span> Planejador</li>
+                            <li><span class="material-symbols-outlined">people</span> CRM</li>
+                            <li><span class="material-symbols-outlined">note</span> Notas</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-side" style="border-color: var(--mint);">
+                        <div class="comparison-title" style="color: var(--mint);">Nova (v2.2)</div>
+                        <ul class="comparison-list">
+                            <li><span class="material-symbols-outlined">dashboard</span> Dashboard</li>
+                            <li><span class="material-symbols-outlined">payments</span> Financas</li>
+                            <li><span class="material-symbols-outlined">favorite</span> Saude</li>
+                            <li><span class="material-symbols-outlined">school</span> Aprendizado <span class="badge badge-new">NOVO</span></li>
+                            <li><span class="material-symbols-outlined">work</span> Projetos</li>
+                            <li><span class="material-symbols-outlined">people</span> Network</li>
+                            <li><span class="material-symbols-outlined">note</span> Notas</li>
+                            <li><span class="material-symbols-outlined">smart_toy</span> Agentes <span class="badge badge-new">NOVO</span></li>
+                            <li><span class="material-symbols-outlined">settings</span> Configuracoes <span class="badge badge-new">NOVO</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: As 9 Secoes -->
+            <section id="secoes" class="section">
+                <div class="section-header">
+                    <div class="section-label">Estrutura</div>
+                    <h1 class="section-title">As 9 Secoes</h1>
+                    <p class="section-desc">Cada secao do Marco OS e um universo. Juntas, formam o sistema completo.</p>
+                </div>
+
+                <!-- Dashboard -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">dashboard</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Dashboard</h3>
+                                <span class="badge badge-refactor">REFATORAR</span>
+                            </div>
+                            <div class="card-subtitle">Central de Comando</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> Visao de 360 da tua vida. Widgets contextuais que mudam baseado na hora do dia.</p>
+                        <p style="margin-top: 8px;"><strong>Dados Notion:</strong> Agregacao de todas as databases</p>
+                    </div>
+                    <div class="wireframe" style="margin-top: 16px;">
+                        <div class="wireframe-header">
+                            <div style="width: 80px; height: 16px; background: var(--mint-10); border-radius: 2px;"></div>
+                            <div style="margin-left: auto; width: 50px; height: 16px; background: var(--surface); border-radius: 2px;"></div>
+                        </div>
+                        <div class="wireframe-row">
+                            <div class="wireframe-card"></div>
+                            <div class="wireframe-card"></div>
+                            <div class="wireframe-card"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <div class="callout-header">
+                        <span class="material-symbols-outlined callout-icon">campaign</span>
+                        <div class="callout-author">Frank</div>
+                    </div>
+                    <div class="callout-text">"O Cross-Domain Health Score transforma o Dashboard de passivo pra proativo. Um numero que resume tua vida."</div>
+                </div>
+
+                <div class="callout">
+                    <div class="callout-header">
+                        <span class="material-symbols-outlined callout-icon">campaign</span>
+                        <div class="callout-author">Frank</div>
+                    </div>
+                    <div class="callout-text">"Context-Aware Dashboard: manha = agenda, tarde = deep work, noite = review. O dashboard trabalha pra voce."</div>
+                </div>
+
+                <!-- Financas -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">payments</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Financas</h3>
+                                <span class="badge badge-refactor">REFATORAR</span>
+                            </div>
+                            <div class="card-subtitle">Controle Financeiro</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> Tracking de receitas, despesas, investimentos. Visao mensal, anual. Savings goals.</p>
+                        <p style="margin-top: 8px;"><strong>Dados Notion:</strong> Transactions, Accounts, Categories, Savings Goals</p>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <div class="callout-header">
+                        <span class="material-symbols-outlined callout-icon">campaign</span>
+                        <div class="callout-author">Frank</div>
+                    </div>
+                    <div class="callout-text">"Savings Goals em Financas: motivacao tangivel. Ver a barra encher e mais poderoso que qualquer planilha."</div>
+                </div>
+
+                <!-- Saude -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">favorite</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Saude</h3>
+                                <span class="badge badge-exists">EXISTE</span>
+                            </div>
+                            <div class="card-subtitle">Tracking de Bem-Estar</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> Metricas de treino, sono, peso, humor. Visualizacoes de progresso.</p>
+                        <p style="margin-top: 8px;"><strong>Dados Notion:</strong> Workouts, Sleep, Weight, Mood</p>
+                    </div>
+                </div>
+
+                <!-- Aprendizado -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">school</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Aprendizado</h3>
+                                <span class="badge badge-new">NOVO</span>
+                            </div>
+                            <div class="card-subtitle">Sistema de Conhecimento</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> 4 tabs: Pipeline (queue), Analises (resumos), Roster (pessoas), Skills (habilidades).</p>
+                        <p style="margin-top: 8px;"><strong>Dados Notion:</strong> Content Pipeline, Analyses, Roster, Skills</p>
+                    </div>
+                    <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                        <div style="padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; text-align: center; font-size: 11px; font-weight: 600;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; display: block; margin-bottom: 6px; color: var(--mint);">queue</span>Pipeline
+                        </div>
+                        <div style="padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; text-align: center; font-size: 11px; font-weight: 600;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; display: block; margin-bottom: 6px; color: var(--mint);">summarize</span>Analises
+                        </div>
+                        <div style="padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; text-align: center; font-size: 11px; font-weight: 600;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; display: block; margin-bottom: 6px; color: var(--mint);">groups</span>Roster
+                        </div>
+                        <div style="padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; text-align: center; font-size: 11px; font-weight: 600;">
+                            <span class="material-symbols-outlined" style="font-size: 18px; display: block; margin-bottom: 6px; color: var(--mint);">military_tech</span>Skills
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projetos -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">work</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Projetos</h3>
+                                <span class="badge badge-refactor">REFATORAR</span>
+                            </div>
+                            <div class="card-subtitle">Ex-Planejador</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> Tasks, projetos, sprints. Kanban, calendar view, time blocking.</p>
+                        <p style="margin-top: 8px;"><strong>Dados Notion:</strong> Tasks, Projects, Sprints, Calendar</p>
+                    </div>
+                </div>
+
+                <!-- Network -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">people</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Network</h3>
+                                <span class="badge badge-refactor">REFATORAR</span>
+                            </div>
+                            <div class="card-subtitle">Ex-CRM</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> Contatos, interacoes, follow-ups automaticos, relationship strength scoring.</p>
+                        <p style="margin-top: 8px;"><strong>Dados Notion:</strong> Contacts, Interactions, Tags, Last Contact</p>
+                    </div>
+                </div>
+
+                <!-- Notas -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">note</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Notas</h3>
+                                <span class="badge badge-exists">EXISTE</span>
+                            </div>
+                            <div class="card-subtitle">Captura Rapida</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> Sistema de captura universal. Inbox zero. Tags, busca, linking.</p>
+                        <p style="margin-top: 8px;"><strong>Dados Notion:</strong> Notes, Tags, Created/Modified</p>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <div class="callout-header">
+                        <span class="material-symbols-outlined callout-icon">campaign</span>
+                        <div class="callout-author">Frank</div>
+                    </div>
+                    <div class="callout-text">"O Quick Capture Universal (Cmd+N) vai ser o feature mais usado no dia a dia. Baixa friccao = mais captura."</div>
+                </div>
+
+                <!-- Agentes -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">smart_toy</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Agentes</h3>
+                                <span class="badge badge-new">NOVO</span>
+                            </div>
+                            <div class="card-subtitle">IA Observavel</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> Thought Log real-time dos agentes. Ver, pausar, redirecionar. Transparencia total.</p>
+                        <p style="margin-top: 8px;"><strong>Dados:</strong> Real-time via Gateway OpenClaw (WebSocket)</p>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <div class="callout-header">
+                        <span class="material-symbols-outlined callout-icon">campaign</span>
+                        <div class="callout-author">Frank</div>
+                    </div>
+                    <div class="callout-text">"A secao de Agentes e o maior diferencial. Nenhum personal OS tem Thought Log + real-time agent control."</div>
+                </div>
+
+                <!-- Configuracoes -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">settings</span></div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <h3 class="card-title">Configuracoes</h3>
+                                <span class="badge badge-new">NOVO</span>
+                            </div>
+                            <div class="card-subtitle">Preferencias</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Descricao:</strong> Theme, Notion sync, Gateway config, API keys, data export.</p>
+                        <p style="margin-top: 8px;"><strong>Dados Notion:</strong> User Preferences</p>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Mapeamento: Notion -> Secoes</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Secao</th><th>Database Notion</th><th>Propriedades-Chave</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Dashboard</td><td>Agregacao</td><td>—</td></tr>
+                        <tr><td>Financas</td><td>Transactions, Accounts</td><td>Amount, Category, Date</td></tr>
+                        <tr><td>Saude</td><td>Workouts, Health Metrics</td><td>Type, Duration, Weight</td></tr>
+                        <tr><td>Aprendizado</td><td>Pipeline, Analyses, Roster, Skills</td><td>Status, Tags, Progress</td></tr>
+                        <tr><td>Projetos</td><td>Tasks, Projects</td><td>Status, Priority, Due Date</td></tr>
+                        <tr><td>Network</td><td>Contacts, Interactions</td><td>Name, Tags, Last Contact</td></tr>
+                        <tr><td>Notas</td><td>Notes</td><td>Title, Tags, Created</td></tr>
+                        <tr><td>Agentes</td><td>—</td><td>Real-time via Gateway</td></tr>
+                        <tr><td>Configuracoes</td><td>User Preferences</td><td>Theme, Sync Interval</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Section 4: Chat Panel -->
+            <section id="chat-panel" class="section">
+                <div class="section-header">
+                    <div class="section-label">IA Conversacional</div>
+                    <h1 class="section-title">Chat Panel</h1>
+                    <p class="section-desc">O Marco OS nao e so um dashboard. E um sistema com IA embutida.</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">chat</span></div>
+                        <div>
+                            <h3 class="card-title">Onboarding Conversacional</h3>
+                            <div class="card-subtitle">Captura Natural</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p>Ao inves de preencher formularios, conversas com o agente. Ele extrai informacoes e popula o Notion automaticamente.</p>
+                        <p style="margin-top: 8px;"><strong>Exemplo:</strong> "Gastei 45 no supermercado" -> Agent cria transaction com category=Food, amount=45.</p>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <div class="callout-header">
+                        <span class="material-symbols-outlined callout-icon">campaign</span>
+                        <div class="callout-author">Frank</div>
+                    </div>
+                    <div class="callout-text">"A arquitetura de Chat Panel e o que separa o Marco OS de qualquer dashboard generico. E um OS com IA embutida, nao um painel de graficos."</div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Arquitetura</h3>
+                <div class="diagram">
+                    <div class="diagram-row">
+                        <div class="diagram-box"><div class="diagram-box-title">User</div><div class="diagram-box-desc">Mensagem</div></div>
+                        <span class="material-symbols-outlined diagram-arrow">arrow_forward</span>
+                        <div class="diagram-box"><div class="diagram-box-title">Gateway</div><div class="diagram-box-desc">OpenClaw</div></div>
+                        <span class="material-symbols-outlined diagram-arrow">arrow_forward</span>
+                        <div class="diagram-box"><div class="diagram-box-title">Agent</div><div class="diagram-box-desc">Processamento</div></div>
+                    </div>
+                    <div class="diagram-row">
+                        <div class="diagram-box"><div class="diagram-box-title">Marco OS</div><div class="diagram-box-desc">UI Update</div></div>
+                        <span class="material-symbols-outlined diagram-arrow" style="transform: rotate(180deg);">arrow_forward</span>
+                        <div class="diagram-box"><div class="diagram-box-title">Notion</div><div class="diagram-box-desc">Database Write</div></div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Exemplo de Conversa</h3>
+                <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 2px; padding: 20px;">
+                    <div style="margin-bottom: 14px; display: flex; gap: 10px;">
+                        <div style="width: 32px; height: 32px; background: var(--mint-10); border: 1px solid var(--mint-30); border-radius: 2px; display: flex; align-items: center; justify-content: center; color: var(--mint); flex-shrink: 0;">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">person</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 4px;">Marco</div>
+                            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 10px; font-size: 13px;">Acabei de fazer um treino de 45min de corrida. Corri 8km.</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div style="width: 32px; height: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">smart_toy</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 4px;">Agente</div>
+                            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 10px; font-size: 13px;">Registado! Treino de corrida: 45min, 8km. Ja sao 3 treinos esta semana.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: Pipeline de Dados -->
+            <section id="pipeline" class="section">
+                <div class="section-header">
+                    <div class="section-label">Sincronizacao</div>
+                    <h1 class="section-title">Pipeline de Dados</h1>
+                    <p class="section-desc">Como os dados fluem do Notion para o Marco OS.</p>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 0 0 20px 0;">Fluxo: Notion -> JSON -> Marco OS</h3>
+                <div class="diagram">
+                    <div class="diagram-row">
+                        <div class="diagram-box"><div class="diagram-box-title">Notion API</div><div class="diagram-box-desc">Source</div></div>
+                        <span class="material-symbols-outlined diagram-arrow">arrow_forward</span>
+                        <div class="diagram-box"><div class="diagram-box-title">Sync Script</div><div class="diagram-box-desc">Node.js</div></div>
+                        <span class="material-symbols-outlined diagram-arrow">arrow_forward</span>
+                        <div class="diagram-box"><div class="diagram-box-title">JSON Files</div><div class="diagram-box-desc">/data/</div></div>
+                        <span class="material-symbols-outlined diagram-arrow">arrow_forward</span>
+                        <div class="diagram-box"><div class="diagram-box-title">Marco OS</div><div class="diagram-box-desc">Frontend</div></div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">JSONs Gerados</h3>
+                <div class="grid-2">
+                    <div class="card"><div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 8px;">finances.json</div><div style="font-size: 12px; color: var(--text-secondary);">Transacoes, contas, saldos, savings goals</div></div>
+                    <div class="card"><div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 8px;">health.json</div><div style="font-size: 12px; color: var(--text-secondary);">Workouts, sono, peso, humor</div></div>
+                    <div class="card"><div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 8px;">learning.json</div><div style="font-size: 12px; color: var(--text-secondary);">Pipeline, analises, roster, skills</div></div>
+                    <div class="card"><div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 8px;">projects.json</div><div style="font-size: 12px; color: var(--text-secondary);">Tasks, projetos, sprints</div></div>
+                    <div class="card"><div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 8px;">network.json</div><div style="font-size: 12px; color: var(--text-secondary);">Contatos, interacoes</div></div>
+                    <div class="card"><div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 8px;">notes.json</div><div style="font-size: 12px; color: var(--text-secondary);">Notas com tags e metadata</div></div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <div class="card-icon"><span class="material-symbols-outlined">schedule</span></div>
+                        <div><h3 class="card-title">Cron de Sincronizacao</h3><div class="card-subtitle">Automacao</div></div>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Frequencia:</strong> A cada 15 minutos (configuravel)</p>
+                        <p style="margin-top: 8px;"><strong>Comando:</strong> <code style="background: var(--bg); padding: 2px 6px; border-radius: 2px; font-family: monospace; font-size: 11px;">node scripts/sync-notion.js</code></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6: Feature Ideas -->
+            <section id="features" class="section">
+                <div class="section-header">
+                    <div class="section-label">Features</div>
+                    <h1 class="section-title">11 Feature Ideas</h1>
+                    <p class="section-desc">Ideias priorizadas para o proximo nivel.</p>
+                </div>
+
+                <div class="expandable-card" id="f1">
+                    <div class="expandable-header" onclick="toggleExpand('f1')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">add_circle</span>
+                            <div class="expandable-title">Quick Capture Universal (Cmd+N)</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-high">HIGH</span>
+                            <span class="badge badge-exists">NOTAS</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Atalho global que abre input flutuante. Captura texto, voz, ou screenshot.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Modal overlay com input, botao de voz, dropdown de destino.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f2">
+                    <div class="expandable-header" onclick="toggleExpand('f2')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">psychology</span>
+                            <div class="expandable-title">Cross-Domain Health Score</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-high">HIGH</span>
+                            <span class="badge badge-refactor">DASHBOARD</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Numero de 0-100 que resume a saude de todos os dominios.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Widget circular no Dashboard. Verde = 80+, Amarelo = 50-79, Vermelho = &lt;50.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f3">
+                    <div class="expandable-header" onclick="toggleExpand('f3')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">watch_later</span>
+                            <div class="expandable-title">Context-Aware Dashboard</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-high">HIGH</span>
+                            <span class="badge badge-refactor">DASHBOARD</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Dashboard muda baseado na hora. Manha = Agenda. Tarde = Deep work. Noite = Review.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Transicao suave entre layouts. Barra de contexto no topo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f4">
+                    <div class="expandable-header" onclick="toggleExpand('f4')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">savings</span>
+                            <div class="expandable-title">Savings Goals com Previsao</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-medium">MEDIUM</span>
+                            <span class="badge badge-refactor">FINANCAS</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Previsao inteligente: "No teu ritmo, vais atingir em X meses."</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Progress bar com milestone markers. Alerta se ritmo nao atinge deadline.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f5">
+                    <div class="expandable-header" onclick="toggleExpand('f5')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">groups</span>
+                            <div class="expandable-title">Relationship Health Alerts</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-medium">MEDIUM</span>
+                            <span class="badge badge-refactor">NETWORK</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Notificacoes: "Nao falas com X ha 3 meses." Suggestions de follow-up.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Badge no Network. Card com pessoas "em risco". Quick actions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f6">
+                    <div class="expandable-header" onclick="toggleExpand('f6')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">assistant</span>
+                            <div class="expandable-title">Agent Thought Log Real-Time</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-high">HIGH</span>
+                            <span class="badge badge-new">AGENTES</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Stream ao vivo do pensamento dos agentes. Ver reasoning, tool calls. Pausar, redirecionar.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Sidebar direita Activity Feed. Cada thought e um card com timestamp.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f7">
+                    <div class="expandable-header" onclick="toggleExpand('f7')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">link</span>
+                            <div class="expandable-title">Smart Linking Entre Dominios</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-medium">MEDIUM</span>
+                            <span class="badge badge-new">GLOBAL</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Linking automatico entre entidades. Task linka pra nota e contato.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Hover mostra backlinks. Cmd+K pra linkar. Graph view opcional.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f8">
+                    <div class="expandable-header" onclick="toggleExpand('f8')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">campaign</span>
+                            <div class="expandable-title">Weekly Review Automation</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-low">LOW</span>
+                            <span class="badge badge-new">DASHBOARD</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Review semanal automatico: gastos, workouts, tasks done. Email ou push.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Modal com resumo visual. Export PDF. Historico.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f9">
+                    <div class="expandable-header" onclick="toggleExpand('f9')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">apps</span>
+                            <div class="expandable-title">Mobile App (Phase 3)</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-low">LOW</span>
+                            <span class="badge badge-new">GLOBAL</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> App nativo com sync offline-first. Captura por voz, widgets, push.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Mobile-first Dashboard. Focus em quick actions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f10">
+                    <div class="expandable-header" onclick="toggleExpand('f10')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">quiz</span>
+                            <div class="expandable-title">Learning Spaced Repetition</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-medium">MEDIUM</span>
+                            <span class="badge badge-new">APRENDIZADO</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Flashcards integrados. Agent gera perguntas das analises. Review 10-15min/dia.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Tab "Review" no Aprendizado. Card flipping. Stats de retention.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expandable-card" id="f11">
+                    <div class="expandable-header" onclick="toggleExpand('f11')">
+                        <div class="expandable-header-left">
+                            <span class="material-symbols-outlined" style="color: var(--mint);">cloud_sync</span>
+                            <div class="expandable-title">Multi-Device Sync (Phase 3)</div>
+                        </div>
+                        <div class="expandable-meta">
+                            <span class="badge badge-low">LOW</span>
+                            <span class="badge badge-new">GLOBAL</span>
+                            <span class="material-symbols-outlined expandable-icon">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="expandable-body">
+                        <div class="expandable-body-inner">
+                            <p><strong>Descricao:</strong> Sync real-time entre dispositivos com Supabase.</p>
+                            <p style="margin-top: 10px;"><strong>UI:</strong> Indicator de sync no header. Conflict resolution UI.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 7: Design System -->
+            <section id="design-system" class="section">
+                <div class="section-header">
+                    <div class="section-label">Visual</div>
+                    <h1 class="section-title">Design System</h1>
+                    <p class="section-desc">A linguagem visual do Marco OS. Consistencia, minimalismo, clareza.</p>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 0 0 20px 0;">Paleta de Cores</h3>
+                <div class="color-grid">
+                    <div class="color-swatch" onclick="copyColor('#0D0D0F')"><div class="color-preview" style="background: #0D0D0F;"></div><div class="color-info"><div class="color-name">Background</div><div class="color-value">#0D0D0F</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#121212')"><div class="color-preview" style="background: #121212;"></div><div class="color-info"><div class="color-name">Header</div><div class="color-value">#121212</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#1C1C1C')"><div class="color-preview" style="background: #1C1C1C;"></div><div class="color-info"><div class="color-name">Surface</div><div class="color-value">#1C1C1C</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#2A2A2A')"><div class="color-preview" style="background: #2A2A2A;"></div><div class="color-info"><div class="color-name">Border</div><div class="color-value">#2A2A2A</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#E1E1E1')"><div class="color-preview" style="background: #E1E1E1;"></div><div class="color-info"><div class="color-name">Text</div><div class="color-value">#E1E1E1</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#8E8E93')"><div class="color-preview" style="background: #8E8E93;"></div><div class="color-info"><div class="color-name">Secondary</div><div class="color-value">#8E8E93</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#00FF95')"><div class="color-preview" style="background: #00FF95;"></div><div class="color-info"><div class="color-name">Mint (Accent)</div><div class="color-value">#00FF95</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#FF3B30')"><div class="color-preview" style="background: #FF3B30;"></div><div class="color-info"><div class="color-name">Red</div><div class="color-value">#FF3B30</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#FF9500')"><div class="color-preview" style="background: #FF9500;"></div><div class="color-info"><div class="color-name">Orange</div><div class="color-value">#FF9500</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#FFCC00')"><div class="color-preview" style="background: #FFCC00;"></div><div class="color-info"><div class="color-name">Yellow</div><div class="color-value">#FFCC00</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#007AFF')"><div class="color-preview" style="background: #007AFF;"></div><div class="color-info"><div class="color-name">Blue</div><div class="color-value">#007AFF</div></div></div>
+                    <div class="color-swatch" onclick="copyColor('#AF52DE')"><div class="color-preview" style="background: #AF52DE;"></div><div class="color-info"><div class="color-name">Purple</div><div class="color-value">#AF52DE</div></div></div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Tipografia</h3>
+                <div class="card">
+                    <div style="margin-bottom: 24px;">
+                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-secondary); margin-bottom: 12px;">FONT FAMILY</div>
+                        <div style="font-size: 40px; font-weight: 800; margin-bottom: 4px;">Inter</div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">Google Fonts CDN</div>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-secondary); margin-bottom: 10px;">HEADINGS</div>
+                            <div style="font-size: 32px; font-weight: 800; margin-bottom: 6px;">H1 Title</div>
+                            <div style="font-size: 20px; font-weight: 700; margin-bottom: 6px;">H2 Section</div>
+                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 6px;">H3 Card Title</div>
+                            <div style="font-size: 14px; font-weight: 700;">H4 Subtitle</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-secondary); margin-bottom: 10px;">LABELS & BODY</div>
+                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--mint); margin-bottom: 10px;">SECTION LABEL</div>
+                            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 10px;">CARD SUBTITLE</div>
+                            <div style="font-size: 13px; line-height: 1.7; margin-bottom: 10px;">Body text para paragrafos.</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Secondary text</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Componentes</h3>
+                <div class="card">
+                    <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-secondary); margin-bottom: 12px;">BUTTONS</div>
+                    <div class="component-example">
+                        <button class="btn"><span class="material-symbols-outlined" style="font-size: 14px;">add</span>Primary</button>
+                        <button class="btn" style="background: transparent; border-color: var(--border); color: var(--text);">Secondary</button>
+                        <button class="btn" style="background: rgba(255, 59, 48, 0.1); border-color: rgba(255, 59, 48, 0.3); color: var(--red);">Danger</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-secondary); margin-bottom: 12px;">BADGES</div>
+                    <div class="component-example">
+                        <span class="badge badge-new">NOVO</span>
+                        <span class="badge badge-refactor">REFATORAR</span>
+                        <span class="badge badge-exists">EXISTE</span>
+                        <span class="badge badge-high">HIGH</span>
+                        <span class="badge badge-medium">MEDIUM</span>
+                        <span class="badge badge-low">LOW</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-secondary); margin-bottom: 12px;">STATUS DOTS</div>
+                    <div class="component-example">
+                        <div style="display: flex; align-items: center; gap: 6px;"><span class="status-dot status-active"></span><span style="font-size: 12px;">Active</span></div>
+                        <div style="display: flex; align-items: center; gap: 6px;"><span class="status-dot status-warning"></span><span style="font-size: 12px;">Warning</span></div>
+                        <div style="display: flex; align-items: center; gap: 6px;"><span class="status-dot status-error"></span><span style="font-size: 12px;">Error</span></div>
+                        <div style="display: flex; align-items: center; gap: 6px;"><span class="status-dot status-inactive"></span><span style="font-size: 12px;">Inactive</span></div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Regras: NAO FAZER</h3>
+                <ul class="dont-list">
+                    <li class="dont-item"><span class="material-symbols-outlined dont-icon">cancel</span><div class="dont-text">Usar emojis. Usar Material Symbols icons.</div></li>
+                    <li class="dont-item"><span class="material-symbols-outlined dont-icon">cancel</span><div class="dont-text">Sombras pesadas (box-shadow > 4px blur).</div></li>
+                    <li class="dont-item"><span class="material-symbols-outlined dont-icon">cancel</span><div class="dont-text">Gradientes em cards. Cor solida sempre.</div></li>
+                    <li class="dont-item"><span class="material-symbols-outlined dont-icon">cancel</span><div class="dont-text">Border-radius > 2px. Nada de rounded-lg.</div></li>
+                    <li class="dont-item"><span class="material-symbols-outlined dont-icon">cancel</span><div class="dont-text">Bordas > 1px. Manter 1px solid.</div></li>
+                    <li class="dont-item"><span class="material-symbols-outlined dont-icon">cancel</span><div class="dont-text">Cores fora da paleta.</div></li>
+                    <li class="dont-item"><span class="material-symbols-outlined dont-icon">cancel</span><div class="dont-text">Animacoes > 300ms ou bounce effects.</div></li>
+                </ul>
+            </section>
+
+            <!-- Section 8: Roadmap -->
+            <section id="roadmap" class="section">
+                <div class="section-header">
+                    <div class="section-label">Planeamento</div>
+                    <h1 class="section-title">Roadmap</h1>
+                    <p class="section-desc">O caminho do conceito a realidade.</p>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 0 0 20px 0;">Timeline: 3 Fases</h3>
+                <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 24px; margin-bottom: 32px;">
+                    <div style="display: flex; gap: 0;">
+                        <div style="flex: 1; padding: 16px; background: var(--mint-10); border: 1px solid var(--mint-30); border-radius: 2px 0 0 2px;">
+                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mint); margin-bottom: 6px;">FASE 1</div>
+                            <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Notion + JSON</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Q1 2026 | MVP funcional</div>
+                        </div>
+                        <div style="display: flex; align-items: center; background: var(--surface); padding: 0 6px;"><span class="material-symbols-outlined" style="color: var(--border);">arrow_forward</span></div>
+                        <div style="flex: 1; padding: 16px; background: var(--bg); border: 1px solid var(--border);">
+                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 6px;">FASE 2</div>
+                            <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Hybrid</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Q2-Q3 2026 | Supabase parcial</div>
+                        </div>
+                        <div style="display: flex; align-items: center; background: var(--surface); padding: 0 6px;"><span class="material-symbols-outlined" style="color: var(--border);">arrow_forward</span></div>
+                        <div style="flex: 1; padding: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 0 2px 2px 0;">
+                            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 6px;">FASE 3</div>
+                            <div style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">Full Supabase</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Q4 2026+ | Mobile app</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 700; margin: 32px 0 20px 0;">Sprints</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Sprint 1: Foundation</div>
+                            <div class="timeline-desc">Semana 1-2</div>
+                            <ul class="checklist">
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Refatorar sidebar com 9 secoes</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Implementar design system</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Setup sync Notion -> JSON</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Sprint 2: Core Sections</div>
+                            <div class="timeline-desc">Semana 3-4</div>
+                            <ul class="checklist">
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Refatorar Dashboard</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Refatorar Financas com savings goals</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Implementar Aprendizado (4 tabs)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Sprint 3: Extended + Agentes</div>
+                            <div class="timeline-desc">Semana 5-6</div>
+                            <ul class="checklist">
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Refatorar Network</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Implementar Agentes + Thought Log</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Implementar Configuracoes</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Sprint 4: Chat Panel</div>
+                            <div class="timeline-desc">Semana 7-8</div>
+                            <ul class="checklist">
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Implementar Chat Panel UI</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Conectar ao OpenClaw</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Write-back para Notion</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Sprint 5: Polish</div>
+                            <div class="timeline-desc">Semana 9-10</div>
+                            <ul class="checklist">
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Cross-Domain Health Score</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Context-Aware Dashboard</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Quick Capture (Cmd+N)</span></li>
+                                <li class="checklist-item"><div class="checkbox" onclick="toggleCheckbox(this)"></div><span class="checklist-text">Mobile responsive</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 9: Questoes em Aberto -->
+            <section id="questoes" class="section">
+                <div class="section-header">
+                    <div class="section-label">Decisoes Pendentes</div>
+                    <h1 class="section-title">Questoes em Aberto</h1>
+                    <p class="section-desc">Pontos que precisam de decisao do Marco.</p>
+                </div>
+
+                <div class="card" style="border-left: 3px solid var(--yellow);">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); color: var(--yellow);"><span class="material-symbols-outlined">help</span></div>
+                        <div><h3 class="card-title">Estrutura do Notion</h3><div class="card-subtitle">Database Design</div></div>
+                    </div>
+                    <div class="card-body">
+                        <p>Os databases do Notion ja estao criados com as propriedades necessarias?</p>
+                        <p style="margin-top: 8px;"><strong>Acao:</strong> Revisar estrutura atual e confirmar alinhamento.</p>
+                    </div>
+                </div>
+
+                <div class="card" style="border-left: 3px solid var(--yellow);">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); color: var(--yellow);"><span class="material-symbols-outlined">help</span></div>
+                        <div><h3 class="card-title">Prioridade de Features</h3><div class="card-subtitle">Scope do MVP</div></div>
+                    </div>
+                    <div class="card-body">
+                        <p>Das 11 features, quais sao must-have pro MVP?</p>
+                        <p style="margin-top: 8px;"><strong>Sugestao:</strong> Quick Capture, Health Score, Context-Aware parecem essenciais.</p>
+                    </div>
+                </div>
+
+                <div class="card" style="border-left: 3px solid var(--yellow);">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); color: var(--yellow);"><span class="material-symbols-outlined">help</span></div>
+                        <div><h3 class="card-title">OpenClaw Integration</h3><div class="card-subtitle">Gateway Setup</div></div>
+                    </div>
+                    <div class="card-body">
+                        <p>O Gateway ja esta rodando? Qual o endpoint?</p>
+                        <p style="margin-top: 8px;"><strong>Acao:</strong> Confirmar setup e fornecer credenciais.</p>
+                    </div>
+                </div>
+
+                <div class="card" style="border-left: 3px solid var(--yellow);">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); color: var(--yellow);"><span class="material-symbols-outlined">help</span></div>
+                        <div><h3 class="card-title">Hosting & Deploy</h3><div class="card-subtitle">Infraestrutura</div></div>
+                    </div>
+                    <div class="card-body">
+                        <p>Onde vai rodar? Vercel? Self-hosted?</p>
+                        <p style="margin-top: 8px;"><strong>Sugestao:</strong> Vercel e o path mais simples pra Next.js.</p>
+                    </div>
+                </div>
+
+                <div class="card" style="border-left: 3px solid var(--yellow);">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); color: var(--yellow);"><span class="material-symbols-outlined">help</span></div>
+                        <div><h3 class="card-title">Light Mode</h3><div class="card-subtitle">Theme</div></div>
+                    </div>
+                    <div class="card-body">
+                        <p>Incluir light mode ou dark-only?</p>
+                        <p style="margin-top: 8px;"><strong>Sugestao:</strong> Comecar dark-only. Adicionar light em Phase 2.</p>
+                    </div>
+                </div>
+
+                <div class="card" style="border-left: 3px solid var(--yellow);">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); color: var(--yellow);"><span class="material-symbols-outlined">help</span></div>
+                        <div><h3 class="card-title">Dados Sensiveis</h3><div class="card-subtitle">Privacy</div></div>
+                    </div>
+                    <div class="card-body">
+                        <p>Como lidar com dados financeiros? Encrypt?</p>
+                        <p style="margin-top: 8px;"><strong>Sugestao:</strong> Notion pra Phase 1. Supabase com RLS pra Phase 2+.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Mapa Notion -->
+            <section id="mapa-notion" class="section">
+                <div class="section-header">
+                    <div class="section-label">Referencia</div>
+                    <h2 class="section-title">Mapa Notion → Secoes</h2>
+                    <p class="section-desc">Correspondencia entre as bases de dados do Notion e as secoes do Marco OS. Cada DB tem uma secao primaria e pode aparecer como widget em outras.</p>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Notion DB</th>
+                            <th>Secao Primaria</th>
+                            <th>Tambem aparece em</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Research</td><td>Aprendizado.Pipeline</td><td>Dashboard</td></tr>
+                        <tr><td>Deep Dives</td><td>Aprendizado.Analises</td><td>Dashboard, Projetos</td></tr>
+                        <tr><td>Criadores</td><td>Aprendizado.Roster</td><td>Content</td></tr>
+                        <tr><td>Projetos</td><td>Projetos</td><td>Dashboard, Financas</td></tr>
+                        <tr><td>Checklists</td><td>Projetos.Tasks</td><td>Dashboard</td></tr>
+                        <tr><td>Reunioes</td><td>Network.Agenda</td><td>Dashboard</td></tr>
+                        <tr><td>Pessoas</td><td>Network.Contatos</td><td>—</td></tr>
+                        <tr><td>Content</td><td>Projetos (filtro)</td><td>Dashboard</td></tr>
+                        <tr><td>Brain Dump</td><td>Notas</td><td>Dashboard</td></tr>
+                        <tr><td>Financas <span class="badge badge-new">NOVO</span></td><td>Financas</td><td>Dashboard</td></tr>
+                        <tr><td>Saude <span class="badge badge-new">NOVO</span></td><td>Saude</td><td>Dashboard</td></tr>
+                        <tr><td>Skills <span class="badge badge-new">NOVO</span></td><td>Aprendizado</td><td>—</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Section: Insights do Claude Code -->
+            <section id="claude-code-insights" class="section">
+                <div class="section-header">
+                    <div class="section-label">Analise</div>
+                    <h2 class="section-title">Insights do Claude Code</h2>
+                    <p class="section-desc">15 dias de uso intenso. O que os dados revelam sobre o Claude Code em producao.</p>
+                </div>
+
+                <div class="grid-3" style="margin-bottom: 24px;">
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 800; color: var(--mint); letter-spacing: -0.02em;">1,184</div>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-top: 4px;">Mensagens</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 800; color: var(--mint); letter-spacing: -0.02em;">88</div>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-top: 4px;">Sessoes</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 800; color: var(--mint); letter-spacing: -0.02em;">649</div>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-top: 4px;">Arquivos</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 800; color: var(--mint); letter-spacing: -0.02em;">63K+</div>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-top: 4px;">Linhas</div>
+                    </div>
+                    <div class="card" style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 800; color: var(--mint); letter-spacing: -0.02em;">15</div>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-top: 4px;">Dias</div>
+                    </div>
+                </div>
+
+                <div class="grid-2" style="margin-bottom: 24px;">
+                    <div class="card">
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 14px;">Languages</div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>TypeScript</span><span style="color: var(--text-secondary);">1616</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 100%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Python</span><span style="color: var(--text-secondary);">476</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 29%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Markdown</span><span style="color: var(--text-secondary);">238</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 15%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 14px;">Tools</div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Bash</span><span style="color: var(--text-secondary);">3131</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 100%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Read</span><span style="color: var(--text-secondary);">1195</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 38%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Edit</span><span style="color: var(--text-secondary);">1105</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 35%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 14px;">Friction</div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Wrong Approach</span><span style="color: var(--text-secondary);">44</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 100%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Buggy Code</span><span style="color: var(--text-secondary);">28</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 64%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Misunderstood</span><span style="color: var(--text-secondary);">11</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 25%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 14px;">Outcomes</div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Mostly</span><span style="color: var(--text-secondary);">24</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 100%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Fully</span><span style="color: var(--text-secondary);">13</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 54%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Partially</span><span style="color: var(--text-secondary);">10</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 42%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;"><span>Not</span><span style="color: var(--text-secondary);">1</span></div>
+                            <div style="height: 6px; background: var(--border); border-radius: 2px;"><div style="height: 6px; width: 4%; background: #00FF95; border-radius: 2px;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-3" style="margin-bottom: 24px;">
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 8px;">Misdiagnosed Root Causes</h3>
+                        <p class="card-body" style="margin-bottom: 10px;">O Claude diagnostica o sintoma, nao a causa raiz. Resolve um bug criando outro em outro lugar.</p>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 4px;">Solucao</div>
+                        <p class="card-body">Exigir analise de causa raiz explicitamente antes de aceitar qualquer implementacao.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 8px;">Incomplete Deployment Prep</h3>
+                        <p class="card-body" style="margin-bottom: 10px;">Declara "pronto" sem verificar env vars, endpoints ou portas no ambiente de producao.</p>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 4px;">Solucao</div>
+                        <p class="card-body">Checklist de deploy obrigatoria antes de qualquer push para producao.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title" style="font-size: 15px; margin-bottom: 8px;">Misunderstanding Intent</h3>
+                        <p class="card-body" style="margin-bottom: 10px;">Interpreta o pedido de forma literal e entrega algo tecnicamente correto mas funcionalmente errado.</p>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 4px;">Solucao</div>
+                        <p class="card-body">Confirmar entendimento antes de codar. Resumir o que vai fazer em 1 frase.</p>
+                    </div>
+                </div>
+
+                <div style="background: rgba(0,255,149,0.05); border-left: 2px solid #00FF95; padding: 16px; border-radius: 2px;">
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 8px;">Frank</div>
+                    <p style="font-size: 14px; line-height: 1.6; font-style: italic;">44 vezes o Claude escolheu o approach errado. A regra dos 2 attempts resolve 80% disso.</p>
+                </div>
+            </section>
+
+            <!-- Section: CLAUDE.md Sugerido -->
+            <section id="claude-md" class="section">
+                <div class="section-header">
+                    <div class="section-label">Configuracao</div>
+                    <h2 class="section-title">CLAUDE.md Sugerido</h2>
+                    <p class="section-desc">Regras operacionais para o Claude Code baseadas nos padroes de fricção identificados. Copie e cole no seu CLAUDE.md.</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">Deployment Checklist</h3>
+                                <div class="card-subtitle">Antes de qualquer push</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">## Deployment Checklist
+- Verify all env vars are set in production
+- Never push without confirming with user first
+- After deploy, confirm live URL is responding
+- Run smoke test on critical paths before declaring done</code>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">Debugging Rules</h3>
+                                <div class="card-subtitle">Limites de tentativas</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">## Debugging Rules
+- After 2 failed attempts on the same bug, STOP and ask
+- Never blame cache without evidence (check logs first)
+- Diagnose root cause before proposing a fix
+- Summarize your diagnosis in 1 sentence before coding</code>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">VPS/Infrastructure</h3>
+                                <div class="card-subtitle">Ambiente de producao</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">## VPS/Infrastructure
+- Check for orphan processes FIRST before starting services
+- SSH commands timeout at 30s — use background jobs for long ops
+- Always run smoke test after any infra change
+- Confirm ports are open before declaring service is up</code>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">Payment Integration</h3>
+                                <div class="card-subtitle">Fluxos financeiros</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">## Payment Integration
+- Pix is not a subscription — they are different flows
+- Map all architectural differences BEFORE writing any code
+- Never assume payment provider behavior — read the docs first
+- Test with sandbox credentials before any production deploy</code>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">Testing</h3>
+                                <div class="card-subtitle">Qualidade do codigo</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">## Testing
+- Run full test suite after any refactor
+- grep for removed function names in test files before deleting
+- A passing build does not mean the feature works
+- Confirm test coverage on the changed path explicitly</code>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">UI/Frontend</h3>
+                                <div class="card-subtitle">Mudancas visuais</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">## UI/Frontend
+- Describe proposed visual changes and ask for confirmation before implementing
+- Never declare done based on build success alone — check in the browser
+- Screenshot or describe the result after UI changes
+- Ask if the interaction feels right, not just if it compiles</code>
+                    </div>
+                </div>
+
+                <div style="background: rgba(0,255,149,0.05); border-left: 2px solid #00FF95; padding: 16px; border-radius: 2px; margin-top: 24px;">
+                    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--mint); margin-bottom: 8px;">Frank</div>
+                    <p style="font-size: 14px; line-height: 1.6; font-style: italic;">Configurar o CLAUDE.md direito e o melhor investimento de 10 minutos que voce pode fazer.</p>
+                </div>
+            </section>
+
+            <!-- Section: Horizon -->
+            <section id="horizon" class="section">
+                <div class="section-header">
+                    <div class="section-label">Futuro</div>
+                    <h2 class="section-title">Horizon</h2>
+                    <p class="section-desc">Capacidades emergentes do Claude Code que vao mudar o fluxo de trabalho. Prompts prontos para usar quando estiver disponivel.</p>
+                </div>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">Autonomous Deploy-Test-Fix Loops</h3>
+                                <div class="card-subtitle">Ciclos automatizados</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">Deploy the feature, run the test suite, interpret any failures, fix them, and redeploy. Repeat until all tests are green. Maximum 5 cycles. If not green after 5 cycles, stop and report what's blocking.</code>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">Parallel Multi-Agent Codebase Ops</h3>
+                                <div class="card-subtitle">Workstreams paralelos</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">Split this batch of tasks into independent workstreams with no shared files. Assign each to a parallel agent. Once all are complete, coordinate the merge and resolve any conflicts before presenting the final result.</code>
+                    </div>
+
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <h3 class="card-title" style="font-size: 15px; margin-bottom: 2px;">Pre-Flight Environment Validation</h3>
+                                <div class="card-subtitle">Checagem pre-deploy</div>
+                            </div>
+                            <button class="btn" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('code').textContent)">Copiar</button>
+                        </div>
+                        <code style="display: block; font-size: 12px; line-height: 1.7; color: var(--text-secondary); font-family: monospace; white-space: pre-wrap;">Before any deploy, validate: open ports, git state (clean branch, no uncommitted changes), VPS connectivity, all required credentials present, deploy targets reachable, and database migrations are up to date. Report any blockers and stop if critical issues are found.</code>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer style="margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center;">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); margin-bottom: 6px;">MARCO OS v2.2</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Guia Interativo | Marco 2026</div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">arrow_upward</span>Voltar ao Topo
+                    </button>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        function toggleExpand(id) {
+            const card = document.getElementById(id);
+            card.classList.toggle('expanded');
+        }
+        function toggleCheckbox(el) {
+            el.classList.toggle('checked');
+            saveChecklist();
+        }
+        function copyColor(color) {
+            navigator.clipboard.writeText(color);
+            const n = document.createElement('div');
+            n.textContent = 'Copiado: ' + color;
+            n.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--mint);color:var(--bg);padding:10px 16px;border-radius:2px;font-size:12px;font-weight:600;z-index:1000;';
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 2000);
+        }
+        function saveChecklist() {
+            const boxes = document.querySelectorAll('.checkbox');
+            const state = Array.from(boxes).map(b => b.classList.contains('checked'));
+            localStorage.setItem('marco-os-checklist', JSON.stringify(state));
+        }
+        function loadChecklist() {
+            const saved = localStorage.getItem('marco-os-checklist');
+            if (saved) {
+                const state = JSON.parse(saved);
+                const boxes = document.querySelectorAll('.checkbox');
+                boxes.forEach((b, i) => { if (state[i]) b.classList.add('checked'); });
+            }
+        }
+        loadChecklist();
+        const sections = document.querySelectorAll('section[id]');
+        const navItems = document.querySelectorAll('.nav-item');
+        function updateNav() {
+            let current = '';
+            sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) current = s.id; });
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === '#' + current) item.classList.add('active');
+            });
+        }
+        window.addEventListener('scroll', updateNav);
+        updateNav();
+        if (window.innerWidth <= 768) {
+            const sidebar = document.querySelector('.sidebar');
+            const btn = document.createElement('button');
+            btn.innerHTML = '<span class="material-symbols-outlined">menu</span>';
+            btn.style.cssText = 'position:fixed;top:12px;left:12px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:6px;color:var(--text);cursor:pointer;';
+            btn.onclick = () => sidebar.classList.toggle('open');
+            document.body.appendChild(btn);
+            navItems.forEach(item => item.addEventListener('click', () => sidebar.classList.remove('open')));
+        }
+    </script>
+</body>
+</html>

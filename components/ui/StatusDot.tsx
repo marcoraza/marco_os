@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '../../utils/cn';
 
 interface StatusDotProps extends React.HTMLAttributes<HTMLSpanElement> {
-  color?: 'mint' | 'red' | 'orange' | 'blue';
+  color?: 'mint' | 'red' | 'orange' | 'blue' | 'purple';
   pulse?: boolean;
   glow?: boolean;
   size?: 'sm' | 'md';
@@ -14,6 +14,7 @@ const colorStyles = {
   red: 'bg-accent-red',
   orange: 'bg-accent-orange',
   blue: 'bg-accent-blue',
+  purple: 'bg-accent-purple',
 };
 
 const glowStyles = {
@@ -21,6 +22,7 @@ const glowStyles = {
   red: 'shadow-[0_0_8px_rgba(255,69,58,0.5)]',
   orange: 'shadow-[0_0_8px_rgba(255,159,10,0.5)]',
   blue: 'shadow-[0_0_8px_rgba(10,132,255,0.5)]',
+  purple: 'shadow-[0_0_8px_rgba(191,90,242,0.5)]',
 };
 
 export function StatusDot({ color = 'mint', pulse = false, glow = false, size = 'sm', className, ...props }: StatusDotProps) {

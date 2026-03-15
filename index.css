@@ -1,8 +1,390 @@
-/*
-  Vite CSS entrypoint.
-  Mantemos o Tailwind via CDN no index.html (estética atual),
-  mas importamos este arquivo via Vite para evitar warnings e
-  permitir extensões futuras.
-*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* (intencionalmente vazio) */
+/* ═══════════════════════════════════════════════════════════════════════════
+   THEME TOKENS (CSS Custom Properties)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root, [data-theme="dark"] {
+    /* Layer 2: Semantic — DARK (Default) */
+    --color-bg-base: #0D0D0F;
+    --color-bg-header: #121212;
+    --color-bg-surface: #1C1C1C;
+    --color-bg-surface-hover: #252525;
+    --color-border-panel: #2A2A2A;
+    --color-border-card: #2A2A2A;
+    --color-text-primary: #E1E1E1;
+    --color-text-secondary: #8E8E93;
+
+    /* Accents — DARK (Vibrant on dark bg) */
+    --color-brand-mint: #00FF95;
+    --color-brand-flame: #FF5500;
+    --color-accent-blue: #0A84FF;
+    --color-accent-blue-dim: #406B94;
+    --color-accent-red: #FF453A;
+    --color-accent-orange: #FF9F0A;
+    --color-accent-purple: #BF5AF2;
+
+    /* Overlay & Glass */
+    --color-overlay: rgba(0, 0, 0, 0.6);
+    --color-glass-bg: rgba(28, 28, 28, 0.7);
+    --color-glass-border: rgba(255, 255, 255, 0.05);
+    --color-grid-line: rgba(255, 255, 255, 0.03);
+    --color-shadow: rgba(0, 0, 0, 0.5);
+    --color-shadow-sm: rgba(0, 0, 0, 0.3);
+    --color-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+
+    /* Toggle */
+    --color-switch-knob: #FFFFFF;
+
+    /* Spacing tokens */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
+    --radius-xl: 12px;
+    --radius-full: 9999px;
+
+    /* Safe Areas */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+[data-theme="light"] {
+    /* Layer 2: Semantic — LIGHT
+       Warm stone palette with layered depth.
+       Base is darkest bg → surfaces rise lighter → cards on top.
+       Inspired by Notion, Linear, Figma — never pure white. */
+    --color-bg-base: #E8E6E1;
+    --color-bg-header: #F0EEE9;
+    --color-bg-surface: #F5F3EF;
+    --color-bg-surface-hover: #E2DFDA;
+    --color-border-panel: #CDC9C1;
+    --color-border-card: #D5D1CA;
+    --color-text-primary: #1C1917;
+    --color-text-secondary: #78716C;
+
+    /* Accents — LIGHT (Rich and saturated on warm bg) */
+    --color-brand-mint: #059669;
+    --color-brand-flame: #DC4A14;
+    --color-accent-blue: #1D4ED8;
+    --color-accent-blue-dim: #2563EB;
+    --color-accent-red: #B91C1C;
+    --color-accent-orange: #B45309;
+    --color-accent-purple: #6D28D9;
+
+    /* Overlay & Glass */
+    --color-overlay: rgba(0, 0, 0, 0.35);
+    --color-glass-bg: rgba(245, 243, 239, 0.9);
+    --color-glass-border: rgba(0, 0, 0, 0.08);
+    --color-grid-line: rgba(0, 0, 0, 0.05);
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-shadow-sm: rgba(0, 0, 0, 0.06);
+    --color-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+
+    /* Toggle */
+    --color-switch-knob: #FFFFFF;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — COMPREHENSIVE OVERRIDES
+   Since Tailwind generates classes with CSS var() values now,
+   most colors adapt automatically. These overrides handle edge cases:
+   inline styles, opacity variants, and hardcoded dark values.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Fix images in Light Mode */
+[data-theme="light"] img {
+    filter: none !important;
+    opacity: 1 !important;
+}
+
+/* Badge / pill opacity variants — ensure readable on warm bg */
+[data-theme="light"] .bg-brand-mint\/10 { background-color: rgba(5, 150, 105, 0.10) !important; }
+[data-theme="light"] .bg-brand-mint\/5 { background-color: rgba(5, 150, 105, 0.06) !important; }
+[data-theme="light"] .bg-accent-blue\/10 { background-color: rgba(29, 78, 216, 0.10) !important; }
+[data-theme="light"] .bg-accent-blue\/20 { background-color: rgba(29, 78, 216, 0.14) !important; }
+[data-theme="light"] .bg-accent-red\/10 { background-color: rgba(185, 28, 28, 0.10) !important; }
+[data-theme="light"] .bg-accent-red\/5 { background-color: rgba(185, 28, 28, 0.06) !important; }
+[data-theme="light"] .bg-accent-orange\/10 { background-color: rgba(180, 83, 9, 0.10) !important; }
+[data-theme="light"] .bg-accent-purple\/10 { background-color: rgba(109, 40, 217, 0.10) !important; }
+
+/* Black overlays softer in light */
+[data-theme="light"] .bg-black\/60 { background-color: rgba(0, 0, 0, 0.35) !important; }
+[data-theme="light"] .bg-black\/80 { background-color: rgba(0, 0, 0, 0.45) !important; }
+
+/* Grayscale images → color in light */
+[data-theme="light"] .grayscale { filter: none !important; }
+
+/* Fix text that uses white directly */
+[data-theme="light"] .text-white { color: #FFFFFF !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html, body {
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+
+body, header, aside, footer, main,
+[class*="bg-"], [class*="border-"], [class*="text-"],
+input, select, textarea, button {
+    transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+    transition-duration: 0.25s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+}
+
+button, [role="button"], nav, a, .select-none {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLLBARS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--color-bg-base);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-border-panel);
+    border-radius: 10px;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-bg-surface);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-border-panel);
+    border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+}
+
+.learning-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+.learning-scroll::-webkit-scrollbar-track {
+    background: var(--color-bg-base);
+}
+.learning-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-border-panel);
+    border-radius: 4px;
+}
+.learning-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-purple);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENT STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.layered-card {
+    box-shadow: var(--color-card-shadow);
+}
+
+.pill-radius {
+    border-radius: 4px;
+}
+
+.progress-ring-circle {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.nav-item-active {
+    background-color: var(--color-bg-surface);
+    color: var(--color-brand-mint);
+    border-left: 2px solid var(--color-brand-mint);
+}
+[data-theme="light"] .nav-item-active {
+    background-color: rgba(5, 150, 105, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(5, 150, 105, 0.12);
+}
+
+.nav-item-inactive {
+    color: var(--color-text-secondary);
+    border-left: 2px solid transparent;
+}
+.nav-item-inactive:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-surface);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INPUT RANGE (Health)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+    touch-action: none;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    background: var(--color-border-panel);
+    border-radius: 0;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 16px;
+    width: 16px;
+    background: var(--color-accent-orange);
+    cursor: pointer;
+    margin-top: -6px;
+    border-radius: 0;
+}
+input[type="range"]:focus {
+    outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GRID BG (Health)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.grid-bg {
+    background-size: 40px 40px;
+    background-image:
+        linear-gradient(to right, var(--color-grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--color-grid-line) 1px, transparent 1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TIMELINE & GLASS (Learning)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.timeline-line::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 15px;
+    width: 2px;
+    background: var(--color-border-panel);
+    z-index: 0;
+}
+
+.glass-panel {
+    background: var(--color-glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-glass-border);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOGGLE SWITCH (Settings)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-border-panel);
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--color-switch-knob);
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: var(--color-brand-mint);
+}
+input:focus + .slider {
+    box-shadow: 0 0 1px var(--color-brand-mint);
+}
+input:checked + .slider:before {
+    transform: translateX(20px);
+    background-color: var(--color-bg-base);
+}
+[data-theme="light"] input:checked + .slider:before {
+    background-color: #F5F3EF;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — RECHARTS
+   Override Recharts inline dark styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .recharts-cartesian-grid line {
+    stroke: var(--color-border-panel) !important;
+}
+[data-theme="light"] .recharts-text {
+    fill: var(--color-text-secondary) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — HEADER & SIDEBAR REFINEMENTS
+   Subtle bottom-border shadow for depth
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] header {
+    box-shadow: 0 1px 0 var(--color-border-panel), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] aside {
+    box-shadow: 1px 0 0 var(--color-border-panel);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NO SCROLLBAR (utility)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Icon, Badge } from './ui';
 
 interface MissionModalProps {
@@ -6,23 +7,45 @@ interface MissionModalProps {
   onSave: (mission: any) => void;
 }
 
+export function isMissionTitleValid(title: string) {
+  return title.trim().length > 0;
+}
+
 const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState('normal');
   const [energy, setEnergy] = useState('medium');
   const [points, setPoints] = useState(3);
+  const [showValidation, setShowValidation] = useState(false);
+  const isValid = isMissionTitleValid(title);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ title, priority, energy, points, tag: 'GERAL' });
+    if (!isValid) {
+      setShowValidation(true);
+      return;
+    }
+    onSave({ title: title.trim(), priority, energy, points, tag: 'GERAL' });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
       {/* Modal Content - Bottom Sheet on Mobile, Centered Card on Desktop */}
-      <div className="relative w-full md:max-w-2xl bg-surface rounded-t-xl md:rounded-xl border-t md:border border-border-panel shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 md:slide-in-from-bottom-0 md:zoom-in-95 duration-200 max-h-[90vh] md:max-h-[85vh] flex flex-col">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 10 }}
+        transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="relative w-full md:max-w-2xl bg-surface rounded-t-xl md:rounded-xl border-t md:border border-border-panel shadow-2xl overflow-hidden max-h-[90vh] md:max-h-[85vh] flex flex-col">
         
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 md:px-6 md:py-5 border-b border-border-panel shrink-0">
@@ -41,19 +64,25 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
             
             {/* Title */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Título da Missão</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">TÍTULO DA MISSÃO</label>
               <input 
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (showValidation && e.target.value.trim()) setShowValidation(false);
+                }}
                 type="text" 
                 placeholder="Ex: Finalizar relatório financeiro Q3" 
                 className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary focus:outline-none focus:border-accent-blue transition-colors placeholder-text-secondary focus:ring-1 focus:ring-accent-blue"
               />
+              {showValidation && !isValid && (
+                <p className="text-[10px] font-medium text-accent-red">Informe um título para criar a missão.</p>
+              )}
             </div>
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Descrição</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">DESCRIÇÃO</label>
               <textarea 
                 placeholder="Adicione detalhes, links ou sub-tarefas necessárias..." 
                 rows={3}
@@ -64,7 +93,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {/* Space */}
               <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Espaço</label>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">ESPAÇO</label>
                 <div className="relative">
                   <select className="w-full bg-header-bg border border-border-panel rounded-md px-4 py-3 text-base md:text-sm text-text-primary appearance-none focus:outline-none focus:border-accent-blue cursor-pointer">
                     <option>🏢 Trabalho</option>
@@ -77,7 +106,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
 
               {/* Responsible */}
               <div className="space-y-2">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Responsável</label>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">RESPONSÁVEL</label>
                 <div className="flex items-center w-full bg-header-bg border border-border-panel rounded-md px-3 py-2.5 cursor-pointer hover:border-text-secondary transition-colors">
                   <div className="w-6 h-6 rounded-full bg-border-panel mr-3 border border-text-secondary"></div>
                   <span className="text-sm text-text-primary flex-1">Marco Silva</span>
@@ -88,7 +117,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
 
             {/* Priority */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Prioridade</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">PRIORIDADE</label>
               <div className="grid grid-cols-4 gap-2">
                 {['urgente', 'alta', 'normal', 'baixa'].map((p) => (
                   <button
@@ -111,7 +140,7 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
 
             {/* Energy */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">Nível de Energia</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-text-secondary">NÍVEL DE ENERGIA</label>
               <div className="flex gap-3">
                 {['low', 'medium', 'high'].map((e) => (
                   <button
@@ -202,14 +231,19 @@ const MissionModal: React.FC<MissionModalProps> = ({ onClose, onSave }) => {
           </button>
           <button 
             onClick={handleSubmit}
-            className="px-6 py-2.5 rounded-sm text-sm font-bold bg-accent-blue hover:bg-accent-blue-dim text-white shadow-lg shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
+            disabled={!isValid}
+            className={`px-6 py-2.5 rounded-sm text-sm font-bold transition-all flex items-center gap-2 ${
+              isValid
+                ? 'bg-accent-blue hover:bg-accent-blue-dim text-white shadow-lg shadow-blue-500/20 transform hover:-translate-y-0.5'
+                : 'bg-border-panel text-text-secondary cursor-not-allowed'
+            }`}
           >
             <Icon name="rocket_launch" size="sm" />
             CRIAR MISSÃO
           </button>
         </div>
 
-      </div>
+      </motion.div>
     </div>
   );
 };

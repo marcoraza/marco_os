@@ -1,20 +1,58 @@
-import React from 'react';
-import { Card, Icon, SectionLabel } from './ui';
+import React, { useRef, useState } from 'react';
+import { Card, Icon, SectionLabel, showToast } from './ui';
+import { useSettings, type AppSettings } from '../hooks/useSettings';
+
+const accentOptions: { id: AppSettings['appearance']['accentColor']; bg: string; glow: string }[] = [
+  { id: 'mint',   bg: 'bg-brand-mint',    glow: 'shadow-[0_0_10px_rgba(0,255,149,0.4)]' },
+  { id: 'blue',   bg: 'bg-accent-blue',   glow: 'shadow-[0_0_10px_rgba(10,132,255,0.4)]' },
+  { id: 'red',    bg: 'bg-accent-red',    glow: 'shadow-[0_0_10px_rgba(255,69,58,0.4)]' },
+  { id: 'orange', bg: 'bg-accent-orange', glow: 'shadow-[0_0_10px_rgba(255,159,10,0.4)]' },
+  { id: 'purple', bg: 'bg-accent-purple', glow: 'shadow-[0_0_10px_rgba(191,90,242,0.4)]' },
+];
 
 const Settings: React.FC = () => {
+  const { settings, update, resetAll, exportAll, importBackup } = useSettings();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [activeTheme, setActiveTheme] = useState(() => localStorage.getItem('marco-os-theme') || 'dark');
+
+  const handleImport = () => fileInputRef.current?.click();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      importBackup(file);
+      showToast('Backup importado com sucesso', 'success');
+    }
+    e.target.value = '';
+  };
+
+  const handleReset = () => {
+    if (!confirmReset) {
+      setConfirmReset(true);
+      setTimeout(() => setConfirmReset(false), 3000);
+      return;
+    }
+    resetAll();
+    showToast('Todos os dados foram resetados', 'success');
+    setConfirmReset(false);
+  };
+
+  const handleExport = () => {
+    exportAll();
+    showToast('Backup exportado', 'success');
+  };
+
   return (
     <div className="flex-grow flex flex-col bg-bg-base overflow-y-auto relative scroll-smooth h-full">
       <div className="max-w-[800px] w-full mx-auto p-8 space-y-8 pb-20">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border-panel pb-6">
             <div>
-                <h1 className="text-lg font-black uppercase tracking-tight text-text-primary mb-1">Configurações</h1>
+                <h1 className="text-lg font-black uppercase tracking-tight text-text-primary mb-1">CONFIGURAÇÕES</h1>
                 <p className="text-xs text-text-secondary font-medium">Gerencie suas preferências globais, integrações e perfil.</p>
             </div>
-            <button className="bg-surface hover:bg-surface-hover text-text-primary px-4 py-2 rounded-md border border-border-panel text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center gap-2">
-                <Icon name="save" size="md" />
-                Salvar Alterações
-            </button>
+            <span className="text-[9px] text-text-secondary font-mono">Auto-save ativo</span>
         </div>
 
         {/* Profile */}
@@ -34,11 +72,16 @@ const Settings: React.FC = () => {
                 </div>
                 <div className="flex-grow grid grid-cols-2 gap-6">
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-text-secondary uppercase">Nome de Exibição</label>
-                        <input className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors" type="text" defaultValue="Marco Anderson"/>
+                        <label className="text-[10px] font-bold text-text-secondary uppercase">NOME DE EXIBIÇÃO</label>
+                        <input
+                          className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
+                          type="text"
+                          value={settings.profile.displayName}
+                          onChange={e => update('profile', { displayName: e.target.value })}
+                        />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-text-secondary uppercase">Função</label>
+                        <label className="text-[10px] font-bold text-text-secondary uppercase">FUNÇÃO</label>
                         <div className="w-full bg-bg-base/50 border border-border-panel rounded-md p-2 text-base md:text-sm text-text-secondary cursor-not-allowed flex justify-between items-center">
                             <span>Fundador</span>
                             <Icon name="lock" size="sm" />
@@ -46,7 +89,12 @@ const Settings: React.FC = () => {
                     </div>
                     <div className="col-span-2 space-y-1">
                         <label className="text-[10px] font-bold text-text-secondary uppercase">Email</label>
-                        <input className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors" type="email" defaultValue="marco@marco-os.com"/>
+                        <input
+                          className="w-full bg-bg-base border border-border-panel rounded-md p-2 text-base md:text-sm text-text-primary focus:border-brand-mint focus:outline-none transition-colors"
+                          type="email"
+                          value={settings.profile.email}
+                          onChange={e => update('profile', { email: e.target.value })}
+                        />
                     </div>
                 </div>
             </div>
@@ -54,26 +102,55 @@ const Settings: React.FC = () => {
 
         {/* Appearance */}
         <Card className="p-6">
-            <SectionLabel icon="palette" className="mb-6">Aparência</SectionLabel>
+            <SectionLabel icon="palette" className="mb-6">APARÊNCIA</SectionLabel>
             <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-bold text-text-primary">Modo Escuro</p>
-                        <p className="text-[10px] text-text-secondary mt-0.5">Sempre ativado para melhor contraste.</p>
+                <div>
+                    <p className="text-sm font-bold text-text-primary mb-3">Tema</p>
+                    <div className="flex gap-3">
+                      {([
+                        { value: 'dark', label: 'Escuro', icon: 'dark_mode', color: 'text-brand-mint' },
+                        { value: 'light', label: 'Claro', icon: 'light_mode', color: 'text-accent-orange' },
+                        { value: 'system', label: 'Sistema', icon: 'desktop_windows', color: 'text-accent-blue' },
+                      ] as const).map(opt => {
+                        const isActive = activeTheme === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => {
+                              localStorage.setItem('marco-os-theme', opt.value);
+                              setActiveTheme(opt.value);
+                              const root = document.documentElement;
+                              let effective = opt.value as string;
+                              if (opt.value === 'system') {
+                                effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                              }
+                              root.setAttribute('data-theme', effective);
+                            }}
+                            className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-md border transition-all ${
+                              isActive
+                                ? `bg-surface border-brand-mint/40 ${opt.color}`
+                                : 'bg-bg-base border-border-panel text-text-secondary hover:border-text-secondary/40'
+                            }`}
+                          >
+                            <Icon name={opt.icon} className="text-lg" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">{opt.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
-                    <label className="switch">
-                        <input defaultChecked type="checkbox"/>
-                        <span className="slider"></span>
-                    </label>
                 </div>
                 <div className="w-full h-[1px] bg-border-panel/50"></div>
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-bold text-text-primary">Animações Reduzidas</p>
+                        <p className="text-sm font-bold text-text-primary">ANIMAÇÕES REDUZIDAS</p>
                         <p className="text-[10px] text-text-secondary mt-0.5">Desativar transições para maior performance.</p>
                     </div>
                     <label className="switch">
-                        <input type="checkbox"/>
+                        <input
+                          type="checkbox"
+                          checked={settings.appearance.reducedMotion}
+                          onChange={e => update('appearance', { reducedMotion: e.target.checked })}
+                        />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -81,19 +158,25 @@ const Settings: React.FC = () => {
                 <div>
                     <p className="text-sm font-bold text-text-primary mb-3">Cor de Destaque (Accent)</p>
                     <div className="flex gap-3">
-                        <div className="size-8 rounded-full bg-brand-mint border-2 border-white cursor-pointer shadow-[0_0_10px_rgba(0,255,149,0.4)]"></div>
-                        <div className="size-8 rounded-full bg-accent-blue border border-border-panel cursor-pointer hover:border-white transition-colors opacity-50 hover:opacity-100"></div>
-                        <div className="size-8 rounded-full bg-accent-red border border-border-panel cursor-pointer hover:border-white transition-colors opacity-50 hover:opacity-100"></div>
-                        <div className="size-8 rounded-full bg-accent-orange border border-border-panel cursor-pointer hover:border-white transition-colors opacity-50 hover:opacity-100"></div>
-                        <div className="size-8 rounded-full bg-accent-purple border border-border-panel cursor-pointer hover:border-white transition-colors opacity-50 hover:opacity-100"></div>
+                        {accentOptions.map(opt => (
+                          <div
+                            key={opt.id}
+                            onClick={() => update('appearance', { accentColor: opt.id })}
+                            className={`size-8 rounded-full ${opt.bg} cursor-pointer transition-all ${
+                              settings.appearance.accentColor === opt.id
+                                ? `border-2 border-white ${opt.glow}`
+                                : 'border border-border-panel opacity-50 hover:opacity-100 hover:border-white'
+                            }`}
+                          />
+                        ))}
                     </div>
                 </div>
             </div>
         </Card>
-        
+
         {/* Notifications */}
         <Card className="p-6">
-            <SectionLabel icon="notifications" className="mb-6">Notificações</SectionLabel>
+            <SectionLabel icon="notifications" className="mb-6">NOTIFICAÇÕES</SectionLabel>
             <div className="space-y-4">
                 <div className="flex items-center justify-between py-2">
                     <div className="flex items-center gap-3">
@@ -101,7 +184,11 @@ const Settings: React.FC = () => {
                         <span className="text-sm font-bold text-text-primary">Push Notifications</span>
                     </div>
                     <label className="switch">
-                        <input defaultChecked type="checkbox"/>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications.push}
+                          onChange={e => update('notifications', { push: e.target.checked })}
+                        />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -111,7 +198,11 @@ const Settings: React.FC = () => {
                         <span className="text-sm font-bold text-text-primary">Email Digest</span>
                     </div>
                     <label className="switch">
-                        <input type="checkbox"/>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications.emailDigest}
+                          onChange={e => update('notifications', { emailDigest: e.target.checked })}
+                        />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -121,7 +212,11 @@ const Settings: React.FC = () => {
                         <span className="text-sm font-bold text-text-primary">WhatsApp Alertas</span>
                     </div>
                     <label className="switch">
-                        <input defaultChecked type="checkbox"/>
+                        <input
+                          type="checkbox"
+                          checked={settings.notifications.whatsapp}
+                          onChange={e => update('notifications', { whatsapp: e.target.checked })}
+                        />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -130,7 +225,7 @@ const Settings: React.FC = () => {
 
         {/* Integrations */}
         <Card className="p-6">
-            <SectionLabel icon="extension" className="mb-6">Integrações</SectionLabel>
+            <SectionLabel icon="extension" className="mb-6">INTEGRAÇÕES</SectionLabel>
             <div className="space-y-3">
                 <div className="flex items-center justify-between p-4 bg-bg-base border border-border-panel rounded-md hover:border-text-secondary/30 transition-colors">
                     <div className="flex items-center gap-4">
@@ -192,7 +287,7 @@ const Settings: React.FC = () => {
         {/* Users */}
         <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
-                <SectionLabel icon="group">Usuários</SectionLabel>
+                <SectionLabel icon="group">USUÁRIOS</SectionLabel>
                 <button className="text-brand-mint text-[10px] font-black uppercase tracking-wide hover:text-text-primary transition-colors flex items-center gap-1">
                     <Icon name="add" size="sm" />
                     Convidar Usuário
@@ -205,8 +300,8 @@ const Settings: React.FC = () => {
                             <img alt="User" className="w-full h-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBP7JXjTU37vKSlINqzka68iHN7f0ORN-zJoJrWycfR_x5JZii_6nZxKtJ_qNuhT6BywYOGEOnjtdOvypS8jjYwoyQzl3Hub2AJAWTaxT9M9YB2RkcP1hHNqP8VrCB7yAfiMeYVbeyJU_Gj9tOvGVpaybTbAGiEygTljwNl0ethjRW6EDzBWgD2rovQefiMUWgi5zwAQ52cJWrZgCFLShhvT0QbsKYz2rNJ0sbYXNByrLZBp9g90wwfq0LoZoE8dVhJvbRr6DokRQ"/>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-text-primary">Marco Anderson</p>
-                            <p className="text-[9px] text-text-secondary">marco@marco-os.com</p>
+                            <p className="text-xs font-bold text-text-primary">{settings.profile.displayName}</p>
+                            <p className="text-[9px] text-text-secondary">{settings.profile.email}</p>
                         </div>
                     </div>
                     <select className="bg-bg-base border border-border-panel text-[10px] font-bold text-text-secondary rounded-md p-1 focus:border-brand-mint outline-none uppercase">
@@ -237,7 +332,7 @@ const Settings: React.FC = () => {
         {/* Spaces */}
         <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
-                <SectionLabel icon="workspaces">Espaços</SectionLabel>
+                <SectionLabel icon="workspaces">ESPAÇOS</SectionLabel>
                 <button className="text-brand-mint text-[10px] font-black uppercase tracking-wide hover:text-text-primary transition-colors flex items-center gap-1">
                     <Icon name="add" size="sm" />
                     Novo Espaço
@@ -274,14 +369,21 @@ const Settings: React.FC = () => {
         <Card className="p-6">
             <SectionLabel icon="database" className="mb-6">Dados do Sistema</SectionLabel>
             <div className="flex gap-4 mb-8">
-                <button className="flex-1 py-3 border border-border-panel rounded-md bg-bg-base hover:bg-bg-base/80 text-text-primary text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleExport}
+                  className="flex-1 py-3 border border-border-panel rounded-md bg-bg-base hover:bg-bg-base/80 text-text-primary text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
+                >
                     <Icon name="download" size="md" />
                     Exportar Tudo (JSON)
                 </button>
-                <button className="flex-1 py-3 border border-border-panel rounded-md bg-bg-base hover:bg-bg-base/80 text-text-primary text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleImport}
+                  className="flex-1 py-3 border border-border-panel rounded-md bg-bg-base hover:bg-bg-base/80 text-text-primary text-[10px] font-bold uppercase tracking-wide transition-colors flex items-center justify-center gap-2"
+                >
                     <Icon name="upload" size="md" />
                     Importar Backup
                 </button>
+                <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileChange} />
             </div>
             <div className="border border-accent-red/30 bg-accent-red/5 rounded-md p-4">
                 <h4 className="text-xs font-black text-accent-red uppercase tracking-wider mb-2 flex items-center gap-2">
@@ -289,8 +391,15 @@ const Settings: React.FC = () => {
                     Zona de Perigo
                 </h4>
                 <p className="text-[10px] text-text-secondary mb-4">Esta ação é irreversível. Todos os dados, agentes e configurações serão apagados permanentemente.</p>
-                <button className="px-4 py-2 bg-accent-red/10 border border-accent-red/50 text-accent-red hover:bg-accent-red hover:text-white rounded-md text-[10px] font-bold uppercase tracking-wide transition-all">
-                    Resetar Todos os Dados
+                <button
+                  onClick={handleReset}
+                  className={`px-4 py-2 border rounded-md text-[10px] font-bold uppercase tracking-wide transition-all ${
+                    confirmReset
+                      ? 'bg-accent-red text-white border-accent-red'
+                      : 'bg-accent-red/10 border-accent-red/50 text-accent-red hover:bg-accent-red hover:text-white'
+                  }`}
+                >
+                    {confirmReset ? 'Confirmar Reset — Clique Novamente' : 'Resetar Todos os Dados'}
                 </button>
             </div>
         </Card>
