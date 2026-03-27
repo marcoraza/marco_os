@@ -1,0 +1,68 @@
+[
+  {
+    "repo": "marcoraza/marco_os",
+    "last_commit": {
+      "author": "Marcoraza",
+      "date": "2026-03-03T21:10:22Z",
+      "message": "feat: Notion data layer + ChatPanel infrastructure\n\n- lib/dataProvider.ts: DataProvider<T> interface + 12 typed interfaces\n- contexts/NotionDataContext.tsx: centralized 30s polling, sequential fetch\n- components/ui/SyncBadge.tsx: auto-refresh sync indicator\n- hooks/useAgentChat.ts: IndexedDB-persisted chat sessions\n- components/ChatPanel.tsx: Framer Motion drawer overlay\n- data/db.ts: chat_sessions store (v7 reset for clean seed)\n- data/types/chat.ts: ChatMessage + ChatSession types\n- App.tsx: wrapped with NotionDataProvider\n- AppSidebar: Planejador→Projetos, Gestão de Contatos→Network\n- public/data/*.json: 12 Notion sync JSONs\n- CLAUDE.md: updated with UX patterns + DB IDs\n\nNo UI components modified. All existing views unchanged."
+    },
+    "open_prs": 0,
+    "ci_status": "unknown",
+    "contributors_30d": []
+  },
+  {
+    "repo": "TurboClawBrasil/skill-avatar-analyzer",
+    "last_commit": {
+      "author": "TurboClaw",
+      "date": "2026-03-02T18:17:32Z",
+      "message": "Initial release"
+    },
+    "open_prs": 0,
+    "ci_status": "unknown",
+    "contributors_30d": []
+  },
+  {
+    "repo": "TurboClawBrasil/skill-last30days",
+    "last_commit": {
+      "author": "TurboClaw",
+      "date": "2026-03-02T18:17:28Z",
+      "message": "Initial release"
+    },
+    "open_prs": 0,
+    "ci_status": "unknown",
+    "contributors_30d": []
+  },
+  {
+    "repo": "TurboClawBrasil/skill-agent-browser",
+    "last_commit": {
+      "author": "TurboClaw",
+      "date": "2026-03-02T18:17:25Z",
+      "message": "Initial release"
+    },
+    "open_prs": 0,
+    "ci_status": "unknown",
+    "contributors_30d": []
+  },
+  {
+    "repo": "TurboClawBrasil/skill-agenda-compromisso",
+    "last_commit": {
+      "author": "TurboClaw",
+      "date": "2026-03-02T18:17:17Z",
+      "message": "Initial release"
+    },
+    "open_prs": 0,
+    "ci_status": "unknown",
+    "contributors_30d": []
+  },
+  {
+    "repo": "TurboClawBrasil/skill-summarize-agent",
+    "last_commit": {
+      "author": "TurboClaw",
+      "date": "2026-03-02T18:17:14Z",
+      "message": "Initial release"
+    },
+    "open_prs": 0,
+    "ci_status": "unknown",
+    "contributors_30d": []
+  }
+]

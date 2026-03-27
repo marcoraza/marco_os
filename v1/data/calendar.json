@@ -1,0 +1,42 @@
+[
+  {
+    "id": "j7cnhigs7iiotl3po26h089eg8",
+    "title": "Reunião OpenClaw — Marcelo Costa",
+    "start": "2026-03-02T14:00:00-03:00",
+    "end": "2026-03-02T15:00:00-03:00",
+    "account": "marcoaquilino",
+    "location": "",
+    "description": "Pauta: Wrapper 99.9% pronto + setup OpenClaw",
+    "all_day": false
+  },
+  {
+    "id": "8ch3a9taib5p9otgokq48cldio",
+    "title": "Pre Kickstart — Gui Franciscon",
+    "start": "2026-03-02T17:00:00-03:00",
+    "end": "2026-03-02T18:00:00-03:00",
+    "account": "marcoaquilino",
+    "location": "",
+    "description": "Pauta: alinhar referências e agenda do mês",
+    "all_day": false
+  },
+  {
+    "id": "pasfkj9ctg5utvg8k6upgihk4o",
+    "title": "Reunião OpenClaw — Marcelo Costa",
+    "start": "2026-03-02T18:30:00Z",
+    "end": "2026-03-02T19:30:00Z",
+    "account": "franciscoraza247",
+    "location": "",
+    "description": "Pauta: Wrapper 99.9% pronto + setup OpenClaw",
+    "all_day": false
+  },
+  {
+    "id": "t80tp313rf5ri93cqc74hl9mac",
+    "title": "Pre Kickstart — Gui Franciscon",
+    "start": "2026-03-02T20:00:00Z",
+    "end": "2026-03-02T21:00:00Z",
+    "account": "franciscoraza247",
+    "location": "",
+    "description": "Pauta: alinhar referências e agenda do mês",
+    "all_day": false
+  }
+]
