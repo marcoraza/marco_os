@@ -1,40 +1,24 @@
 /**
- * MCRightSidebar — contextual right sidebar for Mission Control Overview.
- * Shows: focused agent card + full roster + next cron executions.
+ * MCRightSidebar — V3 redesign
+ *
+ * Three stacked sections:
+ * 1. Chat with focused agent (~40% height)
+ * 2. Inter-agent chat timeline (~30% height)
+ * 3. Activity feed (~30% height)
+ *
+ * Width: w-80 (320px). Visible on xl+ only.
  * All store access via granular selectors.
  */
-import React, { useMemo, useCallback } from 'react';
+import React, { Suspense, lazy, useMemo } from 'react';
 import { cn } from '../../../utils/cn';
 import { Icon } from '../../ui/Icon';
-import { Ring, type RingColor } from '../../ui/Ring';
-import { MCAgentAvatar } from './MCAgentAvatar';
-import { useMissionControlStore, type MCAgent } from '../../../store/missionControl';
+import { useMissionControlStore, type MCInterAgentMessage, type MCActivity } from '../../../store/missionControl';
+
+const MCChatPanel = lazy(() => import('./MCChatPanel').then((m) => ({ default: m.MCChatPanel })));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const STATUS_DOT: Record<MCAgent['status'], string> = {
-  idle: 'bg-brand-mint',
-  busy: 'bg-accent-orange',
-  error: 'bg-accent-red',
-  offline: 'bg-text-secondary',
-};
-
-const STATUS_GLOW: Record<MCAgent['status'], string> = {
-  idle: 'shadow-[0_0_4px_rgba(0,255,149,0.5)]',
-  busy: 'shadow-[0_0_4px_rgba(255,159,10,0.5)]',
-  error: 'shadow-[0_0_4px_rgba(255,69,58,0.5)]',
-  offline: '',
-};
-
-const STATUS_BORDER: Record<MCAgent['status'], string> = {
-  idle: 'border-l-2 border-l-brand-mint',
-  busy: 'border-l-2 border-l-accent-orange',
-  error: 'border-l-2 border-l-accent-red',
-  offline: 'border-l-2 border-l-border-panel',
-};
-
-function relativeTime(ts: number | undefined): string {
-  if (!ts) return '--';
+function relativeTime(ts: number): string {
   const diff = Date.now() - ts;
   if (diff < 60_000) return 'agora';
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m`;
@@ -42,342 +26,167 @@ function relativeTime(ts: number | undefined): string {
   return `${Math.floor(diff / 86_400_000)}d`;
 }
 
-function relativeTimeFromNow(ts: number | undefined): string {
-  if (!ts) return '--';
-  const diff = ts - Date.now();
-  if (diff < 0) return 'atrasado';
-  if (diff < 60_000) return `${Math.ceil(diff / 1_000)}s`;
-  if (diff < 3_600_000) return `em ${Math.floor(diff / 60_000)}m`;
-  if (diff < 86_400_000) return `em ${Math.floor(diff / 3_600_000)}h`;
-  return `em ${Math.floor(diff / 86_400_000)}d`;
+const ACTIVITY_DOT_COLOR: Record<string, string> = {
+  task: 'bg-accent-blue',
+  agent: 'bg-brand-mint',
+  session: 'bg-accent-purple',
+  system: 'bg-text-secondary',
+  cron: 'bg-accent-orange',
+  error: 'bg-accent-red',
+};
+
+function activityDotColor(type: string): string {
+  return ACTIVITY_DOT_COLOR[type] ?? 'bg-text-secondary';
 }
 
-/** Returns time-to-run in ms (negative = overdue). */
-function timeToRun(ts: number | undefined): number {
-  if (!ts) return Infinity;
-  return ts - Date.now();
-}
+// ── Section 1: Agent Chat ────────────────────────────────────────────────────
 
-function completionRingColor(pct: number): RingColor {
-  if (pct > 80) return 'mint';
-  if (pct >= 50) return 'blue';
-  return 'orange';
-}
-
-// ── Mini Bar Sparkline ──────────────────────────────────────────────────────
-
-function MiniBarSparkline({ data }: { data: number[] }) {
-  const maxVal = Math.max(...data, 1);
-  const barWidth = 3;
-  const gap = 1;
-  const svgWidth = data.length * barWidth + (data.length - 1) * gap;
-  const svgHeight = 12;
-
-  return (
-    <svg
-      width={svgWidth}
-      height={svgHeight}
-      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-      fill="none"
-      className="shrink-0"
-    >
-      {data.map((val, i) => {
-        const barHeight = Math.max((val / maxVal) * svgHeight, 1);
-        return (
-          <rect
-            key={i}
-            x={i * (barWidth + gap)}
-            y={svgHeight - barHeight}
-            width={barWidth}
-            height={barHeight}
-            rx={0.5}
-            fill={val > 0 ? 'var(--color-brand-mint)' : 'var(--color-border-panel)'}
-            opacity={val > 0 ? 0.7 : 0.3}
-          />
-        );
-      })}
-    </svg>
-  );
-}
-
-// ── Focused Agent Card ──────────────────────────────────────────────────────
-
-function FocusedAgentCard({
-  agent,
-  onViewProfile,
-  onSendMission,
-  onChat,
-}: {
-  agent: MCAgent;
-  onViewProfile: () => void;
-  onSendMission: () => void;
-  onChat: () => void;
-}) {
-  const tasks = useMissionControlStore((s) => s.tasks);
-  const tokenUsage = useMissionControlStore((s) => s.tokenUsage);
-  const activities = useMissionControlStore((s) => s.activities);
-
-  const stats = useMemo(() => {
-    const agentTasks = tasks.filter(
-      (t) => t.assigned_to?.toLowerCase() === agent.name.toLowerCase(),
-    );
-    const open = agentTasks.filter((t) => t.status !== 'done').length;
-    const done = agentTasks.filter((t) => t.status === 'done').length;
-
-    const now = Date.now();
-    const sevenDaysAgo = new Date(now - 7 * 86_400_000).toISOString().slice(0, 10);
-    const cost7d = tokenUsage
-      .filter((t) => t.date >= sevenDaysAgo)
-      .reduce((sum, t) => sum + t.cost, 0);
-
-    const total = agentTasks.length;
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-    return { open, done, total, pct, cost7d: `$${cost7d.toFixed(2)}` };
-  }, [agent.name, tasks, tokenUsage]);
-
-  // Build 7-day activity sparkline for this agent
-  const sparklineData = useMemo(() => {
-    const now = Date.now();
-    const days: number[] = Array(7).fill(0);
-    const agentNameLower = agent.name.toLowerCase();
-
-    activities.forEach((a) => {
-      if (a.actor?.toLowerCase() !== agentNameLower) return;
-      const daysAgo = Math.floor((now - a.created_at) / 86_400_000);
-      if (daysAgo >= 0 && daysAgo < 7) {
-        days[6 - daysAgo] += 1;
-      }
-    });
-
-    return days;
-  }, [agent.name, activities]);
-
-  return (
-    <div
-      className={cn(
-        'bg-surface border border-border-panel rounded-sm p-3',
-        STATUS_BORDER[agent.status],
-      )}
-    >
-      <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-2">
-        Agente em foco
-      </div>
-
-      {/* Agent identity row */}
-      <div className="flex items-center gap-2 mb-1">
-        <MCAgentAvatar name={agent.name} status={agent.status} size="md" />
-        <span className="text-xs font-bold text-text-primary truncate">{agent.name}</span>
-        <span className="text-[8px] text-text-secondary font-mono">({agent.status})</span>
-      </div>
-
-      {/* Last activity text */}
-      {agent.last_activity && (
-        <div className="text-[9px] text-text-secondary italic truncate mb-1 pl-4">
-          {agent.last_activity}
-        </div>
-      )}
-
-      <div className="text-[9px] text-text-secondary mb-1">
-        {agent.role} · visto {relativeTime(agent.last_seen)}
-      </div>
-
-      {/* Stats + sparkline row */}
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-3 text-[9px] font-mono text-text-secondary">
-          <span>
-            <span className="text-text-primary">{stats.open}</span> abertas /{' '}
-            <span className="text-brand-mint">{stats.done}</span> done
-          </span>
-        </div>
-        <MiniBarSparkline data={sparklineData} />
-      </div>
-
-      <div className="text-[9px] font-mono text-text-secondary mb-2">
-        Custo 7d: <span className="text-text-primary">{stats.cost7d}</span>
-      </div>
-
-      {/* Completion ring */}
-      {stats.total > 0 && (
-        <div className="flex justify-center mb-3">
-          <Ring
-            value={stats.pct}
-            size={36}
-            strokeWidth={3}
-            color={completionRingColor(stats.pct)}
-            showValue
-            label="progresso"
-          />
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onSendMission}
-          className="flex-1 bg-brand-mint/10 border border-brand-mint/30 text-brand-mint rounded-sm text-[9px] font-bold uppercase tracking-widest px-2 py-1.5 hover:bg-brand-mint/20 transition-all focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none"
-        >
-          Enviar Missao
-        </button>
-        <button
-          onClick={onChat}
-          className="flex-1 bg-surface border border-border-panel text-text-primary rounded-sm text-[9px] font-bold uppercase tracking-widest px-2 py-1.5 hover:bg-surface-hover transition-all focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none"
-        >
-          Chat
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── Agent Roster ────────────────────────────────────────────────────────────
-
-function AgentRoster({
-  onAgentClick,
-}: {
-  onAgentClick: (agentId: number) => void;
-}) {
+function AgentChatSection() {
   const agents = useMissionControlStore((s) => s.agents);
   const focusedAgentId = useMissionControlStore((s) => s.focusedAgentId);
-  const tasks = useMissionControlStore((s) => s.tasks);
-  const sessions = useMissionControlStore((s) => s.sessions);
 
-  const visibleAgents = useMemo(
-    () => agents.filter((a) => !a.hidden),
-    [agents],
-  );
-
-  // Pre-compute active session set for O(1) lookup
-  const agentsWithActiveSessions = useMemo(() => {
-    const set = new Set<string>();
-    sessions.forEach((s) => {
-      if (s.active && s.agent) {
-        set.add(s.agent.toLowerCase());
-      }
-    });
-    return set;
-  }, [sessions]);
+  const focusedAgent = useMemo(() => {
+    if (focusedAgentId !== null) {
+      return agents.find((a) => a.id === focusedAgentId) ?? null;
+    }
+    return agents[0] ?? null;
+  }, [agents, focusedAgentId]);
 
   return (
-    <div className="bg-surface border border-border-panel rounded-sm p-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-2">
-        Todos os agentes
+    <div className="flex flex-col min-h-0" style={{ flex: '4 1 0%' }}>
+      <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary px-3 py-2 border-b border-border-panel shrink-0">
+        {focusedAgent
+          ? `Chat com ${focusedAgent.name}`
+          : 'Selecione um agente'}
       </div>
-      <div className="flex flex-col gap-1">
-        {visibleAgents.map((agent) => {
-          const agentNameLower = agent.name.toLowerCase();
-          const agentTasks = tasks.filter(
-            (t) => t.assigned_to?.toLowerCase() === agentNameLower,
-          );
-          const totalTasks = agentTasks.length;
-          const doneTasks = agentTasks.filter((t) => t.status === 'done').length;
-          const taskCount = totalTasks - doneTasks;
-          const completionPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+      {focusedAgent ? (
+        <div className="flex-1 overflow-hidden">
+          <Suspense
+            fallback={
+              <div className="p-3">
+                <div className="bg-border-panel animate-pulse rounded-sm h-12" />
+              </div>
+            }
+          >
+            <MCChatPanel agentId={String(focusedAgent.id)} />
+          </Suspense>
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-text-secondary text-[9px] text-center">
+            Selecione um agente no painel
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
-          const hasActiveSession = agentsWithActiveSessions.has(agentNameLower);
+// ── Section 2: Inter-Agent Chat ──────────────────────────────────────────────
 
-          return (
-            <button
-              key={agent.id}
-              onClick={() => onAgentClick(agent.id)}
-              className={cn(
-                'group flex items-center gap-2 px-2 py-1.5 rounded-sm transition-all w-full text-left',
-                'hover:bg-surface-hover',
-                'focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none',
-                focusedAgentId === agent.id && 'bg-brand-mint/5 border border-brand-mint/20',
-                focusedAgentId !== agent.id && 'border border-transparent',
-              )}
-            >
-              {/* Ring progress + Agent avatar (sm) */}
-              {totalTasks > 0 && (
-                <Ring
-                  value={completionPct}
-                  size={20}
-                  strokeWidth={2}
-                  color={completionRingColor(completionPct)}
-                  showValue={false}
-                  className="shrink-0"
-                />
-              )}
-              <MCAgentAvatar name={agent.name} status={agent.status} size="sm" />
+function InterAgentItem({ msg }: { msg: MCInterAgentMessage }) {
+  return (
+    <div className="px-3 py-1.5">
+      <div className="flex items-center justify-between gap-1">
+        <span className="text-[9px] font-bold text-text-primary truncate">
+          {msg.from} <span className="text-text-secondary font-normal">→</span> {msg.to}
+        </span>
+        <span className="text-[8px] font-mono text-text-secondary shrink-0">
+          {relativeTime(msg.timestamp)}
+        </span>
+      </div>
+      <p className="text-[9px] text-text-secondary line-clamp-2 mt-0.5">
+        {msg.content}
+      </p>
+      {msg.taskRef && (
+        <span className="inline-block text-[7px] font-bold uppercase tracking-widest text-accent-blue bg-accent-blue/10 border border-accent-blue/20 px-1.5 py-0.5 rounded-sm mt-0.5">
+          {msg.taskRef}
+        </span>
+      )}
+    </div>
+  );
+}
 
-              {/* Agent name + live indicator */}
-              <span className="flex items-center gap-1 text-[10px] font-bold text-text-primary truncate flex-1">
-                {agent.name}
-                {hasActiveSession && (
-                  <span className="w-1 h-1 rounded-full bg-brand-mint animate-pulse shrink-0" />
-                )}
-              </span>
+function InterAgentSection() {
+  const interAgentMessages = useMissionControlStore((s) => s.interAgentMessages);
 
-              {/* Task count (more prominent on hover) */}
-              <span
-                className={cn(
-                  'text-[8px] font-mono transition-colors',
-                  taskCount > 0
-                    ? 'text-text-secondary group-hover:text-text-primary'
-                    : 'text-text-secondary',
-                )}
-              >
-                {taskCount > 0 ? (
-                  <span className="group-hover:font-bold">{taskCount} tasks</span>
-                ) : (
-                  agent.status
-                )}
-              </span>
+  const sorted = useMemo(
+    () => [...interAgentMessages].sort((a, b) => b.timestamp - a.timestamp),
+    [interAgentMessages],
+  );
 
-              <Icon name="chevron_right" size="xs" className="text-text-secondary" />
-            </button>
-          );
-        })}
+  return (
+    <div className="flex flex-col min-h-0 border-t border-border-panel" style={{ flex: '3 1 0%' }}>
+      <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary px-3 py-2 border-b border-border-panel shrink-0">
+        Conversas entre agentes
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        {sorted.length === 0 ? (
+          <p className="text-text-secondary text-[9px] text-center py-4">
+            Sem conversas recentes
+          </p>
+        ) : (
+          <div className="divide-y divide-border-panel">
+            {sorted.map((msg) => (
+              <InterAgentItem key={msg.id} msg={msg} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ── Next Crons ──────────────────────────────────────────────────────────────
+// ── Section 3: Activity Feed ─────────────────────────────────────────────────
 
-function NextCrons() {
-  const cronJobs = useMissionControlStore((s) => s.cronJobs);
+function ActivityItem({ activity }: { activity: MCActivity }) {
+  return (
+    <div className="flex items-start gap-2 px-3 py-1" style={{ minHeight: 24 }}>
+      <span
+        className={cn(
+          'w-1.5 h-1.5 rounded-full mt-1 shrink-0',
+          activityDotColor(activity.type),
+        )}
+      />
+      <div className="flex-1 min-w-0">
+        <span className="text-[9px] text-text-primary">
+          <span className="font-bold">{activity.actor}</span>{' '}
+          <span className="text-text-secondary">{activity.description}</span>
+        </span>
+      </div>
+      <span className="text-[8px] font-mono text-text-secondary shrink-0">
+        {relativeTime(activity.created_at)}
+      </span>
+    </div>
+  );
+}
 
-  const upcoming = useMemo(
+function ActivityFeedSection() {
+  const activities = useMissionControlStore((s) => s.activities);
+
+  const recent = useMemo(
     () =>
-      cronJobs
-        .filter((job) => job.enabled && job.nextRun)
-        .sort((a, b) => (a.nextRun ?? 0) - (b.nextRun ?? 0))
-        .slice(0, 3),
-    [cronJobs],
+      [...activities]
+        .sort((a, b) => b.created_at - a.created_at)
+        .slice(0, 15),
+    [activities],
   );
 
-  if (upcoming.length === 0) return null;
-
   return (
-    <div className="bg-surface border border-border-panel rounded-sm p-3">
-      <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary mb-2">
-        Proximas execucoes
+    <div className="flex flex-col min-h-0 border-t border-border-panel" style={{ flex: '3 1 0%' }}>
+      <div className="text-[8px] font-black uppercase tracking-widest text-text-secondary px-3 py-2 border-b border-border-panel shrink-0">
+        Atividades
       </div>
-      <div className="flex flex-col gap-1.5">
-        {upcoming.map((job) => {
-          const ttl = timeToRun(job.nextRun);
-          const isOverdue = ttl < 0;
-          const isUrgent = ttl >= 0 && ttl < 3_600_000; // < 1h
-          const timeColor = isOverdue
-            ? 'text-accent-red'
-            : isUrgent
-              ? 'text-accent-orange'
-              : 'text-brand-mint';
-
-          return (
-            <div key={job.id ?? job.name} className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5 text-[9px] font-mono text-text-primary truncate">
-                <Icon name="schedule" size="xs" className="text-text-secondary shrink-0" />
-                {job.name}
-              </span>
-              <span className={cn('text-[8px] font-mono whitespace-nowrap', timeColor)}>
-                {relativeTimeFromNow(job.nextRun)}
-              </span>
-            </div>
-          );
-        })}
+      <div className="flex-1 overflow-y-auto">
+        {recent.length === 0 ? (
+          <p className="text-text-secondary text-[9px] text-center py-4">
+            Sem atividades recentes
+          </p>
+        ) : (
+          recent.map((activity) => (
+            <ActivityItem key={activity.id} activity={activity} />
+          ))
+        )}
       </div>
     </div>
   );
@@ -385,61 +194,12 @@ function NextCrons() {
 
 // ── Main ────────────────────────────────────────────────────────────────────
 
-interface MCRightSidebarProps {
-  onAgentClick: (agentId: string) => void;
-}
-
-export function MCRightSidebar({ onAgentClick }: MCRightSidebarProps) {
-  const agents = useMissionControlStore((s) => s.agents);
-  const focusedAgentId = useMissionControlStore((s) => s.focusedAgentId);
-  const setFocusedAgentId = useMissionControlStore((s) => s.setFocusedAgentId);
-
-  const focusedAgent = useMemo(() => {
-    if (focusedAgentId !== null) {
-      return agents.find((a) => a.id === focusedAgentId) ?? null;
-    }
-    // Default: most active agent (most in_progress tasks or first busy)
-    const busy = agents.find((a) => a.status === 'busy');
-    return busy ?? agents[0] ?? null;
-  }, [agents, focusedAgentId]);
-
-  const handleRosterClick = useCallback(
-    (agentId: number) => {
-      setFocusedAgentId(agentId);
-    },
-    [setFocusedAgentId],
-  );
-
-  const handleViewProfile = useCallback(() => {
-    if (focusedAgent) {
-      onAgentClick(String(focusedAgent.id));
-    }
-  }, [focusedAgent, onAgentClick]);
-
-  const handleSendMission = useCallback(() => {
-    if (focusedAgent) {
-      useMissionControlStore.getState().openChatForAgent(String(focusedAgent.id));
-    }
-  }, [focusedAgent]);
-
-  const handleChat = useCallback(() => {
-    if (focusedAgent) {
-      useMissionControlStore.getState().openChatForAgent(String(focusedAgent.id));
-    }
-  }, [focusedAgent]);
-
+export function MCRightSidebar() {
   return (
-    <div className="w-72 shrink-0 hidden xl:flex flex-col gap-3 overflow-y-auto p-3 border-l border-border-panel">
-      {focusedAgent && (
-        <FocusedAgentCard
-          agent={focusedAgent}
-          onViewProfile={handleViewProfile}
-          onSendMission={handleSendMission}
-          onChat={handleChat}
-        />
-      )}
-      <AgentRoster onAgentClick={handleRosterClick} />
-      <NextCrons />
+    <div className="w-80 shrink-0 hidden xl:flex flex-col overflow-hidden border-l border-border-panel bg-bg-base">
+      <AgentChatSection />
+      <InterAgentSection />
+      <ActivityFeedSection />
     </div>
   );
 }

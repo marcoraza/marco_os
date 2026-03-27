@@ -198,11 +198,21 @@ export interface MCNotification {
 
 export type MCConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
-/** Main overview tabs (4 tabs — redesign V2) */
-export type MCAgentTab = 'pulse' | 'standup' | 'tasks' | 'activity';
+/** Main overview tabs (6 tabs — V3 reformulation) */
+export type MCAgentTab = 'painel' | 'tarefas' | 'skills' | 'sistema' | 'cron' | 'relatorios';
 
-/** Config view tabs (4 tabs) */
+/** @deprecated Config now lives as preferences, not tabs */
 export type MCConfigTab = 'system' | 'cron' | 'webhooks' | 'skills';
+
+/** Inter-agent chat message */
+export interface MCInterAgentMessage {
+  id: string;
+  from: string;
+  to: string;
+  content: string;
+  taskRef?: string;
+  timestamp: number;
+}
 
 /** @deprecated kept for backwards-compat during migration */
 export type MCAgentDetailTab =
@@ -263,6 +273,10 @@ interface MissionControlState {
   // Notifications
   notifications: MCNotification[];
   setNotifications: (notifications: MCNotification[]) => void;
+
+  // Inter-agent chat
+  interAgentMessages: MCInterAgentMessage[];
+  setInterAgentMessages: (msgs: MCInterAgentMessage[]) => void;
 
   // UI Navigation
   activeTab: MCAgentTab;
@@ -350,8 +364,19 @@ export const useMissionControlStore = create<MissionControlState>()((set) => ({
   notifications: [],
   setNotifications: (notifications) => set({ notifications }),
 
+  // Inter-agent chat (seeded with mock)
+  interAgentMessages: [
+    { id: 'ia1', from: 'Frank', to: 'Claude Code', content: 'Deploy do marco-os concluido. Pode comecar o design pass nos paineis.', taskRef: 'MOS-201', timestamp: Date.now() - 1800_000 },
+    { id: 'ia2', from: 'Claude Code', to: 'Frank', content: 'Recebido. Iniciando design pass nos 12 paineis MC. Estimativa: 2h.', taskRef: 'MOS-201', timestamp: Date.now() - 1700_000 },
+    { id: 'ia3', from: 'Frank', to: 'Researcher', content: 'Preciso de research sobre Obsidian como data source. Prioridade media.', taskRef: 'MOS-301', timestamp: Date.now() - 3600_000 },
+    { id: 'ia4', from: 'Researcher', to: 'Frank', content: 'Iniciando pesquisa. Vou mapear plugins, API, e viabilidade de sync bidirecional.', taskRef: 'MOS-301', timestamp: Date.now() - 3500_000 },
+    { id: 'ia5', from: 'Claude Code', to: 'Frank', content: 'Task board portado como kanban. Movendo para review. 2 paineis restantes.', taskRef: 'MOS-102', timestamp: Date.now() - 900_000 },
+    { id: 'ia6', from: 'Frank', to: 'Claude Code', content: 'Otimo. Prioriza o MCOverviewPanel, e o mais visivel.', timestamp: Date.now() - 800_000 },
+  ],
+  setInterAgentMessages: (msgs) => set({ interAgentMessages: msgs }),
+
   // UI Navigation
-  activeTab: 'pulse',
+  activeTab: 'painel',
   setActiveTab: (tab) => set({ activeTab: tab }),
   activeDetailTab: 'overview',
   setActiveDetailTab: (tab) => set({ activeDetailTab: tab }),

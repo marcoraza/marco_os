@@ -1,11 +1,11 @@
 /**
- * MCAgentsShell — V2 redesign
+ * MCAgentsShell — V3 redesign
  *
  * Mission Control Overview with:
  * - MCMetricBar (sticky top)
  * - AlertBanner (conditional, expandable)
- * - 3 tabs: Standup | Tarefas | Atividade
- * - MCRightSidebar (contextual, xl only)
+ * - 6 tabs: Painel | Tarefas | Skills | Sistema | Cron | Relatorios
+ * - MCRightSidebar (chat + inter-agent + activity feed, xl only)
  *
  * All store access uses granular selectors to prevent render cascades.
  */
@@ -18,17 +18,22 @@ import { Icon } from '../ui/Icon';
 import { MCMetricBar } from './mc/MCMetricBar';
 import { MCRightSidebar } from './mc/MCRightSidebar';
 
-const MCStandupPanel = lazy(() => import('./mc/MCStandupPanel').then((m) => ({ default: m.MCStandupPanel })));
-const MCTaskBoardPanel = lazy(() => import('./mc/MCTaskBoardPanel'));
-const MCActivityPanel = lazy(() => import('./mc/MCActivityPanel').then((m) => ({ default: m.MCActivityPanel })));
+// Lazy-loaded panels (code-split per tab)
+const MCDashboardPanel = lazy(() => import('./mc/MCOverviewPanel').then((m) => ({ default: m.MCOverviewPanel })));
+const MCAgentKanban = lazy(() => import('./mc/MCTaskBoardPanel'));
+const MCSkillsPanel = lazy(() => import('./mc/MCSkillsPanel').then((m) => ({ default: m.MCSkillsPanel })));
+const MCSystemMonitorPanel = lazy(() => import('./mc/MCSystemMonitorPanel').then((m) => ({ default: m.MCSystemMonitorPanel })));
+const MCCronPanel = lazy(() => import('./mc/MCCronPanel').then((m) => ({ default: m.MCCronPanel })));
+const MCReportsPanel = lazy(() => import('./mc/MCReportsPanel'));
 const MCChatPanel = lazy(() => import('./mc/MCChatPanel').then((m) => ({ default: m.MCChatPanel })));
-const MCLivePulse = lazy(() => import('./mc/MCLivePulse').then((m) => ({ default: m.MCLivePulse })));
 
 const TABS: { id: MCAgentTab; label: string; icon: string }[] = [
-  { id: 'pulse',    label: 'Agora',     icon: 'sensors' },
-  { id: 'standup',  label: 'Standup',   icon: 'summarize' },
-  { id: 'tasks',    label: 'Tarefas',   icon: 'task_alt' },
-  { id: 'activity', label: 'Atividade', icon: 'timeline' },
+  { id: 'painel',     label: 'Painel',      icon: 'dashboard' },
+  { id: 'tarefas',    label: 'Tarefas',     icon: 'task_alt' },
+  { id: 'skills',     label: 'Skills',      icon: 'psychology' },
+  { id: 'sistema',    label: 'Sistema',     icon: 'monitor_heart' },
+  { id: 'cron',       label: 'Cron',        icon: 'schedule' },
+  { id: 'relatorios', label: 'Relatorios',  icon: 'analytics' },
 ];
 
 function TabBar() {
@@ -223,19 +228,21 @@ function AlertItem({
 
 // ── Active Panel ────────────────────────────────────────────────────────────
 
-function ActivePanel() {
+function ActivePanel({ onAgentClick }: { onAgentClick?: (agentId: string) => void }) {
   const activeTab = useMissionControlStore((s) => s.activeTab);
   const agentCount = useMissionControlStore((s) => s.agents.length);
 
   const panelContent = useMemo(() => {
     switch (activeTab) {
-      case 'pulse':    return <MCLivePulse />;
-      case 'standup':  return <MCStandupPanel />;
-      case 'tasks':    return <MCTaskBoardPanel />;
-      case 'activity': return <MCActivityPanel />;
-      default:         return null;
+      case 'painel':     return <MCDashboardPanel onAgentClick={onAgentClick} />;
+      case 'tarefas':    return <MCAgentKanban />;
+      case 'skills':     return <MCSkillsPanel />;
+      case 'sistema':    return <MCSystemMonitorPanel />;
+      case 'cron':       return <MCCronPanel />;
+      case 'relatorios': return <MCReportsPanel />;
+      default:           return null;
     }
-  }, [activeTab]);
+  }, [activeTab, onAgentClick]);
 
   if (agentCount === 0) {
     return (
@@ -323,10 +330,12 @@ function useMCKeyboardNav(onAgentClick?: (agentId: string) => void) {
           }
           break;
         }
-        case '1': { e.preventDefault(); setActiveTab('pulse'); break; }
-        case '2': { e.preventDefault(); setActiveTab('standup'); break; }
-        case '3': { e.preventDefault(); setActiveTab('tasks'); break; }
-        case '4': { e.preventDefault(); setActiveTab('activity'); break; }
+        case '1': { e.preventDefault(); setActiveTab('painel'); break; }
+        case '2': { e.preventDefault(); setActiveTab('tarefas'); break; }
+        case '3': { e.preventDefault(); setActiveTab('skills'); break; }
+        case '4': { e.preventDefault(); setActiveTab('sistema'); break; }
+        case '5': { e.preventDefault(); setActiveTab('cron'); break; }
+        case '6': { e.preventDefault(); setActiveTab('relatorios'); break; }
       }
     };
 
@@ -342,8 +351,9 @@ interface MCAgentsShellProps {
 }
 
 export default function MCAgentsShell({ onAgentClick }: MCAgentsShellProps) {
-  // Keyboard navigation (j/k/Enter/Backspace/1-4)
+  // Keyboard navigation (j/k/Enter/Backspace/1-6)
   useMCKeyboardNav(onAgentClick);
+
   // One-time health check
   const checked = useRef(false);
   useEffect(() => {
@@ -371,12 +381,12 @@ export default function MCAgentsShell({ onAgentClick }: MCAgentsShellProps) {
           <TabBar />
           <AlertBanner />
           <div className="flex-1 overflow-y-auto p-3">
-            <ActivePanel />
+            <ActivePanel onAgentClick={onAgentClick} />
           </div>
         </div>
 
         {/* Right sidebar (xl only) */}
-        {onAgentClick && <MCRightSidebar onAgentClick={onAgentClick} />}
+        <MCRightSidebar />
       </div>
 
       {/* Chat Panel overlay */}

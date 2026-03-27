@@ -1,7 +1,7 @@
 /**
  * MCMetricBar — production-quality sticky metric strip for Mission Control.
  *
- * Layout: ConnectionDot | 6 MetricPills (with border-l accent) | 7-bar cost sparkline | action buttons.
+ * Layout: HealthScoreRing | ConnectionDot | Uptime | Tasks Ativas | Bloqueados | Atrasados | Custo hoje + sparkline + forecast | terminal | settings
  * All store access via granular selectors (one per field).
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -235,11 +235,10 @@ function ActionButton({
 // ── MCMetricBar ──────────────────────────────────────────────────────────────
 
 export function MCMetricBar() {
-  const agents = useMissionControlStore((s) => s.agents);
   const tasks = useMissionControlStore((s) => s.tasks);
   const tokenUsage = useMissionControlStore((s) => s.tokenUsage);
-  const sessions = useMissionControlStore((s) => s.sessions);
   const logs = useMissionControlStore((s) => s.logs);
+  const connectionStatus = useMissionControlStore((s) => s.connectionStatus);
   const toggleLogTerminal = useMissionControlStore((s) => s.toggleLogTerminal);
   const setShowConfigView = useMissionControlStore((s) => s.setShowConfigView);
 
@@ -249,9 +248,6 @@ export function MCMetricBar() {
   );
 
   const metrics = useMemo(() => {
-    const visibleAgents = agents.filter((a) => !a.hidden);
-    const online = visibleAgents.filter((a) => a.status !== 'offline').length;
-    const total = visibleAgents.length;
     const inProgress = tasks.filter((t) => t.status === 'in_progress').length;
     const blocked = tasks.filter(
       (t) => t.status === 'review' || t.status === 'quality_review',
@@ -269,11 +265,7 @@ export function MCMetricBar() {
       .filter((t) => t.date === yesterday)
       .reduce((sum, t) => sum + t.cost, 0);
 
-    const activeSessions = sessions.filter((s) => s.active).length;
-
     return {
-      online,
-      total,
       inProgress,
       blocked,
       overdue,
@@ -281,9 +273,8 @@ export function MCMetricBar() {
       costYesterday,
       costDelta: costToday - costYesterday,
       costLabel: `$${costToday.toFixed(2)}`,
-      sessions: activeSessions,
     };
-  }, [agents, tasks, tokenUsage, sessions]);
+  }, [tasks, tokenUsage]);
 
   const dailyCosts = useMemo(
     () => buildDailyCosts(tokenUsage),
@@ -332,6 +323,9 @@ export function MCMetricBar() {
     }
   }, [dailyCosts]);
 
+  // -- Uptime placeholder (MC service offline, show '--') --
+  const uptimeLabel = connectionStatus === 'connected' ? '99.9%' : '--';
+
   return (
     <div
       className={cn(
@@ -352,17 +346,13 @@ export function MCMetricBar() {
       {/* Metric pills */}
       <div className="flex items-center gap-3 flex-wrap xl:flex-nowrap min-w-0">
         <MetricPill
-          label="Online"
-          value={`${metrics.online}/${metrics.total}`}
-          color="text-brand-mint"
-          borderColor="border-brand-mint/40"
-          fraction={{
-            numerator: String(metrics.online),
-            denominator: String(metrics.total),
-          }}
+          label="Uptime"
+          value={uptimeLabel}
+          color={connectionStatus === 'connected' ? 'text-brand-mint' : 'text-text-secondary'}
+          borderColor={connectionStatus === 'connected' ? 'border-brand-mint/40' : 'border-border-panel'}
         />
         <MetricPill
-          label="Em progresso"
+          label="Tasks Ativas"
           value={String(metrics.inProgress)}
           color="text-accent-blue"
           borderColor="border-accent-blue/40"
@@ -404,12 +394,6 @@ export function MCMetricBar() {
               </span>
             </div>
           }
-        />
-        <MetricPill
-          label="Sessoes"
-          value={String(metrics.sessions)}
-          color="text-accent-blue"
-          borderColor="border-accent-blue/40"
         />
       </div>
 
