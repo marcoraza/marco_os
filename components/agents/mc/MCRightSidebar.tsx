@@ -6,6 +6,7 @@
 import React, { useMemo, useCallback } from 'react';
 import { cn } from '../../../utils/cn';
 import { Icon } from '../../ui/Icon';
+import { Ring, type RingColor } from '../../ui/Ring';
 import { MCAgentAvatar } from './MCAgentAvatar';
 import { useMissionControlStore, type MCAgent } from '../../../store/missionControl';
 
@@ -55,6 +56,12 @@ function relativeTimeFromNow(ts: number | undefined): string {
 function timeToRun(ts: number | undefined): number {
   if (!ts) return Infinity;
   return ts - Date.now();
+}
+
+function completionRingColor(pct: number): RingColor {
+  if (pct > 80) return 'mint';
+  if (pct >= 50) return 'blue';
+  return 'orange';
 }
 
 // ── Mini Bar Sparkline ──────────────────────────────────────────────────────
@@ -123,7 +130,10 @@ function FocusedAgentCard({
       .filter((t) => t.date >= sevenDaysAgo)
       .reduce((sum, t) => sum + t.cost, 0);
 
-    return { open, done, cost7d: `$${cost7d.toFixed(2)}` };
+    const total = agentTasks.length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    return { open, done, total, pct, cost7d: `$${cost7d.toFixed(2)}` };
   }, [agent.name, tasks, tokenUsage]);
 
   // Build 7-day activity sparkline for this agent
@@ -183,9 +193,23 @@ function FocusedAgentCard({
         <MiniBarSparkline data={sparklineData} />
       </div>
 
-      <div className="text-[9px] font-mono text-text-secondary mb-3">
+      <div className="text-[9px] font-mono text-text-secondary mb-2">
         Custo 7d: <span className="text-text-primary">{stats.cost7d}</span>
       </div>
+
+      {/* Completion ring */}
+      {stats.total > 0 && (
+        <div className="flex justify-center mb-3">
+          <Ring
+            value={stats.pct}
+            size={36}
+            strokeWidth={3}
+            color={completionRingColor(stats.pct)}
+            showValue
+            label="progresso"
+          />
+        </div>
+      )}
 
       {/* Action buttons */}
       <div className="flex items-center gap-2">
@@ -241,13 +265,16 @@ function AgentRoster({
       </div>
       <div className="flex flex-col gap-1">
         {visibleAgents.map((agent) => {
-          const taskCount = tasks.filter(
-            (t) =>
-              t.assigned_to?.toLowerCase() === agent.name.toLowerCase() && t.status !== 'done',
-          ).length;
+          const agentNameLower = agent.name.toLowerCase();
+          const agentTasks = tasks.filter(
+            (t) => t.assigned_to?.toLowerCase() === agentNameLower,
+          );
+          const totalTasks = agentTasks.length;
+          const doneTasks = agentTasks.filter((t) => t.status === 'done').length;
+          const taskCount = totalTasks - doneTasks;
+          const completionPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
-          const hasActiveSession = agentsWithActiveSessions.has(agent.name.toLowerCase());
-          const isActive = agent.status === 'idle' || agent.status === 'busy';
+          const hasActiveSession = agentsWithActiveSessions.has(agentNameLower);
 
           return (
             <button
@@ -261,7 +288,17 @@ function AgentRoster({
                 focusedAgentId !== agent.id && 'border border-transparent',
               )}
             >
-              {/* Agent avatar (sm) */}
+              {/* Ring progress + Agent avatar (sm) */}
+              {totalTasks > 0 && (
+                <Ring
+                  value={completionPct}
+                  size={20}
+                  strokeWidth={2}
+                  color={completionRingColor(completionPct)}
+                  showValue={false}
+                  className="shrink-0"
+                />
+              )}
               <MCAgentAvatar name={agent.name} status={agent.status} size="sm" />
 
               {/* Agent name + live indicator */}

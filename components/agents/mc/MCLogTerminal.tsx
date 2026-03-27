@@ -15,6 +15,11 @@ import { useMissionControlStore, type MCLogEntry } from '../../../store/missionC
 // ── Constants ────────────────────────────────────────────────────────────────
 
 type LogLevel = MCLogEntry['level'];
+type TerminalHeight = 'sm' | 'md' | 'lg';
+
+const HEIGHT_MAP: Record<TerminalHeight, string> = { sm: 'h-[25vh]', md: 'h-[40vh]', lg: 'h-[60vh]' };
+const HEIGHT_LABEL: Record<TerminalHeight, string> = { sm: 'S', md: 'M', lg: 'L' };
+const HEIGHT_CYCLE: Record<TerminalHeight, TerminalHeight> = { sm: 'md', md: 'lg', lg: 'sm' };
 
 const LEVEL_OPTIONS: Array<{ id: string; label: string }> = [
   { id: 'all', label: 'All' },
@@ -47,6 +52,7 @@ export function MCLogTerminal() {
   const setShowLogTerminal = useMissionControlStore((s) => s.setShowLogTerminal);
   const logs = useMissionControlStore((s) => s.logs);
 
+  const [terminalHeight, setTerminalHeight] = useState<TerminalHeight>('md');
   const [levelFilter, setLevelFilter] = useState('all');
   const [search, setSearch] = useState('');
 
@@ -119,7 +125,7 @@ export function MCLogTerminal() {
         'fixed bottom-0 left-0 right-0 z-40',
         'bg-bg-base border-t border-border-panel',
         'transition-transform duration-300 ease-out',
-        'h-[40vh] flex flex-col',
+        HEIGHT_MAP[terminalHeight], 'flex flex-col',
       )}
       style={{ transform: showLogTerminal ? 'translateY(0)' : 'translateY(100%)' }}
     >
@@ -132,6 +138,20 @@ export function MCLogTerminal() {
               Logs
             </span>
           </div>
+
+          {/* Height cycle button */}
+          <button
+            onClick={() => setTerminalHeight((h) => HEIGHT_CYCLE[h])}
+            className={cn(
+              'flex items-center gap-1 text-[8px] font-bold uppercase tracking-widest px-2 py-1 rounded-sm border transition-all',
+              'bg-surface border-border-panel text-text-secondary hover:text-text-primary',
+              'focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none',
+            )}
+            title="Alternar tamanho do terminal"
+          >
+            <Icon name="unfold_more" size="xs" />
+            <span>{HEIGHT_LABEL[terminalHeight]}</span>
+          </button>
 
           {/* Level filter buttons */}
           <div className="flex items-center gap-1">

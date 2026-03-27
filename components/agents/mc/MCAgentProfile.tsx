@@ -7,6 +7,7 @@
  *  - Tasks abertas (expanded)
  *  - Sessoes ativas (expanded)
  *  - Atividade recente (expanded)
+ *  - Mapa de atividade (collapsed)
  *  - Memoria (collapsed)
  *  - Ferramentas & Skills (collapsed)
  *  - Token Usage (collapsed)
@@ -20,6 +21,7 @@ import { cn } from '../../../utils/cn';
 import { Icon } from '../../ui/Icon';
 import { MCAgentAvatar } from './MCAgentAvatar';
 import { useMissionControlStore, type MCAgent } from '../../../store/missionControl';
+import { HeatmapGrid } from '../../ui/HeatmapGrid';
 import { MCAgentTaskStrip } from './MCAgentTaskStrip';
 import { MCAgentSessions } from './MCAgentSessions';
 
@@ -249,6 +251,7 @@ export function MCAgentProfile({ agentId, onBack }: MCAgentProfileProps) {
   const sessions = useMissionControlStore((s) => s.sessions);
   const memoryFiles = useMissionControlStore((s) => s.memoryFiles);
   const tokenUsage = useMissionControlStore((s) => s.tokenUsage);
+  const activities = useMissionControlStore((s) => s.activities);
 
   const openTaskCount = useMemo(
     () =>
@@ -290,6 +293,35 @@ export function MCAgentProfile({ agentId, onBack }: MCAgentProfileProps) {
     if (typeof tools === 'object') return Object.keys(tools as Record<string, unknown>).length;
     return 0;
   }, [agent?.config]);
+
+  const heatmapData = useMemo(() => {
+    if (!agent) return {} as Record<string, 0 | 1 | 2 | 3 | 4>;
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const ninetyDaysAgo = new Date(now);
+    ninetyDaysAgo.setDate(now.getDate() - 90);
+    const cutoff = ninetyDaysAgo.getTime();
+
+    const nameLower = agent.name.toLowerCase();
+    const counts = new Map<string, number>();
+
+    for (const act of activities) {
+      if (act.created_at < cutoff) continue;
+      if (act.actor.toLowerCase() !== nameLower) continue;
+      const key = new Date(act.created_at).toISOString().slice(0, 10);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+
+    const result: Record<string, 0 | 1 | 2 | 3 | 4> = {};
+    for (const [day, count] of counts) {
+      if (count === 0) result[day] = 0;
+      else if (count <= 2) result[day] = 1;
+      else if (count <= 4) result[day] = 2;
+      else if (count <= 7) result[day] = 3;
+      else result[day] = 4;
+    }
+    return result;
+  }, [agent, activities]);
 
   const tokenSummary = useMemo(() => {
     if (!agent) return '';
@@ -364,6 +396,11 @@ export function MCAgentProfile({ agentId, onBack }: MCAgentProfileProps) {
           <Suspense fallback={<div className="bg-border-panel animate-pulse rounded-sm h-16" />}>
             <MCActivityPanel agentId={agentFilter} />
           </Suspense>
+        </CollapsibleSection>
+
+        {/* Mapa de Atividade */}
+        <CollapsibleSection title="Mapa de Atividade" count="13 semanas" defaultOpen={false}>
+          <HeatmapGrid data={heatmapData} weeks={13} />
         </CollapsibleSection>
 
         {/* Memoria */}

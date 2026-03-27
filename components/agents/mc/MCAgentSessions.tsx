@@ -14,6 +14,24 @@ function relativeAge(age: string): string {
   return age || '--';
 }
 
+/** Parse an age string like "12m", "2h", "3d", "1h30m" into total minutes. */
+function parseAgeToMinutes(age: string): number {
+  if (!age) return 0;
+  let total = 0;
+  const dayMatch = age.match(/(\d+)d/);
+  const hourMatch = age.match(/(\d+)h/);
+  const minMatch = age.match(/(\d+)m/);
+  if (dayMatch) total += parseInt(dayMatch[1], 10) * 1440;
+  if (hourMatch) total += parseInt(hourMatch[1], 10) * 60;
+  if (minMatch) total += parseInt(minMatch[1], 10);
+  // fallback: if nothing matched, try bare number as minutes
+  if (!dayMatch && !hourMatch && !minMatch) {
+    const bare = parseInt(age, 10);
+    if (!isNaN(bare)) total = bare;
+  }
+  return total;
+}
+
 interface MCAgentSessionsProps {
   agentName: string;
 }
@@ -93,6 +111,28 @@ export function MCAgentSessions({ agentName }: MCAgentSessionsProps) {
                 {session.label}
               </p>
             )}
+
+            {/* Session timeline bar */}
+            {(() => {
+              const ageMinutes = parseAgeToMinutes(session.age);
+              const pct = Math.min(ageMinutes / 120, 1) * 100;
+              return (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="flex-1 h-1 bg-border-panel rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full rounded-full',
+                        isActive ? 'bg-brand-mint' : 'bg-text-secondary',
+                      )}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="text-[7px] font-mono text-text-secondary shrink-0">
+                    {relativeAge(session.age)}
+                  </span>
+                </div>
+              );
+            })()}
           </div>
         );
       })}

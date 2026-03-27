@@ -7,6 +7,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '../../../utils/cn';
 import { Icon } from '../../ui/Icon';
+import { MetricDelta } from '../../ui/MetricDelta';
 import { useMissionControlStore } from '../../../store/missionControl';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -259,8 +260,12 @@ export function MCMetricBar() {
     ).length;
 
     const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     const costToday = tokenUsage
       .filter((t) => t.date === today)
+      .reduce((sum, t) => sum + t.cost, 0);
+    const costYesterday = tokenUsage
+      .filter((t) => t.date === yesterday)
       .reduce((sum, t) => sum + t.cost, 0);
 
     const activeSessions = sessions.filter((s) => s.active).length;
@@ -272,6 +277,8 @@ export function MCMetricBar() {
       blocked,
       overdue,
       costToday,
+      costYesterday,
+      costDelta: costToday - costYesterday,
       costLabel: `$${costToday.toFixed(2)}`,
       sessions: activeSessions,
     };
@@ -360,7 +367,20 @@ export function MCMetricBar() {
           color="text-text-primary"
           borderColor="border-accent-blue/40"
           valueClassName={costFlash ? 'mc-cost-flash' : undefined}
-          trailing={<MiniBarSparkline data={dailyCosts} pulseLastBar={sparklinePulse} />}
+          trailing={
+            <span className="flex items-center gap-1.5">
+              <MiniBarSparkline data={dailyCosts} pulseLastBar={sparklinePulse} />
+              {metrics.costDelta !== 0 && (metrics.costYesterday > 0 || metrics.costToday > 0) && (
+                <MetricDelta
+                  value={parseFloat(metrics.costDelta.toFixed(2))}
+                  suffix=""
+                  size="sm"
+                  forceColor={metrics.costDelta > 0 ? 'red' : 'mint'}
+                  className="text-[8px]"
+                />
+              )}
+            </span>
+          }
         />
         <MetricPill
           label="Sessoes"
