@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>TurboClaw – Brand Showcase</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #fff; font-family: 'Space Grotesk', sans-serif; }
+
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 48px;
+    padding: 80px 60px;
+  }
+  .hero-logo {
+    display: flex; align-items: center; gap: 24px;
+  }
+  .hero-logo svg { width: 64px; height: 64px; }
+  .hero-logo span {
+    font-weight: 700; font-size: 56px; letter-spacing: -1.5px; color: #fff;
+  }
+  .hero-tagline {
+    font-size: 16px; color: #555; font-weight: 400; letter-spacing: 0.05em;
+  }
+
+  .section {
+    padding: 80px 60px;
+    border-top: 1px solid #1a1a24;
+  }
+  .section-title {
+    font-size: 13px; font-weight: 500; color: #555;
+    letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 40px;
+  }
+
+  .variants { display: flex; gap: 48px; align-items: center; flex-wrap: wrap; }
+
+  .card-dark {
+    display: flex; align-items: center; gap: 18px;
+    padding: 32px 40px; background: #0a0a0f;
+    border-radius: 16px; border: 1px solid #1a1a24;
+  }
+  .card-light {
+    display: flex; align-items: center; gap: 18px;
+    padding: 32px 40px; background: #ffffff;
+    border-radius: 16px; border: 1px solid #e5e5e5;
+  }
+  .card-blue {
+    display: flex; align-items: center; gap: 18px;
+    padding: 32px 40px; background: #2563eb;
+    border-radius: 16px;
+  }
+  .wm-dark { font-weight: 700; font-size: 38px; color: #fff; letter-spacing: -1px; }
+  .wm-light { font-weight: 700; font-size: 38px; color: #18181b; letter-spacing: -1px; }
+  .wm-white { font-weight: 700; font-size: 38px; color: #fff; letter-spacing: -1px; }
+
+  .app-icons { display: flex; gap: 32px; align-items: flex-end; flex-wrap: wrap; }
+  .app-icon-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .app-icon-wrap span { font-size: 11px; color: #444; }
+  .ai { display: flex; align-items: center; justify-content: center; border-radius: 22%; }
+  .ai-lg { width: 120px; height: 120px; }
+  .ai-md { width: 80px; height: 80px; }
+  .ai-sm { width: 48px; height: 48px; }
+  .ai-blue { background: #2563eb; }
+  .ai-dark { background: #111118; border: 1px solid #222; }
+  .ai-light { background: #f5f5f5; border: 1px solid #e0e0e0; }
+
+  .colors { display: flex; gap: 24px; flex-wrap: wrap; }
+  .swatch {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .swatch-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+  }
+  .swatch span { font-size: 12px; color: #555; }
+
+  .type-spec { display: flex; flex-direction: column; gap: 24px; max-width: 600px; }
+  .type-spec .big { font-weight: 700; font-size: 48px; letter-spacing: -1.5px; }
+  .type-spec .med { font-weight: 500; font-size: 20px; color: #999; letter-spacing: -0.3px; }
+  .type-spec .sm { font-weight: 400; font-size: 14px; color: #666; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-logo">
+    <svg viewBox="0 0 48 48" fill="none">
+      <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" transform="rotate(8 24 24)"/>
+      <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.55" transform="rotate(118 24 24)"/>
+      <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.25" transform="rotate(243 24 24)"/>
+      <circle cx="24" cy="24" r="4" fill="#2563eb"/>
+    </svg>
+    <span>turboclaw</span>
+  </div>
+  <p class="hero-tagline">Slash Turbine · Space Grotesk 700 · #2563eb</p>
+</div>
+
+<!-- Logo Variants -->
+<div class="section">
+  <p class="section-title">Logo Variants</p>
+  <div class="variants">
+    <!-- Dark bg -->
+    <div class="card-dark">
+      <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" transform="rotate(8 24 24)"/>
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.55" transform="rotate(118 24 24)"/>
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.25" transform="rotate(243 24 24)"/>
+        <circle cx="24" cy="24" r="4" fill="#2563eb"/>
+      </svg>
+      <span class="wm-dark">turboclaw</span>
+    </div>
+    <!-- Light bg -->
+    <div class="card-light">
+      <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" transform="rotate(8 24 24)"/>
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.55" transform="rotate(118 24 24)"/>
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.25" transform="rotate(243 24 24)"/>
+        <circle cx="24" cy="24" r="4" fill="#2563eb"/>
+      </svg>
+      <span class="wm-light">turboclaw</span>
+    </div>
+    <!-- Blue bg -->
+    <div class="card-blue">
+      <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" transform="rotate(8 24 24)"/>
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" opacity="0.6" transform="rotate(118 24 24)"/>
+        <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" opacity="0.3" transform="rotate(243 24 24)"/>
+        <circle cx="24" cy="24" r="4" fill="#fff"/>
+      </svg>
+      <span class="wm-white">turboclaw</span>
+    </div>
+  </div>
+</div>
+
+<!-- App Icons -->
+<div class="section">
+  <p class="section-title">App Icons</p>
+  <div class="app-icons">
+    <div class="app-icon-wrap">
+      <div class="ai ai-lg ai-blue">
+        <svg width="60" height="60" viewBox="0 0 48 48" fill="none">
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" transform="rotate(8 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" opacity="0.6" transform="rotate(118 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" opacity="0.3" transform="rotate(243 24 24)"/>
+          <circle cx="24" cy="24" r="4" fill="#fff"/>
+        </svg>
+      </div>
+      <span>120px Blue</span>
+    </div>
+    <div class="app-icon-wrap">
+      <div class="ai ai-lg ai-dark">
+        <svg width="60" height="60" viewBox="0 0 48 48" fill="none">
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" transform="rotate(8 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.55" transform="rotate(118 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.25" transform="rotate(243 24 24)"/>
+          <circle cx="24" cy="24" r="4" fill="#2563eb"/>
+        </svg>
+      </div>
+      <span>120px Dark</span>
+    </div>
+    <div class="app-icon-wrap">
+      <div class="ai ai-md ai-blue">
+        <svg width="40" height="40" viewBox="0 0 48 48" fill="none">
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" transform="rotate(8 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" opacity="0.6" transform="rotate(118 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" opacity="0.3" transform="rotate(243 24 24)"/>
+          <circle cx="24" cy="24" r="4" fill="#fff"/>
+        </svg>
+      </div>
+      <span>80px</span>
+    </div>
+    <div class="app-icon-wrap">
+      <div class="ai ai-sm ai-blue">
+        <svg width="24" height="24" viewBox="0 0 48 48" fill="none">
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" transform="rotate(8 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" opacity="0.6" transform="rotate(118 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#fff" opacity="0.3" transform="rotate(243 24 24)"/>
+          <circle cx="24" cy="24" r="4" fill="#fff"/>
+        </svg>
+      </div>
+      <span>48px</span>
+    </div>
+    <div class="app-icon-wrap">
+      <div class="ai ai-light" style="width:48px;height:48px;">
+        <svg width="24" height="24" viewBox="0 0 48 48" fill="none">
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" transform="rotate(8 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.55" transform="rotate(118 24 24)"/>
+          <rect x="21.5" y="5" width="5" height="20" rx="2.5" fill="#2563eb" opacity="0.25" transform="rotate(243 24 24)"/>
+          <circle cx="24" cy="24" r="4" fill="#2563eb"/>
+        </svg>
+      </div>
+      <span>48px Light</span>
+    </div>
+  </div>
+</div>
+
+<!-- Color Palette -->
+<div class="section">
+  <p class="section-title">Color Palette</p>
+  <div class="colors">
+    <div class="swatch">
+      <div class="swatch-circle" style="background:#2563eb;"></div>
+      <span>#2563eb</span>
+      <span style="font-size:10px;color:#444;">Primary</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-circle" style="background:#0a0a0f;border:1px solid #222;"></div>
+      <span>#0a0a0f</span>
+      <span style="font-size:10px;color:#444;">Background</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-circle" style="background:#18181b;border:1px solid #333;"></div>
+      <span>#18181b</span>
+      <span style="font-size:10px;color:#444;">Surface</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-circle" style="background:#ffffff;"></div>
+      <span>#ffffff</span>
+      <span style="font-size:10px;color:#444;">Text Light</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-circle" style="background:#555555;border:1px solid #666;"></div>
+      <span>#555555</span>
+      <span style="font-size:10px;color:#444;">Muted</span>
+    </div>
+  </div>
+</div>
+
+<!-- Typography -->
+<div class="section">
+  <p class="section-title">Typography</p>
+  <div class="type-spec">
+    <p class="big">Space Grotesk Bold</p>
+    <p class="med">Weight 700 · Tracking -1px · Lowercase</p>
+    <p class="sm">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z<br>a b c d e f g h i j k l m n o p q r s t u v w x y z<br>0 1 2 3 4 5 6 7 8 9</p>
+  </div>
+</div>
+
+</body>
+</html>

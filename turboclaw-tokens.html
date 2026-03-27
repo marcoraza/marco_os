@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>TurboClaw – Design Tokens Showcase</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #050507; color: #f8f9fa; font-family: 'Inter', system-ui, sans-serif; font-size: 15px; line-height: 1.5; }
+
+  .page { max-width: 1200px; margin: 0 auto; padding: 80px 48px 120px; }
+
+  /* Header */
+  .header { margin-bottom: 80px; }
+  .header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 48px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin-bottom: 12px; }
+  .header p { color: #6c757d; font-size: 16px; }
+
+  /* Section */
+  .section { margin-bottom: 72px; }
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 500;
+    color: #6c757d; letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 32px; padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Color Swatches */
+  .color-row { display: flex; gap: 4px; margin-bottom: 24px; }
+  .color-row-label { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600; color: #adb5bd; margin-bottom: 8px; }
+  .swatch { flex: 1; height: 56px; border-radius: 8px; position: relative; display: flex; align-items: flex-end; padding: 6px 8px; min-width: 0; }
+  .swatch span { font-size: 10px; font-family: 'JetBrains Mono', monospace; opacity: 0.8; }
+  .swatch.dark-text span { color: #18181b; }
+  .swatch.light-text span { color: #fff; }
+
+  /* Typography */
+  .type-sample { margin-bottom: 32px; display: flex; align-items: baseline; gap: 24px; }
+  .type-label { font-size: 12px; color: #495057; font-family: 'JetBrains Mono', monospace; width: 120px; flex-shrink: 0; }
+  .type-preview { flex: 1; }
+  .type-meta { font-size: 11px; color: #343a40; font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
+
+  /* Spacing */
+  .spacing-row { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+  .spacing-label { font-size: 12px; color: #495057; font-family: 'JetBrains Mono', monospace; width: 80px; flex-shrink: 0; text-align: right; }
+  .spacing-bar { height: 24px; background: #2563eb; border-radius: 4px; opacity: 0.6; }
+  .spacing-value { font-size: 11px; color: #6c757d; font-family: 'JetBrains Mono', monospace; }
+
+  /* Radius */
+  .radius-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 16px; }
+  .radius-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .radius-box { width: 64px; height: 64px; border: 2px solid #2563eb; opacity: 0.6; }
+  .radius-label { font-size: 11px; color: #6c757d; font-family: 'JetBrains Mono', monospace; }
+
+  /* Shadows */
+  .shadow-row { display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 16px; }
+  .shadow-item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .shadow-box { width: 96px; height: 72px; background: #111113; border-radius: 12px; }
+  .shadow-label { font-size: 11px; color: #6c757d; font-family: 'JetBrains Mono', monospace; }
+
+  /* Semantic */
+  .semantic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .semantic-card { background: #111113; border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.06); }
+  .semantic-card .label { font-size: 11px; color: #6c757d; font-family: 'JetBrains Mono', monospace; margin-bottom: 8px; }
+  .semantic-card .value { font-size: 14px; color: #f8f9fa; }
+  .semantic-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <h1>Design Tokens</h1>
+  <p>TurboClaw v1.0 — Slash Turbine · Space Grotesk + Inter + JetBrains Mono</p>
+</div>
+
+<!-- ═══ COLORS ═══ -->
+<div class="section">
+  <div class="section-title">Colors — Primary</div>
+  <div class="color-row">
+    <div class="swatch dark-text" style="background:#eff6ff;"><span>50</span></div>
+    <div class="swatch dark-text" style="background:#dbeafe;"><span>100</span></div>
+    <div class="swatch dark-text" style="background:#bfdbfe;"><span>200</span></div>
+    <div class="swatch dark-text" style="background:#93c5fd;"><span>300</span></div>
+    <div class="swatch dark-text" style="background:#60a5fa;"><span>400</span></div>
+    <div class="swatch light-text" style="background:#3b82f6;"><span>500</span></div>
+    <div class="swatch light-text" style="background:#2563eb; outline: 2px solid #60a5fa;"><span>600 ★</span></div>
+    <div class="swatch light-text" style="background:#1d4ed8;"><span>700</span></div>
+    <div class="swatch light-text" style="background:#1e40af;"><span>800</span></div>
+    <div class="swatch light-text" style="background:#1e3a8a;"><span>900</span></div>
+    <div class="swatch light-text" style="background:#172554;"><span>950</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Colors — Neutral</div>
+  <div class="color-row">
+    <div class="swatch dark-text" style="background:#ffffff;"><span>0</span></div>
+    <div class="swatch dark-text" style="background:#f8f9fa;"><span>50</span></div>
+    <div class="swatch dark-text" style="background:#f1f3f5;"><span>100</span></div>
+    <div class="swatch dark-text" style="background:#e9ecef;"><span>200</span></div>
+    <div class="swatch dark-text" style="background:#dee2e6;"><span>300</span></div>
+    <div class="swatch dark-text" style="background:#adb5bd;"><span>400</span></div>
+    <div class="swatch light-text" style="background:#6c757d;"><span>500</span></div>
+    <div class="swatch light-text" style="background:#495057;"><span>600</span></div>
+    <div class="swatch light-text" style="background:#343a40;"><span>700</span></div>
+    <div class="swatch light-text" style="background:#212529;"><span>800</span></div>
+    <div class="swatch light-text" style="background:#18181b;"><span>850</span></div>
+    <div class="swatch light-text" style="background:#111113;"><span>900</span></div>
+    <div class="swatch light-text" style="background:#0a0a0f;"><span>925</span></div>
+    <div class="swatch light-text" style="background:#050507; border: 1px solid #212529;"><span>950</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Colors — Semantic</div>
+  <div style="display: flex; gap: 32px;">
+    <div>
+      <div class="color-row-label">Success</div>
+      <div style="display:flex; gap:4px;">
+        <div class="swatch dark-text" style="background:#4ade80; width:80px; height:48px;"><span>400</span></div>
+        <div class="swatch light-text" style="background:#22c55e; width:80px; height:48px;"><span>500</span></div>
+        <div class="swatch light-text" style="background:#16a34a; width:80px; height:48px;"><span>600</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="color-row-label">Warning</div>
+      <div style="display:flex; gap:4px;">
+        <div class="swatch dark-text" style="background:#fbbf24; width:80px; height:48px;"><span>400</span></div>
+        <div class="swatch dark-text" style="background:#f59e0b; width:80px; height:48px;"><span>500</span></div>
+        <div class="swatch light-text" style="background:#d97706; width:80px; height:48px;"><span>600</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="color-row-label">Error</div>
+      <div style="display:flex; gap:4px;">
+        <div class="swatch dark-text" style="background:#f87171; width:80px; height:48px;"><span>400</span></div>
+        <div class="swatch light-text" style="background:#ef4444; width:80px; height:48px;"><span>500</span></div>
+        <div class="swatch light-text" style="background:#dc2626; width:80px; height:48px;"><span>600</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="color-row-label">Info</div>
+      <div style="display:flex; gap:4px;">
+        <div class="swatch dark-text" style="background:#38bdf8; width:80px; height:48px;"><span>400</span></div>
+        <div class="swatch light-text" style="background:#0ea5e9; width:80px; height:48px;"><span>500</span></div>
+        <div class="swatch light-text" style="background:#0284c7; width:80px; height:48px;"><span>600</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TYPOGRAPHY ═══ -->
+<div class="section">
+  <div class="section-title">Typography</div>
+
+  <div class="type-sample">
+    <div class="type-label">display-xl</div>
+    <div class="type-preview">
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:60px; font-weight:700; line-height:1; letter-spacing:-0.04em;">TurboClaw</div>
+      <div class="type-meta">Space Grotesk 700 · 60px · leading 1 · tracking -0.04em</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">display-lg</div>
+    <div class="type-preview">
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:48px; font-weight:700; line-height:1.1; letter-spacing:-0.04em;">Seu assistente IA pessoal</div>
+      <div class="type-meta">Space Grotesk 700 · 48px · leading 1.1 · tracking -0.04em</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">display-md</div>
+    <div class="type-preview">
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:36px; font-weight:700; line-height:1.2; letter-spacing:-0.02em;">Setup em 3 cliques</div>
+      <div class="type-meta">Space Grotesk 700 · 36px · leading 1.2 · tracking -0.02em</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">heading-lg</div>
+    <div class="type-preview">
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:30px; font-weight:700; line-height:1.2; letter-spacing:-0.02em;">Recursos e benefícios</div>
+      <div class="type-meta">Space Grotesk 700 · 30px · leading 1.2 · tracking -0.02em</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">heading-md</div>
+    <div class="type-preview">
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; line-height:1.35; letter-spacing:-0.02em;">Servidor dedicado 24/7</div>
+      <div class="type-meta">Space Grotesk 700 · 24px · leading 1.35 · tracking -0.02em</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">heading-sm</div>
+    <div class="type-preview">
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:600; line-height:1.35; letter-spacing:-0.02em;">Integração com Telegram</div>
+      <div class="type-meta">Space Grotesk 600 · 20px · leading 1.35 · tracking -0.02em</div>
+    </div>
+  </div>
+
+  <div style="height:1px; background:rgba(255,255,255,0.04); margin: 32px 0;"></div>
+
+  <div class="type-sample">
+    <div class="type-label">body-lg</div>
+    <div class="type-preview">
+      <div style="font-family:'Inter',sans-serif; font-size:18px; font-weight:400; line-height:1.5; color:#e9ecef;">Plataforma brasileira que provisiona e gerencia seu assistente IA pessoal rodando 24/7 no Telegram.</div>
+      <div class="type-meta">Inter 400 · 18px · leading 1.5</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">body-md</div>
+    <div class="type-preview">
+      <div style="font-family:'Inter',sans-serif; font-size:16px; font-weight:400; line-height:1.5; color:#dee2e6;">Configure em minutos, servidor dedicado para cada cliente. Sem código, sem complicação.</div>
+      <div class="type-meta">Inter 400 · 16px · leading 1.5</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">body-sm</div>
+    <div class="type-preview">
+      <div style="font-family:'Inter',sans-serif; font-size:14px; font-weight:400; line-height:1.5; color:#adb5bd;">Ao se cadastrar, você concorda com os Termos de Serviço e Política de Privacidade.</div>
+      <div class="type-meta">Inter 400 · 14px · leading 1.5</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">caption</div>
+    <div class="type-preview">
+      <div style="font-family:'Inter',sans-serif; font-size:12px; font-weight:400; line-height:1.5; color:#6c757d;">Última atualização: 11 mar 2026</div>
+      <div class="type-meta">Inter 400 · 12px · leading 1.5</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">overline</div>
+    <div class="type-preview">
+      <div style="font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:500; line-height:1; letter-spacing:0.1em; text-transform:uppercase; color:#6c757d;">Planos e preços</div>
+      <div class="type-meta">Space Grotesk 500 · 12px · leading 1 · tracking 0.1em · uppercase</div>
+    </div>
+  </div>
+
+  <div class="type-sample">
+    <div class="type-label">code</div>
+    <div class="type-preview">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:400; line-height:1.65; color:#93c5fd; background:#0a0a0f; padding:12px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">const bot = await turboclaw.provision({ plan: 'pro' })</div>
+      <div class="type-meta">JetBrains Mono 400 · 14px · leading 1.65</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SPACING ═══ -->
+<div class="section">
+  <div class="section-title">Spacing — 4px Base Grid</div>
+  <div class="spacing-row"><div class="spacing-label">space-1</div><div class="spacing-bar" style="width:4px;"></div><div class="spacing-value">4px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-2</div><div class="spacing-bar" style="width:8px;"></div><div class="spacing-value">8px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-3</div><div class="spacing-bar" style="width:12px;"></div><div class="spacing-value">12px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-4</div><div class="spacing-bar" style="width:16px;"></div><div class="spacing-value">16px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-5</div><div class="spacing-bar" style="width:20px;"></div><div class="spacing-value">20px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-6</div><div class="spacing-bar" style="width:24px;"></div><div class="spacing-value">24px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-8</div><div class="spacing-bar" style="width:32px;"></div><div class="spacing-value">32px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-10</div><div class="spacing-bar" style="width:40px;"></div><div class="spacing-value">40px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-12</div><div class="spacing-bar" style="width:48px;"></div><div class="spacing-value">48px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-16</div><div class="spacing-bar" style="width:64px;"></div><div class="spacing-value">64px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-20</div><div class="spacing-bar" style="width:80px;"></div><div class="spacing-value">80px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-24</div><div class="spacing-bar" style="width:96px;"></div><div class="spacing-value">96px</div></div>
+  <div class="spacing-row"><div class="spacing-label">space-32</div><div class="spacing-bar" style="width:128px;"></div><div class="spacing-value">128px</div></div>
+</div>
+
+<!-- ═══ BORDER RADIUS ═══ -->
+<div class="section">
+  <div class="section-title">Border Radius</div>
+  <div class="radius-row">
+    <div class="radius-item"><div class="radius-box" style="border-radius:4px;"></div><div class="radius-label">xs · 4px</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:6px;"></div><div class="radius-label">sm · 6px</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:8px;"></div><div class="radius-label">md · 8px</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:12px;"></div><div class="radius-label">lg · 12px</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:16px;"></div><div class="radius-label">xl · 16px</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:24px;"></div><div class="radius-label">2xl · 24px</div></div>
+    <div class="radius-item"><div class="radius-box" style="border-radius:9999px;"></div><div class="radius-label">full</div></div>
+  </div>
+</div>
+
+<!-- ═══ SHADOWS ═══ -->
+<div class="section">
+  <div class="section-title">Shadows — Elevation</div>
+  <div class="shadow-row">
+    <div class="shadow-item"><div class="shadow-box" style="box-shadow: 0 1px 2px rgba(0,0,0,0.3);"></div><div class="shadow-label">xs</div></div>
+    <div class="shadow-item"><div class="shadow-box" style="box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div><div class="shadow-label">sm</div></div>
+    <div class="shadow-item"><div class="shadow-box" style="box-shadow: 0 4px 12px rgba(0,0,0,0.4);"></div><div class="shadow-label">md</div></div>
+    <div class="shadow-item"><div class="shadow-box" style="box-shadow: 0 8px 24px rgba(0,0,0,0.5);"></div><div class="shadow-label">lg</div></div>
+    <div class="shadow-item"><div class="shadow-box" style="box-shadow: 0 16px 48px rgba(0,0,0,0.6);"></div><div class="shadow-label">xl</div></div>
+    <div class="shadow-item"><div class="shadow-box" style="box-shadow: 0 0 20px rgba(37,99,235,0.2);"></div><div class="shadow-label">glow</div></div>
+    <div class="shadow-item"><div class="shadow-box" style="box-shadow: 0 0 40px rgba(37,99,235,0.3);"></div><div class="shadow-label">glow-lg</div></div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

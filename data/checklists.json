@@ -2,8 +2,8 @@
   "_meta": {
     "db_id": "30fb72d5-042d-81d2-bc6b-e2515ca8d3e2",
     "db_name": "checklists",
-    "synced_at": "2026-03-08T19:00:07.467559+00:00",
-    "count": 40
+    "synced_at": "2026-03-05T02:00:11.412359+00:00",
+    "count": 42
   },
   "items": [
     {
@@ -602,6 +602,69 @@
       "Name": "Testar Marco OS no celular"
     },
     {
+      "_id": "31ab72d5-042d-8121-bb5b-e5718f20e429",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Marketing-Plan-TurboClaw-31ab72d5042d8121bb5be5718f20e429",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🔴 Urgente",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "PROJETOS"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-05",
+      "Total": null,
+      "Name": "Marketing Plan TurboClaw"
+    },
+    {
+      "_id": "31ab72d5-042d-8141-ba3a-f5007790a038",
+      "_created_time": "2026-03-05T01:09:00.000Z",
+      "_edited_time": "2026-03-05T01:09:00.000Z",
+      "_url": "https://www.notion.so/Reuni-o-D-bora-hor-rio-a-confirmar-31ab72d5042d8141ba3af5007790a038",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🟢 Normal",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "NEGÓCIOS"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-05",
+      "Total": null,
+      "Name": "Reunião Débora — horário a confirmar"
+    },
+    {
+      "_id": "31ab72d5-042d-816b-ad8a-d023ad0eeece",
+      "_created_time": "2026-03-05T01:02:00.000Z",
+      "_edited_time": "2026-03-05T01:02:00.000Z",
+      "_url": "https://www.notion.so/Teste-callback-DELETAR-31ab72d5042d816bad8ad023ad0eeece",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🟢 Normal",
+      "Progresso": 0,
+      "Data": "2026-03-04",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [
+        "TESTE"
+      ],
+      "Feitos": null,
+      "Prazo": "2026-03-05",
+      "Total": null,
+      "Name": "Teste callback - DELETAR"
+    },
+    {
       "_id": "31ab72d5-042d-8181-b9c5-c9e797e3cf05",
       "_created_time": "2026-03-05T01:09:00.000Z",
       "_edited_time": "2026-03-05T01:09:00.000Z",
@@ -665,6 +728,25 @@
       "Name": "Pagar cartões"
     },
     {
+      "_id": "31ab72d5-042d-819e-8cd4-dc0d3c072194",
+      "_created_time": "2026-03-05T00:51:00.000Z",
+      "_edited_time": "2026-03-05T00:51:00.000Z",
+      "_url": "https://www.notion.so/Revisar-PRD-TurboClaw-v4-pricing-final-31ab72d5042d819e8cd4dc0d3c072194",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🔴 Urgente",
+      "Progresso": 0,
+      "Data": "2026-03-05",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [],
+      "Feitos": null,
+      "Prazo": "2026-03-12",
+      "Total": null,
+      "Name": "Revisar PRD TurboClaw v4 — pricing final"
+    },
+    {
       "_id": "31ab72d5-042d-81b5-8124-d2100eb86ddd",
       "_created_time": "2026-03-05T00:51:00.000Z",
       "_edited_time": "2026-03-05T00:51:00.000Z",
@@ -703,6 +785,25 @@
       "Prazo": "2026-03-05",
       "Total": null,
       "Name": "Vender $Birb"
+    },
+    {
+      "_id": "31ab72d5-042d-81d1-9f25-fab5519dcc81",
+      "_created_time": "2026-03-05T00:51:00.000Z",
+      "_edited_time": "2026-03-05T00:51:00.000Z",
+      "_url": "https://www.notion.so/Preparar-pauta-reuni-o-Gui-sexta-31ab72d5042d81d19f25fab5519dcc81",
+      "Responsável": "Marco",
+      "Contexto": "",
+      "Prioridade": "🟢 Normal",
+      "Progresso": 0,
+      "Data": "2026-03-05",
+      "Tipo": null,
+      "Status": "Aberto",
+      "Projeto": null,
+      "Tags": [],
+      "Feitos": null,
+      "Prazo": "2026-03-07",
+      "Total": null,
+      "Name": "Preparar pauta reunião Gui — sexta"
     },
     {
       "_id": "31ab72d5-042d-81db-84d5-e0887e98fd38",
@@ -764,69 +865,6 @@
       "Prazo": "2026-03-09",
       "Total": null,
       "Name": "Planejar Viagem 29/03"
-    },
-    {
-      "_id": "31bb72d5-042d-812e-8521-d3fcd18fce24",
-      "_created_time": "2026-03-06T23:45:00.000Z",
-      "_edited_time": "2026-03-06T23:45:00.000Z",
-      "_url": "https://www.notion.so/Revis-o-Crons-06-03-2026-31bb72d5042d812e8521d3fcd18fce24",
-      "Responsável": null,
-      "Contexto": "15 execuções/dia | 0 com erro | 2 desativados",
-      "Prioridade": null,
-      "Progresso": 87,
-      "Data": "2026-03-06",
-      "Tipo": "Diário",
-      "Status": "Concluído",
-      "Projeto": null,
-      "Tags": [
-        "Cron"
-      ],
-      "Feitos": 13,
-      "Prazo": null,
-      "Total": 15,
-      "Name": "Revisão Crons 06/03/2026"
-    },
-    {
-      "_id": "31bb72d5-042d-81c6-bfbf-e5f1e67ab565",
-      "_created_time": "2026-03-06T23:45:00.000Z",
-      "_edited_time": "2026-03-06T23:45:00.000Z",
-      "_url": "https://www.notion.so/Revis-o-Crons-06-03-2026-31bb72d5042d81c6bfbfe5f1e67ab565",
-      "Responsável": null,
-      "Contexto": "15 execuções/dia | 0 com erro | 2 desativados",
-      "Prioridade": null,
-      "Progresso": 87,
-      "Data": "2026-03-06",
-      "Tipo": "Diário",
-      "Status": "Concluído",
-      "Projeto": null,
-      "Tags": [
-        "Cron"
-      ],
-      "Feitos": 13,
-      "Prazo": null,
-      "Total": 15,
-      "Name": "Revisão Crons 06/03/2026"
-    },
-    {
-      "_id": "31cb72d5-042d-814e-a3bc-c0f137122d6c",
-      "_created_time": "2026-03-07T23:45:00.000Z",
-      "_edited_time": "2026-03-07T23:45:00.000Z",
-      "_url": "https://www.notion.so/Revis-o-Crons-07-03-2026-31cb72d5042d814ea3bcc0f137122d6c",
-      "Responsável": null,
-      "Contexto": "20 execuções/dia | 0 com erro | 1 desativados",
-      "Prioridade": null,
-      "Progresso": 90,
-      "Data": "2026-03-07",
-      "Tipo": "Diário",
-      "Status": "Concluído",
-      "Projeto": null,
-      "Tags": [
-        "Cron"
-      ],
-      "Feitos": 18,
-      "Prazo": null,
-      "Total": 20,
-      "Name": "Revisão Crons 07/03/2026"
     }
   ]
 }
