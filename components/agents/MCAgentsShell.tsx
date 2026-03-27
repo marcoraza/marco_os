@@ -227,6 +227,16 @@ function ActivePanel() {
   const activeTab = useMissionControlStore((s) => s.activeTab);
   const agentCount = useMissionControlStore((s) => s.agents.length);
 
+  const panelContent = useMemo(() => {
+    switch (activeTab) {
+      case 'pulse':    return <MCLivePulse />;
+      case 'standup':  return <MCStandupPanel />;
+      case 'tasks':    return <MCTaskBoardPanel />;
+      case 'activity': return <MCActivityPanel />;
+      default:         return null;
+    }
+  }, [activeTab]);
+
   if (agentCount === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-12">
@@ -238,16 +248,6 @@ function ActivePanel() {
       </div>
     );
   }
-
-  const panelContent = useMemo(() => {
-    switch (activeTab) {
-      case 'pulse':    return <MCLivePulse />;
-      case 'standup':  return <MCStandupPanel />;
-      case 'tasks':    return <MCTaskBoardPanel />;
-      case 'activity': return <MCActivityPanel />;
-      default:         return null;
-    }
-  }, [activeTab]);
 
   return (
     <Suspense
@@ -273,6 +273,68 @@ function ActivePanel() {
   );
 }
 
+// ── Keyboard Navigation ─────────────────────────────────────────────────────
+
+function useMCKeyboardNav(onAgentClick?: (agentId: string) => void) {
+  const agents = useMissionControlStore((s) => s.agents);
+  const focusedAgentId = useMissionControlStore((s) => s.focusedAgentId);
+  const setFocusedAgentId = useMissionControlStore((s) => s.setFocusedAgentId);
+  const setActiveTab = useMissionControlStore((s) => s.setActiveTab);
+  const showConfigView = useMissionControlStore((s) => s.showConfigView);
+  const setShowConfigView = useMissionControlStore((s) => s.setShowConfigView);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable;
+      if (isInput || e.metaKey || e.ctrlKey) return;
+
+      const visibleAgents = agents.filter((a) => !a.hidden);
+      const currentIndex = visibleAgents.findIndex((a) => a.id === focusedAgentId);
+
+      switch (e.key) {
+        case 'j': {
+          e.preventDefault();
+          const nextIndex = currentIndex < visibleAgents.length - 1 ? currentIndex + 1 : 0;
+          setFocusedAgentId(visibleAgents[nextIndex]?.id ?? null);
+          break;
+        }
+        case 'k': {
+          e.preventDefault();
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : visibleAgents.length - 1;
+          setFocusedAgentId(visibleAgents[prevIndex]?.id ?? null);
+          break;
+        }
+        case 'Enter': {
+          if (focusedAgentId !== null && onAgentClick) {
+            e.preventDefault();
+            onAgentClick(String(focusedAgentId));
+          }
+          break;
+        }
+        case 'Backspace': {
+          if (showConfigView) {
+            e.preventDefault();
+            setShowConfigView(false);
+          }
+          break;
+        }
+        case '1': { e.preventDefault(); setActiveTab('pulse'); break; }
+        case '2': { e.preventDefault(); setActiveTab('standup'); break; }
+        case '3': { e.preventDefault(); setActiveTab('tasks'); break; }
+        case '4': { e.preventDefault(); setActiveTab('activity'); break; }
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [agents, focusedAgentId, onAgentClick, setFocusedAgentId, setActiveTab, showConfigView, setShowConfigView]);
+}
+
 // ── Shell ────────────────────────────────────────────────────────────────────
 
 interface MCAgentsShellProps {
@@ -280,6 +342,8 @@ interface MCAgentsShellProps {
 }
 
 export default function MCAgentsShell({ onAgentClick }: MCAgentsShellProps) {
+  // Keyboard navigation (j/k/Enter/Backspace/1-4)
+  useMCKeyboardNav(onAgentClick);
   // One-time health check
   const checked = useRef(false);
   useEffect(() => {

@@ -9,6 +9,7 @@ import { cn } from '../../../utils/cn';
 import { Icon } from '../../ui/Icon';
 import { MetricDelta } from '../../ui/MetricDelta';
 import { useMissionControlStore } from '../../../store/missionControl';
+import { MCTeamHealthScore } from './MCTeamHealthScore';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -289,6 +290,20 @@ export function MCMetricBar() {
     [tokenUsage],
   );
 
+  // -- Cost forecast: 7-day average projected to week --
+  const weeklyForecast = useMemo(() => {
+    const sum = dailyCosts.reduce((acc, v) => acc + v, 0);
+    const avgDaily = dailyCosts.length > 0 ? sum / dailyCosts.length : 0;
+    return avgDaily * 7;
+  }, [dailyCosts]);
+
+  const forecastColor =
+    weeklyForecast > 50
+      ? 'text-accent-red'
+      : weeklyForecast > 20
+        ? 'text-accent-orange'
+        : 'text-text-secondary';
+
   // -- Cost flash animation: brief opacity dip when cost changes --
   const prevCostRef = useRef(metrics.costToday);
   const [costFlash, setCostFlash] = useState(false);
@@ -325,6 +340,9 @@ export function MCMetricBar() {
         'flex-wrap xl:flex-nowrap',
       )}
     >
+      {/* Team health ring */}
+      <MCTeamHealthScore />
+
       {/* Connection status */}
       <ConnectionDot />
 
@@ -368,18 +386,23 @@ export function MCMetricBar() {
           borderColor="border-accent-blue/40"
           valueClassName={costFlash ? 'mc-cost-flash' : undefined}
           trailing={
-            <span className="flex items-center gap-1.5">
-              <MiniBarSparkline data={dailyCosts} pulseLastBar={sparklinePulse} />
-              {metrics.costDelta !== 0 && (metrics.costYesterday > 0 || metrics.costToday > 0) && (
-                <MetricDelta
-                  value={parseFloat(metrics.costDelta.toFixed(2))}
-                  suffix=""
-                  size="sm"
-                  forceColor={metrics.costDelta > 0 ? 'red' : 'mint'}
-                  className="text-[8px]"
-                />
-              )}
-            </span>
+            <div className="flex flex-col items-end gap-0.5">
+              <div className="flex items-center gap-1.5">
+                <MiniBarSparkline data={dailyCosts} pulseLastBar={sparklinePulse} />
+                {metrics.costDelta !== 0 && (metrics.costYesterday > 0 || metrics.costToday > 0) && (
+                  <MetricDelta
+                    value={parseFloat(metrics.costDelta.toFixed(2))}
+                    suffix=""
+                    size="sm"
+                    forceColor={metrics.costDelta > 0 ? 'red' : 'mint'}
+                    className="text-[8px]"
+                  />
+                )}
+              </div>
+              <span className={cn('text-[7px] font-mono', forecastColor)}>
+                ~${weeklyForecast.toFixed(2)}/sem
+              </span>
+            </div>
           }
         />
         <MetricPill

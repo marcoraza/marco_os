@@ -24,6 +24,11 @@ export const SHORTCUTS: { key: string; mod?: boolean; shift?: boolean; label: st
   { key: 'p', label: 'G → P', description: 'Ir para Planejador' },
   { key: 's', label: 'G → S', description: 'Ir para Configurações' },
   { key: 'Escape', label: 'Esc', description: 'Fechar modal/painel' },
+  // Mission Control keyboard nav (active only in agents-overview)
+  { key: 'j', label: 'J', description: 'Proximo agente' },
+  { key: 'k', label: 'K', description: 'Agente anterior' },
+  { key: 'Enter', label: 'Enter', description: 'Abrir perfil do agente' },
+  { key: '1-4', label: '1-4', description: 'Trocar tab MC' },
 ];
 
 export function useHotkeys(hotkeys: HotkeyDef[]) {
