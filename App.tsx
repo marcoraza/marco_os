@@ -6,6 +6,7 @@ import { useGhostMode } from './hooks/useGhostMode';
 import { useAppHydration, useDebouncedPersistence } from './hooks/useAppPersistence';
 import { useAgentRosterSync } from './hooks/useAgentRosterSync';
 import { useAppDomainActions } from './hooks/useAppDomainActions';
+import { useMissionControlStore } from './store/missionControl';
 import type { StoredAgent, StoredContact, StoredEvent, StoredNote } from './data/models';
 import type { Agent } from './types/agents';
 import type { View, Theme, Project, Task } from './lib/appTypes';
@@ -21,6 +22,7 @@ const DeepWorkPanel = lazy(() => import('./components/focus/DeepWorkPanel').then
 // Lazy-loaded Sprint E components
 const QuickCaptureModal = lazy(() => import('./components/capture/QuickCaptureModal').then(m => ({ default: m.QuickCaptureModal })));
 
+const MCLogTerminal = lazy(() => import('./components/agents/mc/MCLogTerminal').then(m => ({ default: m.MCLogTerminal })));
 const CommandPalette = lazy(() => import('./components/CommandPalette'));
 const AgentAddModal = lazy(() => import('./components/AgentAddModal'));
 const MissionModal = lazy(() => import('./components/MissionModal'));
@@ -319,6 +321,7 @@ const AppContent: React.FC = () => {
     { key: 'g', mod: true, shift: true, handler: () => ghostMode.toggle(), description: 'Ghost Mode' },
     { key: 'd', mod: true, shift: true, handler: () => setIsDeepWorkOpen(o => !o), description: 'Deep Work' },
     { key: 'z', mod: true, shift: true, handler: () => handleUndoDelete(), description: 'Undo delete' },
+    { key: 'l', mod: true, handler: () => { const { toggleLogTerminal } = useMissionControlStore.getState(); toggleLogTerminal(); }, description: 'Log Terminal' },
     { key: '?', shift: true, handler: () => setIsShortcutsOpen(o => !o), description: 'Toggle shortcuts' },
     { key: 'Escape', handler: () => {
       if (ghostMode.isActive) { ghostMode.exit(); return; }
@@ -668,6 +671,11 @@ const AppContent: React.FC = () => {
           onClose={() => setQuickCaptureOpen(false)}
           onSaveCapture={handleQuickCaptureSave}
         />
+      </Suspense>
+
+      {/* Mission Control Log Terminal — persists across navigation */}
+      <Suspense fallback={null}>
+        <MCLogTerminal />
       </Suspense>
 
       <ToastContainer />

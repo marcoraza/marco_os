@@ -13,6 +13,8 @@ import {
   MOCK_LOGS,
   MOCK_CRON_JOBS,
   MOCK_TOKEN_USAGE,
+  MOCK_SESSIONS,
+  MOCK_STANDUP,
 } from './mcMockData';
 
 // ── Types (ported from MC) ────────────────────────────────────────────────────
@@ -196,11 +198,13 @@ export interface MCNotification {
 
 export type MCConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
-export type MCAgentTab =
-  | 'standup' | 'tasks' | 'activity' | 'logs' | 'tokens'
-  | 'cron' | 'memory' | 'webhooks' | 'config' | 'chat'
-  | 'skills' | 'overview';
+/** Main overview tabs (3 tabs only — redesign V2) */
+export type MCAgentTab = 'standup' | 'tasks' | 'activity';
 
+/** Config view tabs (4 tabs) */
+export type MCConfigTab = 'system' | 'cron' | 'webhooks' | 'skills';
+
+/** @deprecated kept for backwards-compat during migration */
 export type MCAgentDetailTab =
   | 'overview' | 'tasks' | 'activity' | 'chat' | 'memory'
   | 'config' | 'cron' | 'tools' | 'models';
@@ -265,6 +269,17 @@ interface MissionControlState {
   setActiveTab: (tab: MCAgentTab) => void;
   activeDetailTab: MCAgentDetailTab;
   setActiveDetailTab: (tab: MCAgentDetailTab) => void;
+
+  // V2 redesign state
+  focusedAgentId: number | null;
+  setFocusedAgentId: (id: number | null) => void;
+  showConfigView: boolean;
+  setShowConfigView: (show: boolean) => void;
+  activeConfigTab: MCConfigTab;
+  setActiveConfigTab: (tab: MCConfigTab) => void;
+  showLogTerminal: boolean;
+  setShowLogTerminal: (show: boolean) => void;
+  toggleLogTerminal: () => void;
 }
 
 export const useMissionControlStore = create<MissionControlState>()((set) => ({
@@ -286,8 +301,8 @@ export const useMissionControlStore = create<MissionControlState>()((set) => ({
       tasks: state.tasks.map((t) => (t.id === taskId ? { ...t, ...updates } : t)),
     })),
 
-  // Sessions
-  sessions: [],
+  // Sessions (seeded with mocks)
+  sessions: MOCK_SESSIONS,
   setSessions: (sessions) => set({ sessions }),
 
   // Activities (seeded with mocks)
@@ -316,8 +331,8 @@ export const useMissionControlStore = create<MissionControlState>()((set) => ({
   tokenUsage: MOCK_TOKEN_USAGE,
   setTokenUsage: (usage) => set({ tokenUsage: usage }),
 
-  // Standup
-  currentStandup: null,
+  // Standup (seeded with mocks)
+  currentStandup: MOCK_STANDUP,
   setCurrentStandup: (report) => set({ currentStandup: report }),
 
   // Projects
@@ -329,8 +344,19 @@ export const useMissionControlStore = create<MissionControlState>()((set) => ({
   setNotifications: (notifications) => set({ notifications }),
 
   // UI Navigation
-  activeTab: 'overview',
+  activeTab: 'standup',
   setActiveTab: (tab) => set({ activeTab: tab }),
   activeDetailTab: 'overview',
   setActiveDetailTab: (tab) => set({ activeDetailTab: tab }),
+
+  // V2 redesign state
+  focusedAgentId: null,
+  setFocusedAgentId: (id) => set({ focusedAgentId: id }),
+  showConfigView: false,
+  setShowConfigView: (show) => set({ showConfigView: show }),
+  activeConfigTab: 'system',
+  setActiveConfigTab: (tab) => set({ activeConfigTab: tab }),
+  showLogTerminal: false,
+  setShowLogTerminal: (show) => set({ showLogTerminal: show }),
+  toggleLogTerminal: () => set((state) => ({ showLogTerminal: !state.showLogTerminal })),
 }));

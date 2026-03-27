@@ -1,6 +1,7 @@
 import React, { lazy } from 'react';
 import type { StoredEvent, StoredNote } from '../data/models';
 import type { Project, Task, View } from '../lib/appTypes';
+import { useMissionControlStore } from '../store/missionControl';
 
 const Dashboard = lazy(() => import('./Dashboard'));
 const Finance = lazy(() => import('./Finance'));
@@ -13,6 +14,8 @@ const AgentCommandCenter = lazy(() => import('./AgentCommandCenter'));
 const MCAgentsShell = lazy(() => import('./agents/MCAgentsShell'));
 const AgentDetailView = lazy(() => import('./AgentDetailView'));
 const MCAgentDetail = lazy(() => import('./agents/MCAgentDetail'));
+const MCAgentProfile = lazy(() => import('./agents/mc/MCAgentProfile').then((m) => ({ default: m.MCAgentProfile })));
+const MCConfigShell = lazy(() => import('./agents/mc/MCConfigShell').then((m) => ({ default: m.MCConfigShell })));
 const Settings = lazy(() => import('./Settings'));
 const MissionDetail = lazy(() => import('./MissionDetail'));
 
@@ -61,6 +64,9 @@ export default function AppContentRouter({
   activeAgentId,
   selectedTaskId,
 }: AppContentRouterProps) {
+  const showConfigView = useMissionControlStore((s) => s.showConfigView);
+  const setShowConfigView = useMissionControlStore((s) => s.setShowConfigView);
+
   if (currentView === 'dashboard') {
     return (
       <Dashboard
@@ -92,10 +98,13 @@ export default function AppContentRouter({
   }
   if (currentView === 'crm') return <CRM />;
   if (currentView === 'agents-overview') {
+    if (showConfigView) {
+      return <MCConfigShell onBack={() => setShowConfigView(false)} />;
+    }
     return <MCAgentsShell onAgentClick={onAgentClick} />;
   }
   if (currentView === 'agent-detail' && activeAgentId) {
-    return <MCAgentDetail agentId={activeAgentId} onBack={() => onNavigate('agents-overview')} />;
+    return <MCAgentProfile agentId={activeAgentId} onBack={() => onNavigate('agents-overview')} />;
   }
   if (currentView === 'settings') return <Settings />;
   if (currentView === 'mission-detail' && selectedTaskId) {
