@@ -20,7 +20,7 @@ function formatTime(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-const PRIORITY_ORDER: Record<Task['priority'], number> = { high: 0, medium: 1, low: 2 };
+const PRIORITY_ORDER: Record<Task['priority'], number> = { urgent: 0, high: 1, medium: 2, low: 3 };
 const SESSIONS_TOTAL = 4;
 
 export function DeepWorkPanel({ isOpen, onClose, flowState, tasks = [] }: DeepWorkPanelProps) {
@@ -59,9 +59,17 @@ export function DeepWorkPanel({ isOpen, onClose, flowState, tasks = [] }: DeepWo
   };
 
   const priorityColor = (p: Task['priority']) => {
+    if (p === 'urgent') return 'text-accent-red border-accent-red/50';
     if (p === 'high') return 'text-accent-red border-accent-red/30';
     if (p === 'medium') return 'text-accent-orange border-accent-orange/30';
     return 'text-text-secondary border-border-panel';
+  };
+
+  const priorityLabel = (p: Task['priority']) => {
+    if (p === 'urgent') return 'Urgente';
+    if (p === 'high') return 'Alta';
+    if (p === 'medium') return 'Média';
+    return 'Baixa';
   };
 
   return (
@@ -202,7 +210,7 @@ export function DeepWorkPanel({ isOpen, onClose, flowState, tasks = [] }: DeepWo
                   'text-[7px] font-bold uppercase tracking-widest px-1.5 py-0.5 border rounded-sm shrink-0',
                   priorityColor(task.priority),
                 )}>
-                  {task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Média' : 'Baixa'}
+                  {priorityLabel(task.priority)}
                 </span>
               </button>
             ))}

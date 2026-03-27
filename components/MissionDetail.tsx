@@ -197,18 +197,15 @@ const MissionDetail: React.FC<MissionDetailProps> = ({ task, onBack, onStatusCha
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-[11px] text-text-secondary leading-relaxed">{task.tag}</p>
-                    {task.deadline && task.deadline !== 'A definir' && (
+                    {task.deadline && (
                       <p className={cn(
                         'text-[11px] leading-relaxed',
                         task.deadline === 'Hoje' ? 'text-accent-red'
                           : task.deadline === 'Amanhã' ? 'text-accent-orange'
-                          : task.deadline.includes('atrás') || task.deadline === 'Ontem' ? 'text-brand-mint'
+                          : task.deadline.startsWith('−') ? 'text-accent-red'
                           : 'text-text-secondary'
                       )}>
-                        {task.deadline === 'Hoje' ? 'Prazo: Hoje — urgente'
-                          : task.deadline === 'Amanhã' ? 'Prazo: Amanhã'
-                          : task.deadline === 'Ontem' ? 'Concluído ontem'
-                          : `Prazo: ${task.deadline}`}
+                        {`Prazo: ${task.deadline}`}
                       </p>
                     )}
                   </div>

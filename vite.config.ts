@@ -6,7 +6,7 @@ export default defineConfig(() => {
     return {
       base: '/marco_os/',
       server: {
-        port: 3000,
+        port: 5173,
         host: '0.0.0.0',
       },
       plugins: [react()],

@@ -7,7 +7,7 @@ export interface StoredProject {
 }
 
 export type StoredTaskStatus = 'assigned' | 'started' | 'in-progress' | 'standby' | 'done';
-export type StoredTaskPriority = 'high' | 'medium' | 'low';
+export type StoredTaskPriority = 'urgent' | 'high' | 'medium' | 'low';
 
 export interface StoredTask {
   id: number;

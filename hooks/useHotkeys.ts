@@ -15,6 +15,7 @@ export const SHORTCUTS: { key: string; mod?: boolean; shift?: boolean; label: st
   { key: 'n', mod: true, shift: true, label: '⌘⇧N', description: 'Captura Rápida' },
   { key: 'g', mod: true, shift: true, label: '⌘⇧G', description: 'Ghost Mode' },
   { key: 'd', mod: true, shift: true, label: '⌘⇧D', description: 'Deep Work' },
+  { key: 'z', mod: true, shift: true, label: '⌘⇧Z', description: 'Desfazer remoção' },
   { key: '?', shift: true, label: '?', description: 'Atalhos' },
   { key: 'd', label: 'G → D', description: 'Ir para Dashboard' },
   { key: 'f', label: 'G → F', description: 'Ir para Finanças' },

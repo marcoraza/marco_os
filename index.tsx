@@ -11,9 +11,7 @@ if (!rootElement) {
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <React.StrictMode>
-    <OpenClawProvider autoConnect>
-      <App />
-    </OpenClawProvider>
-  </React.StrictMode>
+  <OpenClawProvider autoConnect>
+    <App />
+  </OpenClawProvider>
 );

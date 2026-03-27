@@ -25,7 +25,7 @@ export function createTaskFromInput(
     projectId,
     status: 'assigned',
     priority: input.priority || 'medium',
-    deadline: 'A definir',
+    deadline: '',
     assignee: 'MA',
     dependencies: 0,
   };

@@ -35,6 +35,8 @@ export function useAppHydration({
   storedAgentToAgent,
 }: AppHydrationParams) {
   const didHydrateRef = useRef(false);
+  const initialProjectIdRef = useRef(activeProjectId);
+  const initialAgentIdRef = useRef(activeAgentId);
 
   useEffect(() => {
     (async () => {
@@ -61,7 +63,7 @@ export function useAppHydration({
         if (tasks.length) setTasks(tasks);
         setNotes(notes);
         setEvents(events);
-        if (projects.length && !projects.some((project) => project.id === activeProjectId)) {
+        if (projects.length && !projects.some((project) => project.id === initialProjectIdRef.current)) {
           setActiveProjectId(projects[0].id);
         }
       } catch (err) {
@@ -72,7 +74,7 @@ export function useAppHydration({
         const agents = await repository.loadAgents();
         if (agents.length) {
           setAgentRoster(agents.map(storedAgentToAgent));
-          if (!agents.some((agent) => agent.id === activeAgentId)) {
+          if (!agents.some((agent) => agent.id === initialAgentIdRef.current)) {
             setActiveAgentId(agents[0].id);
           }
         } else {
@@ -96,8 +98,6 @@ export function useAppHydration({
       didHydrateRef.current = true;
     })();
   }, [
-    activeAgentId,
-    activeProjectId,
     defaultProjects,
     defaultTasks,
     setActiveAgentId,

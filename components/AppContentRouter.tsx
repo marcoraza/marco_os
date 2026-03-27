@@ -10,7 +10,9 @@ const Planner = lazy(() => import('./Planner'));
 const NotesPanel = lazy(() => import('./NotesPanel'));
 const CRM = lazy(() => import('./CRM'));
 const AgentCommandCenter = lazy(() => import('./AgentCommandCenter'));
+const MCAgentsShell = lazy(() => import('./agents/MCAgentsShell'));
 const AgentDetailView = lazy(() => import('./AgentDetailView'));
+const MCAgentDetail = lazy(() => import('./agents/MCAgentDetail'));
 const Settings = lazy(() => import('./Settings'));
 const MissionDetail = lazy(() => import('./MissionDetail'));
 
@@ -30,6 +32,9 @@ interface AppContentRouterProps {
   onAgentClick: (agentId: string) => void;
   onNavigate: React.Dispatch<React.SetStateAction<View>>;
   onTaskStatusSync?: (taskId: number, newStatus: Task['status']) => Promise<void>;
+  onMoveTask?: (taskId: number, newStatus: Task['status']) => void;
+  onDeleteTask?: (taskId: number) => void;
+  onRestoreTask?: (taskId: number) => void;
   activeAgentId: string;
   selectedTaskId: number | null;
 }
@@ -50,6 +55,9 @@ export default function AppContentRouter({
   onAgentClick,
   onNavigate,
   onTaskStatusSync,
+  onMoveTask,
+  onDeleteTask,
+  onRestoreTask,
   activeAgentId,
   selectedTaskId,
 }: AppContentRouterProps) {
@@ -66,6 +74,9 @@ export default function AppContentRouter({
         setEvents={setEvents}
         onNavigate={(view) => onNavigate(view as View)}
         onTaskStatusSync={onTaskStatusSync}
+        onMoveTask={onMoveTask}
+        onDeleteTask={onDeleteTask}
+        onRestoreTask={onRestoreTask}
       />
     );
   }
@@ -81,10 +92,10 @@ export default function AppContentRouter({
   }
   if (currentView === 'crm') return <CRM />;
   if (currentView === 'agents-overview') {
-    return <AgentCommandCenter onAgentClick={onAgentClick} onNavigate={onNavigate} />;
+    return <MCAgentsShell onAgentClick={onAgentClick} />;
   }
   if (currentView === 'agent-detail' && activeAgentId) {
-    return <AgentDetailView agentId={activeAgentId} onBack={() => onNavigate('agents-overview')} />;
+    return <MCAgentDetail agentId={activeAgentId} onBack={() => onNavigate('agents-overview')} />;
   }
   if (currentView === 'settings') return <Settings />;
   if (currentView === 'mission-detail' && selectedTaskId) {

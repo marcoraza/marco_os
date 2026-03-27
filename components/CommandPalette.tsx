@@ -146,6 +146,7 @@ export default function CommandPalette(props: CommandPaletteProps) {
       { kind: 'action' as const, id: 'new-finance', title: 'Nova entrada financeira', subtitle: 'Registrar receita ou despesa', icon: 'payments' },
       { kind: 'action' as const, id: 'new-health', title: 'Novo registro de saude', subtitle: 'Treino, peso, habito, sono ou humor', icon: 'monitor_heart' },
       { kind: 'action' as const, id: 'new-braindump', title: 'Nova nota rapida', subtitle: 'Brain dump para ideias e reflexoes', icon: 'sticky_note_2' },
+      { kind: 'action' as const, id: 'open-marco-os-v2', title: 'Abrir Marco OS V2', subtitle: 'Launch do shell Mission Control V2', icon: 'open_in_new' },
       { kind: 'action' as const, id: 'resume-plan', title: 'Retomar ultimo plano', subtitle: 'Abrir o planejamento mais recente', icon: 'history' },
       { kind: 'action' as const, id: 'focus-next-task', title: 'Focar proxima tarefa', subtitle: 'Abrir a tarefa prioritaria do dashboard', icon: 'track_changes' },
       { kind: 'action' as const, id: 'open-starred-notes', title: 'Abrir notas favoritas', subtitle: 'Ir para notas com foco nas favoritas', icon: 'star' },

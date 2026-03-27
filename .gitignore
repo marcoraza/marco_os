@@ -26,6 +26,9 @@ dist-ssr
 .env
 .v01-snapshot
 .env.production
+apps/marco-os-v2/.data/
+apps/marco-os-v2/vendor/mission-control/.data/
+apps/marco-os-v2/vendor/mission-control/.next/
 
 # Local AI/workspace tooling
 .aios-core/

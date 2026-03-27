@@ -21,7 +21,7 @@ export interface AppSettings {
 
 const defaultSettings: AppSettings = {
   profile: {
-    displayName: 'Marco Anderson',
+    displayName: 'Marco',
     email: 'marco@marco-os.com',
   },
   appearance: {

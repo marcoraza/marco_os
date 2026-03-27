@@ -4,10 +4,12 @@ import type { Agent } from '../../types/agents';
 import { Icon, SectionLabel, StatusDot } from '../ui';
 import { cn } from '../../utils/cn';
 import { useProjectContext } from '../../contexts/ProjectContext';
+import { useMissionControlStore, type MCAgent } from '../../store/missionControl';
 
 interface AppSidebarProps {
   currentView: View;
   onNavigate: (view: View) => void;
+  onOpenMarcoOsV2: () => void;
   agentRoster: Agent[];
   activeAgentId: string;
   onAgentClick: (agentId: string) => void;
@@ -28,9 +30,142 @@ const NAV_ITEMS = [
   { id: 'settings',  icon: 'settings',       label: 'Configurações' },
 ] as const;
 
+function mcStatusColor(status: MCAgent['status']): 'mint' | 'orange' | 'red' | 'blue' {
+  if (status === 'idle') return 'mint';
+  if (status === 'busy') return 'orange';
+  if (status === 'error') return 'red';
+  return 'blue';
+}
+
+function MCAgentRoster({
+  compact, mcAgents, mcConnected, fallbackRoster, currentView, activeAgentId, onAgentClick,
+}: {
+  compact: boolean;
+  mcAgents: MCAgent[];
+  mcConnected: boolean;
+  fallbackRoster: Agent[];
+  currentView: View;
+  activeAgentId: string;
+  onAgentClick: (id: string) => void;
+}) {
+  // Use MC agents when connected, fallback to V1 roster otherwise
+  if (mcConnected && mcAgents.length > 0) {
+    return (
+      <div className="space-y-0.5">
+        {mcAgents.map((agent) => {
+          const color = mcStatusColor(agent.status);
+          const isOnline = agent.status === 'idle' || agent.status === 'busy';
+          const isSelected = currentView === 'agent-detail' && activeAgentId === String(agent.id);
+
+          if (compact) {
+            return (
+              <div
+                key={agent.id}
+                onClick={() => { useMissionControlStore.getState().setSelectedAgentId(agent.id); onAgentClick(String(agent.id)); }}
+                title={agent.name}
+                className={cn(
+                  'flex items-center justify-center p-2 rounded-md cursor-pointer transition-all group relative',
+                  isSelected ? 'bg-brand-mint/5 border border-brand-mint/20' : 'hover:bg-surface border border-transparent',
+                )}
+              >
+                <div className="size-7 rounded-sm flex items-center justify-center shrink-0 bg-accent-blue/10 text-accent-blue">
+                  <Icon name="smart_toy" size="md" />
+                </div>
+                <div className="absolute bottom-0.5 right-0.5">
+                  <StatusDot color={color} glow={isOnline} />
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={agent.id}
+              onClick={() => { useMissionControlStore.getState().setSelectedAgentId(agent.id); onAgentClick(String(agent.id)); }}
+              className={cn(
+                'p-2 rounded-md flex items-center gap-3 cursor-pointer transition-all group',
+                isSelected ? 'bg-brand-mint/5 border border-brand-mint/20' : 'hover:bg-surface border border-transparent',
+              )}
+            >
+              <div className="size-7 rounded-sm flex items-center justify-center shrink-0 bg-accent-blue/10 text-accent-blue">
+                <Icon name="smart_toy" size="md" />
+              </div>
+              <div className="flex-grow overflow-hidden min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className={cn('text-[10px] font-bold truncate', isSelected ? 'text-brand-mint' : 'text-text-primary')}>{agent.name}</p>
+                </div>
+                <p className="text-[8px] text-text-secondary/60 font-mono truncate">{agent.role}</p>
+              </div>
+              <StatusDot color={color} glow={isOnline} />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Fallback: V1 static roster
+  return (
+    <div className="space-y-0.5">
+      {fallbackRoster.map((agent) => {
+        const roleBg = agent.role === 'coordinator' ? 'bg-accent-purple/10 text-accent-purple' : agent.role === 'integration' ? 'bg-accent-orange/10 text-accent-orange' : 'bg-accent-blue/10 text-accent-blue';
+        const statusColor = agent.status === 'online' ? 'mint' as const : agent.status === 'busy' ? 'orange' as const : agent.status === 'idle' ? 'blue' as const : 'red' as const;
+        const isOnline = agent.status === 'online' || agent.status === 'busy';
+        const isSelected = currentView === 'agent-detail' && activeAgentId === agent.id;
+
+        if (compact) {
+          return (
+            <div
+              key={agent.id}
+              onClick={() => onAgentClick(agent.id)}
+              title={agent.name}
+              className={cn(
+                'flex items-center justify-center p-2 rounded-md cursor-pointer transition-all group relative',
+                isSelected ? 'bg-brand-mint/5 border border-brand-mint/20' : 'hover:bg-surface border border-transparent',
+              )}
+            >
+              <div className={`size-7 rounded-sm flex items-center justify-center shrink-0 ${roleBg}`}>
+                <Icon name={agent.avatarIcon || (agent.role === 'coordinator' ? 'shield' : 'engineering')} size="md" />
+              </div>
+              <div className="absolute bottom-0.5 right-0.5">
+                <StatusDot color={statusColor} glow={isOnline} />
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div
+            key={agent.id}
+            onClick={() => onAgentClick(agent.id)}
+            className={cn(
+              'p-2 rounded-md flex items-center gap-3 cursor-pointer transition-all group',
+              isSelected ? 'bg-brand-mint/5 border border-brand-mint/20' : 'hover:bg-surface border border-transparent',
+            )}
+          >
+            <div className={`size-7 rounded-sm flex items-center justify-center shrink-0 ${roleBg}`}>
+              <Icon name={agent.avatarIcon || (agent.role === 'coordinator' ? 'shield' : 'engineering')} size="md" />
+            </div>
+            <div className="flex-grow overflow-hidden min-w-0">
+              <div className="flex items-center gap-1.5">
+                <p className={cn('text-[10px] font-bold truncate', isSelected ? 'text-brand-mint' : 'text-text-primary')}>{agent.name}</p>
+              </div>
+              {agent.model && (
+                <p className="text-[8px] text-text-secondary/60 font-mono truncate">{agent.model}</p>
+              )}
+            </div>
+            <StatusDot color={statusColor} glow={isOnline} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function AppSidebar({
   currentView,
   onNavigate,
+  onOpenMarcoOsV2,
   agentRoster,
   activeAgentId,
   onAgentClick,
@@ -39,6 +174,10 @@ function AppSidebar({
   connectionState,
   agentsOnlineCount,
 }: AppSidebarProps) {
+  // MC dynamic roster: read directly from store (no polling hook to avoid render loops)
+  const mcAgents = useMissionControlStore((s) => s.agents);
+  const mcConnectionStatus = useMissionControlStore((s) => s.connectionStatus);
+  const mcConnected = mcConnectionStatus === 'connected' || mcAgents.length > 0;
   // Local uptime state
   const [uptime, setUptime] = useState(0);
   const [uptimeView, setUptimeView] = useState<UptimeView>('24H');
@@ -159,65 +298,32 @@ function AppSidebar({
               <Icon name="hub" size="lg" />
               {!compact && 'Mission Control'}
             </button>
+            <button
+              onClick={() => { onOpenMarcoOsV2(); setIsMobileOpen(false); }}
+              title={compact ? 'Marco OS V2' : undefined}
+              className={cn(
+                'w-full flex items-center rounded-sm transition-all duration-300 ease-out border border-brand-mint/15 text-brand-mint hover:bg-brand-mint/10 hover:border-brand-mint/30',
+                compact
+                  ? 'justify-center p-2.5'
+                  : 'gap-3 px-3 py-2 text-[10px] font-bold uppercase tracking-wide'
+              )}
+            >
+              <Icon name="open_in_new" size="lg" />
+              {!compact && 'Marco OS V2'}
+            </button>
           </nav>
 
           <div className="w-full h-[1px] bg-border-panel/50 mb-3"></div>
 
-          <div className="space-y-0.5">
-            {agentRoster.map(agent => {
-              const roleBg = agent.role === 'coordinator' ? 'bg-accent-purple/10 text-accent-purple' : agent.role === 'integration' ? 'bg-accent-orange/10 text-accent-orange' : 'bg-accent-blue/10 text-accent-blue';
-              const statusColor = agent.status === 'online' ? 'mint' as const : agent.status === 'busy' ? 'orange' as const : agent.status === 'idle' ? 'blue' as const : 'red' as const;
-              const isOnline = agent.status === 'online' || agent.status === 'busy';
-              const isSelected = currentView === 'agent-detail' && activeAgentId === agent.id;
-
-              if (compact) {
-                return (
-                  <div
-                    key={agent.id}
-                    onClick={() => { onAgentClick(agent.id); setIsMobileOpen(false); }}
-                    title={agent.name}
-                    className={cn(
-                      'flex items-center justify-center p-2 rounded-md cursor-pointer transition-all group relative',
-                      isSelected ? 'bg-brand-mint/5 border border-brand-mint/20' : 'hover:bg-surface border border-transparent'
-                    )}
-                  >
-                    <div className={`size-7 rounded-sm flex items-center justify-center shrink-0 ${roleBg}`}>
-                      <Icon name={agent.avatarIcon || (agent.role === 'coordinator' ? 'shield' : 'engineering')} size="md" />
-                    </div>
-                    <div className="absolute bottom-0.5 right-0.5">
-                      <StatusDot color={statusColor} glow={isOnline} />
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <div
-                  key={agent.id}
-                  onClick={() => { onAgentClick(agent.id); setIsMobileOpen(false); }}
-                  className={cn(
-                    'p-2 rounded-md flex items-center gap-3 cursor-pointer transition-all group',
-                    isSelected
-                      ? 'bg-brand-mint/5 border border-brand-mint/20'
-                      : 'hover:bg-surface border border-transparent'
-                  )}
-                >
-                  <div className={`size-7 rounded-sm flex items-center justify-center shrink-0 ${roleBg}`}>
-                    <Icon name={agent.avatarIcon || (agent.role === 'coordinator' ? 'shield' : 'engineering')} size="md" />
-                  </div>
-                  <div className="flex-grow overflow-hidden min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className={cn('text-[10px] font-bold truncate', isSelected ? 'text-brand-mint' : 'text-text-primary')}>{agent.name}</p>
-                    </div>
-                    {agent.model && (
-                      <p className="text-[8px] text-text-secondary/60 font-mono truncate">{agent.model}</p>
-                    )}
-                  </div>
-                  <StatusDot color={statusColor} glow={isOnline} />
-                </div>
-              );
-            })}
-          </div>
+          <MCAgentRoster
+            compact={compact}
+            mcAgents={mcAgents}
+            mcConnected={mcConnected}
+            fallbackRoster={agentRoster}
+            currentView={currentView}
+            activeAgentId={activeAgentId}
+            onAgentClick={(id) => { onAgentClick(id); setIsMobileOpen(false); }}
+          />
 
           <button
             onClick={onAddAgent}

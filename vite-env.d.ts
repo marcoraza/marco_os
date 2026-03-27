@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_OPENCLAW_PORT?: string;
   readonly VITE_OPENCLAW_SECURE?: string;
   readonly VITE_OPENCLAW_TOKEN?: string;
+  readonly VITE_MARCO_OS_V2_URL?: string;
 }
 
 interface ImportMeta {

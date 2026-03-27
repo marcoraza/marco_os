@@ -4,11 +4,12 @@ import { cn } from '../../utils/cn';
 
 export const getPriorityPill = (priority: string): React.ReactElement => {
   const config: Record<string, { label: string; bg: string; text: string }> = {
-    high:   { label: 'P0', bg: 'bg-accent-red',           text: 'text-white' },
-    medium: { label: 'P1', bg: 'bg-accent-orange',        text: 'text-white' },
-    low:    { label: 'P2', bg: 'bg-text-secondary/40',    text: 'text-white' },
+    urgent: { label: 'P0', bg: 'bg-accent-red',           text: 'text-white' },
+    high:   { label: 'P1', bg: 'bg-accent-orange',        text: 'text-white' },
+    medium: { label: 'P2', bg: 'bg-text-secondary/50',    text: 'text-white' },
+    low:    { label: 'P3', bg: 'bg-text-secondary/25',    text: 'text-text-secondary' },
   };
-  const c = config[priority] || config.low;
+  const c = config[priority] || config.medium;
   return React.createElement(
     'span',
     { className: cn('px-2 py-0.5 rounded-full text-[9px] font-black shrink-0', c.bg, c.text) },
@@ -19,11 +20,14 @@ export const getPriorityPill = (priority: string): React.ReactElement => {
 export const getDeadlineColor = (deadline: string): string => {
   if (deadline === 'Hoje') return 'text-accent-red';
   if (deadline === 'Amanhã') return 'text-accent-orange';
-  if (deadline === 'Ontem' || deadline.includes('atrás')) return 'text-brand-mint';
+  if (deadline.startsWith('−')) return 'text-accent-red'; // overdue: −2d
   return 'text-text-secondary';
 };
 
 export const getTaskTimestamp = (task: Task): string => {
+  // ClickUp tasks use hashed IDs (large numbers) — no fake timestamp for real data
+  if (task.id > 100_000) return '';
+  // Mock tasks: generate deterministic fake timestamp
   const base = new Date('2026-02-16T20:00:00Z');
   base.setMinutes(base.getMinutes() + task.id * 17);
   return base.toISOString().replace(/\.\d{3}Z/, 'Z');
@@ -42,7 +46,8 @@ export const chartTooltipStyle = {
 };
 
 export const prioPillColor: Record<string, string> = {
-  high:   'bg-accent-red/60',
-  medium: 'bg-accent-orange/60',
-  low:    'bg-text-secondary/30',
+  urgent: 'bg-accent-red/60',
+  high:   'bg-accent-orange/60',
+  medium: 'bg-text-secondary/40',
+  low:    'bg-text-secondary/20',
 };

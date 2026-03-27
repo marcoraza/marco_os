@@ -79,8 +79,8 @@ test('formatDeadline keeps relative labels deterministic', () => {
   try {
     assert.equal(formatDeadline('2026-03-06T12:00:00.000Z'), 'Hoje');
     assert.equal(formatDeadline('2026-03-07T12:00:00.000Z'), 'Amanhã');
-    assert.equal(formatDeadline('2026-03-05T12:00:00.000Z'), 'Ontem');
-    assert.equal(formatDeadline(undefined), 'A definir');
+    assert.equal(formatDeadline('2026-03-05T12:00:00.000Z'), '−1d');
+    assert.equal(formatDeadline(undefined), '');
   } finally {
     global.Date = RealDate;
   }

@@ -31,7 +31,7 @@ export interface Task {
   tag: string;
   projectId: string; // references Project.id
   status: 'assigned' | 'started' | 'in-progress' | 'standby' | 'done';
-  priority: 'high' | 'medium' | 'low';
+  priority: 'urgent' | 'high' | 'medium' | 'low';
   deadline: string;
   assignee: string;
   dependencies?: number;

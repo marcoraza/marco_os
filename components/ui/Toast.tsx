@@ -3,14 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import { Icon } from './Icon';
 
+interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface ToastItem {
   id: number;
   message: string;
   variant: 'success' | 'error' | 'info';
+  action?: ToastAction;
 }
 
 let toastIdCounter = 0;
-let globalShowToast: ((message: string, variant: 'success' | 'error' | 'info') => void) | null = null;
+let globalShowToast: ((message: string, variant: 'success' | 'error' | 'info', action?: ToastAction) => void) | null = null;
 
 export function getToastAppearance(variant: 'success' | 'error' | 'info') {
   if (variant === 'error') {
@@ -34,21 +40,22 @@ export function getToastAppearance(variant: 'success' | 'error' | 'info') {
   };
 }
 
-export function showToast(message: string, variant: 'success' | 'error' | 'info' = 'success') {
-  globalShowToast?.(message, variant);
+export function showToast(message: string, variant: 'success' | 'error' | 'info' = 'success', action?: ToastAction) {
+  globalShowToast?.(message, variant, action);
 }
 
 export function ToastContainer() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
 
-  const addToast = useCallback((message: string, variant: 'success' | 'error' | 'info') => {
+  const addToast = useCallback((message: string, variant: 'success' | 'error' | 'info', action?: ToastAction) => {
     const id = ++toastIdCounter;
-    setToasts(prev => [...prev.slice(-2), { id, message, variant }]);
+    setToasts(prev => [...prev.slice(-2), { id, message, variant, action }]);
+    const duration = action ? 5000 : 2000; // Longer duration when undo available
     const timer = setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
       timersRef.current.delete(id);
-    }, 2000);
+    }, duration);
     timersRef.current.set(id, timer);
   }, []);
 
@@ -71,6 +78,19 @@ export function ToastContainer() {
           >
             <Icon name={getToastAppearance(t.variant).icon} size="sm" className={getToastAppearance(t.variant).iconClassName} />
             <span className="text-[11px] font-bold text-text-primary">{t.message}</span>
+            {t.action && (
+              <button
+                onClick={() => {
+                  t.action!.onClick();
+                  setToasts(prev => prev.filter(x => x.id !== t.id));
+                  const timer = timersRef.current.get(t.id);
+                  if (timer) { clearTimeout(timer); timersRef.current.delete(t.id); }
+                }}
+                className="ml-2 text-[10px] font-black uppercase tracking-widest text-brand-mint hover:text-brand-mint/80 transition-colors pointer-events-auto"
+              >
+                {t.action.label}
+              </button>
+            )}
           </motion.div>
         ))}
       </AnimatePresence>

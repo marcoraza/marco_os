@@ -40,6 +40,8 @@ import {
   projetoItemToProject,
   buildProjectIdMap,
 } from './utils/taskMappings';
+import { openMarcoOsV2 } from './lib/marcoOsV2';
+import { useClickUpTasks } from './hooks/useClickUpTasks';
 import { createQuickCaptureNote, createQuickCaptureTask } from './data/domainFactories';
 import { summarizeProjectControl } from './lib/projectControl';
 
@@ -66,21 +68,21 @@ const DEFAULT_PROJECTS: Project[] = [
 ];
 
 const DEFAULT_TASKS: Task[] = [
-  { id: 1,  title: 'Treino de Hipertrofia A',   tag: 'SAÚDE',    projectId: 'pessoal',        status: 'assigned',    priority: 'high',   deadline: 'Hoje',          assignee: 'MA', dependencies: 0 },
-  { id: 2,  title: 'Agendar check-up médico',   tag: 'SAÚDE',    projectId: 'pessoal',        status: 'standby',     priority: 'medium', deadline: 'Prox. Mês',     assignee: 'MA', dependencies: 1 },
-  { id: 3,  title: 'Pagar fatura cartão Black', tag: 'FINANÇAS', projectId: 'pessoal',        status: 'started',     priority: 'high',   deadline: 'Amanhã',        assignee: 'MA', dependencies: 0 },
-  { id: 4,  title: 'Ler 20 pág. "Clean Code"', tag: 'ESTUDO',   projectId: 'pessoal',        status: 'done',        priority: 'low',    deadline: 'Ontem',         assignee: 'MA', dependencies: 0 },
-  { id: 5,  title: 'Organizar Home Office',     tag: 'CASA',     projectId: 'pessoal',        status: 'in-progress', priority: 'low',    deadline: 'Fim de Semana', assignee: 'MA', dependencies: 2 },
-  { id: 6,  title: 'Definir Arquitetura AWS',   tag: 'DEV',      projectId: 'zaremba-gestao', status: 'assigned',    priority: 'high',   deadline: '10 Fev',        assignee: 'https://i.pravatar.cc/150?u=1', dependencies: 3 },
-  { id: 7,  title: 'Refatoração da API de Login', tag: 'BACKEND', projectId: 'zaremba-gestao', status: 'in-progress', priority: 'high',  deadline: 'Hoje',          assignee: 'MA', dependencies: 1 },
-  { id: 8,  title: 'Deploy v2.4 em Staging',   tag: 'DEVOPS',   projectId: 'zaremba-gestao', status: 'done',        priority: 'medium', deadline: 'Ontem',         assignee: 'JP', dependencies: 0 },
-  { id: 9,  title: 'Design System Tokens',      tag: 'DESIGN',   projectId: 'zaremba-gestao', status: 'started',     priority: 'medium', deadline: '12 Fev',        assignee: 'https://i.pravatar.cc/150?u=2', dependencies: 0 },
-  { id: 10, title: 'Code Review PR #402',       tag: 'DEV',      projectId: 'zaremba-gestao', status: 'assigned',    priority: 'low',    deadline: 'Hoje',          assignee: 'MA', dependencies: 0 },
-  { id: 11, title: 'Briefing Campanha Q1',      tag: 'MKT',      projectId: 'pessoal',        status: 'assigned',    priority: 'medium', deadline: 'Amanhã',        assignee: 'JP', dependencies: 0 },
-  { id: 12, title: 'Análise de Concorrentes',   tag: 'STRATEGY', projectId: 'pessoal',        status: 'started',     priority: 'low',    deadline: '15 Fev',        assignee: 'MA', dependencies: 0 },
-  { id: 13, title: 'Gravação Vídeo Youtube',    tag: 'SOCIAL',   projectId: 'zaremba-gestao', status: 'in-progress', priority: 'medium', deadline: 'Hoje',          assignee: 'https://i.pravatar.cc/150?u=4', dependencies: 1 },
-  { id: 14, title: 'Copywriting Landing Page',  tag: 'COPY',     projectId: 'zaremba-gestao', status: 'standby',     priority: 'high',   deadline: 'Indef.',        assignee: 'MA', dependencies: 2 },
-  { id: 15, title: 'Newsletter Semanal',        tag: 'MKT',      projectId: 'pessoal',        status: 'done',        priority: 'medium', deadline: '2d atrás',      assignee: 'https://i.pravatar.cc/150?u=5', dependencies: 0 },
+  { id: 1,  title: 'Treinar musculação',         tag: 'FÍSICO',   projectId: 'pessoal',        status: 'assigned',    priority: 'high',   deadline: 'Hoje',    assignee: 'MA', dependencies: 0 },
+  { id: 2,  title: 'Agendar check-up médico',    tag: 'FÍSICO',   projectId: 'pessoal',        status: 'standby',     priority: 'medium', deadline: '15 mar',  assignee: 'MA', dependencies: 1 },
+  { id: 3,  title: 'Pagar fatura cartão Black',  tag: 'BIZ',      projectId: 'pessoal',        status: 'started',     priority: 'high',   deadline: 'Amanhã',  assignee: 'MA', dependencies: 0 },
+  { id: 4,  title: 'Ler 20 pág Clean Code',      tag: 'MIND',     projectId: 'pessoal',        status: 'done',        priority: 'low',    deadline: '−1d',     assignee: 'MA', dependencies: 0 },
+  { id: 5,  title: 'Organizar home office',       tag: 'LIFE',     projectId: 'pessoal',        status: 'in-progress', priority: 'low',    deadline: '5d',      assignee: 'MA', dependencies: 2 },
+  { id: 6,  title: 'Definir arquitetura AWS',     tag: 'BUILD',    projectId: 'zaremba-gestao', status: 'assigned',    priority: 'urgent', deadline: '2d',      assignee: 'MA', dependencies: 3 },
+  { id: 7,  title: 'Refatorar API de login',      tag: 'BUILD',    projectId: 'zaremba-gestao', status: 'in-progress', priority: 'high',   deadline: 'Hoje',    assignee: 'MA', dependencies: 1 },
+  { id: 8,  title: 'Deploy v2.4 staging',         tag: 'BUILD',    projectId: 'zaremba-gestao', status: 'done',        priority: 'medium', deadline: '−1d',     assignee: 'JP', dependencies: 0 },
+  { id: 9,  title: 'Design system tokens',        tag: 'BUILD',    projectId: 'zaremba-gestao', status: 'started',     priority: 'medium', deadline: '4d',      assignee: 'MA', dependencies: 0 },
+  { id: 10, title: 'Code review PR #402',         tag: 'BUILD',    projectId: 'zaremba-gestao', status: 'assigned',    priority: 'low',    deadline: 'Hoje',    assignee: 'MA', dependencies: 0 },
+  { id: 11, title: 'Briefing campanha Q1',        tag: 'BIZ',      projectId: 'pessoal',        status: 'assigned',    priority: 'medium', deadline: 'Amanhã',  assignee: 'JP', dependencies: 0 },
+  { id: 12, title: 'Analisar concorrentes',       tag: 'BIZ',      projectId: 'pessoal',        status: 'started',     priority: 'low',    deadline: '7d',      assignee: 'MA', dependencies: 0 },
+  { id: 13, title: 'Gravar vídeo YouTube',        tag: 'BIZ',      projectId: 'zaremba-gestao', status: 'in-progress', priority: 'medium', deadline: 'Hoje',    assignee: 'MA', dependencies: 1 },
+  { id: 14, title: 'Copywriting landing page',    tag: 'BIZ',      projectId: 'zaremba-gestao', status: 'standby',     priority: 'high',   deadline: '',        assignee: 'MA', dependencies: 2 },
+  { id: 15, title: 'Newsletter semanal',          tag: 'BIZ',      projectId: 'pessoal',        status: 'done',        priority: 'medium', deadline: '−2d',     assignee: 'MA', dependencies: 0 },
 ];
 
 // ─── StoredAgent ↔ Agent conversion ──────────────────────────────────────────
@@ -193,72 +195,114 @@ const AppContent: React.FC = () => {
           : 'red';
   const agentsOnlineCount = agentRoster.filter(a => a.status !== 'offline').length;
 
-  // ─── Tasks (from Supabase with fallback) ───────────────────────────────────
+  // ─── Tasks (ClickUp primary, Notion fallback, mock last resort) ────────────
   // Build project name → ID map for task mapping
   const projectIdMap = useMemo(() => buildProjectIdMap(projects), [projects]);
-  
-  // Map ChecklistItem to Task - filter for Marco's tasks only
+
+  // ClickUp tasks from Supabase clickup_tasks table (populated every 5 min by Frank)
+  const { tasks: clickupTasks, isLoading: clickupLoading, updateTaskStatus: clickupUpdateStatus, deleteTask: clickupDeleteTask, restoreTask: clickupRestoreTask } = useClickUpTasks();
+
+  // Notion checklist tasks (legacy fallback)
   const realTasks = useMemo<Task[]>(() => {
     const marcoTasks = checklist.items.filter(item => {
       const resp = (item.responsavel || '').toLowerCase();
-      // Include tasks for Marco or tasks without responsavel (personal)
       return resp === '' || resp === 'marco' || resp === 'ma';
     });
-    
     if (marcoTasks.length === 0) return [];
     return marcoTasks.map(item => checklistItemToTask(item, projectIdMap));
   }, [checklist.items, projectIdMap]);
-  
+
   // Local tasks state (for fallback and local additions)
   const [localTasks, setLocalTasks] = useState<Task[]>(DEFAULT_TASKS);
-  
-  // Combined tasks: prefer real tasks, fallback to local
-  const tasks = realTasks.length > 0 ? realTasks : localTasks;
-  
-  // Wrapper setTasks that handles both local and API sync
+
+  // Which source is active?
+  const isClickUpActive = clickupTasks.length > 0;
+
+  // Priority: ClickUp → Notion → mock
+  const tasks = isClickUpActive
+    ? clickupTasks
+    : realTasks.length > 0
+      ? realTasks
+      : (!clickupLoading ? localTasks : []);
+
+  // setTasks: when ClickUp is active, route to optimistic updater; otherwise local state
   const setTasks: React.Dispatch<React.SetStateAction<Task[]>> = useCallback((action) => {
     setLocalTasks(prev => {
       const newTasks = typeof action === 'function' ? action(prev) : action;
       return newTasks;
     });
   }, []);
-  
-  // Notify ID map for syncing (notionId → Task ID)
-  const notionIdMap = useMemo(() => {
-    const map = new Map<number, string>();
-    for (const task of realTasks) {
-      if ((task as Task & { notionId?: string }).notionId) {
-        map.set(task.id, (task as Task & { notionId?: string }).notionId!);
-      }
-    }
-    return map;
-  }, [realTasks]);
-  
-  // Status sync handler - called when dragging tasks in kanban
+
+  // Status sync handler — optimistic for ClickUp, API for Notion
   const handleTaskStatusSync = useCallback(async (taskId: number, newStatus: Task['status']) => {
-    const notionId = notionIdMap.get(taskId);
-    if (!notionId) {
-      console.warn('[TaskSync] No Notion ID for task:', taskId);
+    if (isClickUpActive) {
+      clickupUpdateStatus(taskId, newStatus);
       return;
     }
-    
+
+    // Notion fallback
+    const task = tasks.find(t => t.id === taskId);
+    const notionId = (task as Task & { notionId?: string })?.notionId;
+    if (!notionId) return;
+
     const apiBase = import.meta.env.VITE_FORM_API_URL;
     const apiToken = import.meta.env.VITE_FORM_API_TOKEN;
-    
-    if (!apiBase) {
-      console.warn('[TaskSync] VITE_FORM_API_URL not configured');
-      return;
-    }
-    
+    if (!apiBase) return;
+
     const { syncTaskStatus } = await import('./utils/taskMappings');
-    const success = await syncTaskStatus(notionId, newStatus, apiBase, apiToken || '');
-    if (success) {
-      showToast('Status atualizado');
+    await syncTaskStatus(notionId, newStatus, apiBase, apiToken || '');
+  }, [isClickUpActive, clickupUpdateStatus, tasks]);
+
+  // Move task: operates on correct state source (ClickUp hook or local state)
+  const handleMoveTask = useCallback((taskId: number, newStatus: Task['status']) => {
+    if (isClickUpActive) {
+      clickupUpdateStatus(taskId, newStatus);
     } else {
-      showToast('Erro ao sincronizar', 'error');
+      setLocalTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
     }
-  }, [notionIdMap]);
-  
+  }, [isClickUpActive, clickupUpdateStatus]);
+
+  // Delete task: operates on correct state source
+  const handleDeleteTask = useCallback((taskId: number) => {
+    if (isClickUpActive) {
+      clickupDeleteTask(taskId);
+    } else {
+      setLocalTasks(prev => prev.filter(t => t.id !== taskId));
+    }
+  }, [isClickUpActive, clickupDeleteTask]);
+
+  // Restore task (undo delete)
+  const handleRestoreTask = useCallback((taskId: number) => {
+    if (isClickUpActive) {
+      clickupRestoreTask(taskId);
+    } else {
+      // For local tasks, we can't restore (already removed from array)
+      // This is a no-op for non-ClickUp mode
+    }
+  }, [isClickUpActive, clickupRestoreTask]);
+
+  // Undo stack for task deletions (stores taskIds for restore)
+  const undoStackRef = React.useRef<number[]>([]);
+
+  // Delete task with undo support
+  const handleDeleteTaskWithUndo = useCallback((taskId: number) => {
+    handleDeleteTask(taskId);
+    undoStackRef.current.push(taskId);
+    // Auto-expire after 30s
+    setTimeout(() => {
+      undoStackRef.current = undoStackRef.current.filter(id => id !== taskId);
+    }, 30000);
+  }, [handleDeleteTask]);
+
+  // Undo last delete
+  const handleUndoDelete = useCallback(() => {
+    const lastId = undoStackRef.current.pop();
+    if (lastId != null) {
+      handleRestoreTask(lastId);
+      showToast('Tarefa restaurada');
+    }
+  }, [handleRestoreTask]);
+
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
 
   // ─── Notes, Events & Contacts (persisted; used by Command Palette) ─────────
@@ -274,6 +318,7 @@ const AppContent: React.FC = () => {
     { key: 'n', mod: true, shift: true, handler: () => setQuickCaptureOpen(true), description: 'Quick Capture' },
     { key: 'g', mod: true, shift: true, handler: () => ghostMode.toggle(), description: 'Ghost Mode' },
     { key: 'd', mod: true, shift: true, handler: () => setIsDeepWorkOpen(o => !o), description: 'Deep Work' },
+    { key: 'z', mod: true, shift: true, handler: () => handleUndoDelete(), description: 'Undo delete' },
     { key: '?', shift: true, handler: () => setIsShortcutsOpen(o => !o), description: 'Toggle shortcuts' },
     { key: 'Escape', handler: () => {
       if (ghostMode.isActive) { ghostMode.exit(); return; }
@@ -320,7 +365,7 @@ const AppContent: React.FC = () => {
     notes,
     events,
     didHydrateRef,
-    onPersisted: () => showToast('Salvo'),
+    onPersisted: undefined,
   });
 
   useAgentRosterSync(liveAgents, setAgentRoster);
@@ -366,6 +411,15 @@ const AppContent: React.FC = () => {
   const handleOpenPalette = useCallback(() => setIsPaletteOpen(true), []);
   const handleOpenQuickCapture = useCallback(() => setQuickCaptureOpen(true), []);
   const handleOpenMissionModal = useCallback(() => setIsMissionModalOpen(true), []);
+  const handleOpenMarcoOsV2 = useCallback(() => {
+    const result = openMarcoOsV2();
+    showToast(
+      result.mode === 'new-tab'
+        ? 'Abrindo Marco OS V2 em nova aba'
+        : 'Abrindo Marco OS V2 nesta aba',
+      'info'
+    );
+  }, []);
   const handleNavigateDashboard = useCallback(() => setCurrentView('dashboard'), []);
   const handleOpenAddAgent = useCallback(() => setIsAddAgentOpen(true), []);
   const handleQuickCaptureSave = useCallback(({ type, content }: { type: 'Nota' | 'Tarefa' | 'Ideia' | 'Decisão'; content: string }) => {
@@ -416,6 +470,7 @@ const AppContent: React.FC = () => {
         <AppSidebar
           currentView={currentView}
           onNavigate={setCurrentView}
+          onOpenMarcoOsV2={handleOpenMarcoOsV2}
           agentRoster={agentRoster}
           activeAgentId={activeAgentId}
           onAgentClick={handleAgentClick}
@@ -458,6 +513,9 @@ const AppContent: React.FC = () => {
                         setNotes={setNotes}
                         onAgentClick={handleAgentClick}
                         onNavigate={setCurrentView}
+                        onMoveTask={handleMoveTask}
+                        onDeleteTask={handleDeleteTaskWithUndo}
+                        onRestoreTask={handleRestoreTask}
                         activeAgentId={activeAgentId}
                         selectedTaskId={selectedTaskId}
                       />
@@ -480,6 +538,8 @@ const AppContent: React.FC = () => {
                     onAgentClick={handleAgentClick}
                     onNavigate={setCurrentView}
                     onTaskStatusSync={handleTaskStatusSync}
+                    onMoveTask={handleMoveTask}
+                    onDeleteTask={handleDeleteTask}
                     activeAgentId={activeAgentId}
                     selectedTaskId={selectedTaskId}
                   />
@@ -510,6 +570,7 @@ const AppContent: React.FC = () => {
       <MobileNav
         currentView={currentView}
         onNavigate={setCurrentView}
+        onOpenMarcoOsV2={handleOpenMarcoOsV2}
         onOpenMissionModal={handleOpenMissionModal}
         onOpenQuickCapture={handleOpenQuickCapture}
         projects={projects}
@@ -539,6 +600,10 @@ const AppContent: React.FC = () => {
               setCurrentView('planner');
               return;
             }
+            if (actionId === 'open-marco-os-v2') {
+              handleOpenMarcoOsV2();
+              return;
+            }
             if (actionId === 'open-starred-notes') {
               localStorage.setItem('notes-list-mode', 'starred');
               setCurrentView('notes');
@@ -548,7 +613,7 @@ const AppContent: React.FC = () => {
               const nextTask = [...tasks]
                 .filter((task) => task.status !== 'done')
                 .sort((left, right) => {
-                  const priorityRank: Record<Task['priority'], number> = { high: 0, medium: 1, low: 2 };
+                  const priorityRank: Record<Task['priority'], number> = { urgent: 0, high: 1, medium: 2, low: 3 };
                   return priorityRank[left.priority] - priorityRank[right.priority];
                 })[0];
               if (nextTask) {

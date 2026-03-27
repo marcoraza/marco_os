@@ -36,10 +36,13 @@ interface DashboardProps {
   setEvents: React.Dispatch<React.SetStateAction<StoredEvent[]>>;
   onNavigate?: (view: string) => void;
   onTaskStatusSync?: (taskId: number, newStatus: Task['status']) => Promise<void>;
+  onMoveTask?: (taskId: number, newStatus: Task['status']) => void;
+  onDeleteTask?: (taskId: number) => void;
+  onRestoreTask?: (taskId: number) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
-  tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask, events, setEvents, onNavigate, onTaskStatusSync,
+  tasks, setTasks, onTaskClick, activeProjectId, projects, onAddTask, events, setEvents, onNavigate, onTaskStatusSync, onMoveTask: onMoveTaskProp, onDeleteTask: onDeleteTaskProp, onRestoreTask: onRestoreTaskProp,
 }) => {
   const activeProject = projects.find(p => p.id === activeProjectId);
   const { isMobile } = useBreakpoint();
@@ -70,25 +73,26 @@ const Dashboard: React.FC<DashboardProps> = ({
     });
   };
 
-  const handleDragStart = (e: React.DragEvent, id: number) => {
-    e.dataTransfer.setData('taskId', id.toString());
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e: React.DragEvent, newStatus: Task['status']) => {
-    e.preventDefault();
-    const id = parseInt(e.dataTransfer.getData('taskId'));
-    if (!isNaN(id)) {
-      setTasks(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+  const handleMoveTask = (taskId: number, newStatus: Task['status']) => {
+    // Use dedicated ClickUp handler when available (operates on correct state)
+    if (onMoveTaskProp) {
+      onMoveTaskProp(taskId, newStatus);
+    } else {
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
       if (onTaskStatusSync) {
-        void onTaskStatusSync(id, newStatus);
+        void onTaskStatusSync(taskId, newStatus);
       }
     }
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    // Use dedicated ClickUp handler when available
+    if (onDeleteTaskProp) {
+      onDeleteTaskProp(taskId);
+    } else {
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+    }
+    showToast('Tarefa removida — Cmd+Shift+Z para desfazer');
   };
 
   const handleTaskStatusChange = (taskId: number, status: Task['status']) => {
@@ -106,13 +110,13 @@ const Dashboard: React.FC<DashboardProps> = ({
     return true;
   });
 
-  const criticalMission = tasks.filter(t => t.priority === 'high' && t.status !== 'done').pop();
+  const criticalMission = tasks.filter(t => (t.priority === 'urgent' || t.priority === 'high') && t.status !== 'done').pop();
 
   const focusTask = contextTasks
     .filter(t => t.status !== 'done')
     .sort((a, b) => {
-      const prio: Record<string, number> = { high: 0, medium: 1, low: 2 };
-      return (prio[a.priority] ?? 2) - (prio[b.priority] ?? 2);
+      const prio: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+      return (prio[a.priority] ?? 3) - (prio[b.priority] ?? 3);
     })[0] || null;
 
   const completedTasks = tasks.filter(t => t.status === 'done').length;
@@ -179,9 +183,8 @@ const Dashboard: React.FC<DashboardProps> = ({
           onToggleCollapse={toggleCollapse}
           onTaskClick={id => onTaskClick && onTaskClick(id)}
           onAddTask={() => onAddTask && onAddTask()}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
+          onMoveTask={handleMoveTask}
+          onDeleteTask={handleDeleteTask}
         />
 
         <div className="px-4 py-2 flex flex-col gap-2">

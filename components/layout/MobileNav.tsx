@@ -5,6 +5,7 @@ import { Icon } from '../ui';
 interface MobileNavProps {
   currentView: View;
   onNavigate: (view: View) => void;
+  onOpenMarcoOsV2: () => void;
   onOpenMissionModal: () => void;
   onOpenQuickCapture: () => void;
   projects: Project[];
@@ -21,6 +22,7 @@ const MORE_ITEMS = [
   { id: 'notes',    icon: 'sticky_note_2', label: 'Notas'    },
   { id: 'crm',      icon: 'contacts',     label: 'Rede (CRM)'  },
   { id: 'agents-overview', icon: 'smart_toy',    label: 'Agentes' },
+  { id: 'marco-os-v2', icon: 'open_in_new', label: 'Marco OS V2' },
   { id: 'settings', icon: 'settings',     label: 'Configurações' },
 ] as const;
 
@@ -29,6 +31,7 @@ const MORE_VIEW_IDS = ['learning','planner','notes','crm','agents-overview','age
 export default function MobileNav({
   currentView,
   onNavigate,
+  onOpenMarcoOsV2,
   onOpenMissionModal,
   onOpenQuickCapture,
   projects,
@@ -120,6 +123,8 @@ export default function MobileNav({
               onClick={() => {
                 if (item.id === 'quick-capture') {
                   onOpenQuickCapture();
+                } else if (item.id === 'marco-os-v2') {
+                  onOpenMarcoOsV2();
                 } else {
                   onNavigate(item.id as View);
                 }
