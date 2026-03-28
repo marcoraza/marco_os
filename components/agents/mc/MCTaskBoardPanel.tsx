@@ -216,13 +216,43 @@ export default function MCTaskBoardPanel({ agentId }: MCTaskBoardPanelProps) {
   );
 }
 
+// ── Ticket ref badge (GitHub-aware) ──────────────────────────────────────────
+
+function isGitHubRef(ref: string): boolean {
+  return /^GH[-#]/i.test(ref) || /[\w-]+\/[\w-]+#\d+/.test(ref) || /^#\d+$/.test(ref);
+}
+
+function TicketRefBadge({ ref: ticketRef }: { ref: string }) {
+  const isGH = isGitHubRef(ticketRef);
+  return (
+    <span className={cn(
+      'flex items-center gap-0.5 text-[8px] font-mono px-1.5 py-0.5 rounded-sm border',
+      isGH
+        ? 'text-accent-purple border-accent-purple/30 bg-accent-purple/5'
+        : 'text-accent-blue border-accent-blue/20',
+    )}>
+      {isGH && (
+        <span className="material-symbols-outlined text-[9px] leading-none">hub</span>
+      )}
+      {ticketRef}
+    </span>
+  );
+}
+
 // ── Task Card ────────────────────────────────────────────────────────────────
 
 function TaskCard({ task }: { task: MCTask }) {
   const prio = PRIORITY_STYLE[task.priority];
+  const setTaskDetailId = useMissionControlStore((s) => s.setTaskDetailId);
 
   return (
-    <div className="bg-surface border border-border-panel rounded-sm p-2.5 hover:bg-surface-hover transition-all cursor-pointer">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => setTaskDetailId(task.id)}
+      onKeyDown={(e) => e.key === 'Enter' && setTaskDetailId(task.id)}
+      className="bg-surface border border-border-panel rounded-sm p-2.5 hover:bg-surface-hover transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none"
+    >
       <div className="flex items-start justify-between gap-1">
         <p className="text-[10px] font-bold text-text-primary leading-tight flex-1 min-w-0">
           {task.title}
@@ -245,9 +275,7 @@ function TaskCard({ task }: { task: MCTask }) {
           </span>
         )}
         {task.ticket_ref && (
-          <span className="text-[8px] font-mono text-accent-blue">
-            {task.ticket_ref}
-          </span>
+          <TicketRefBadge ref={task.ticket_ref} />
         )}
         {task.project_name && (
           <span className="text-[8px] font-mono text-text-secondary truncate max-w-[80px]">

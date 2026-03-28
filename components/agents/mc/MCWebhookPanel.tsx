@@ -4,7 +4,8 @@
  * Webhook management table for the agent section.
  * Lists all configured webhooks with status, endpoint, events, and last trigger info.
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '../../../utils/cn';
 import { Icon } from '../../ui/Icon';
 import { mcApi } from '../../../lib/mcApi';
@@ -112,6 +113,70 @@ function StatusDot({ active, lastStatus }: { active: boolean; lastStatus?: numbe
   );
 }
 
+// ── Delivery history ─────────────────────────────────────────────────────────
+
+interface Delivery {
+  id: number;
+  status: number;
+  event: string;
+  delivered_at: number;
+  duration_ms?: number;
+}
+
+function WebhookDeliveries({ webhookId }: { webhookId: number }) {
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    mcApi.get<Delivery[]>(`/api/webhooks/${webhookId}/deliveries`)
+      .then((data) => setDeliveries(Array.isArray(data) ? data.slice(0, 10) : []))
+      .catch(() => setDeliveries([]))
+      .finally(() => setLoading(false));
+  }, [webhookId]);
+
+  if (loading) {
+    return (
+      <div className="px-3 py-2">
+        <div className="bg-border-panel animate-pulse rounded-sm h-4 w-1/2" />
+      </div>
+    );
+  }
+
+  if (deliveries.length === 0) {
+    return (
+      <p className="px-3 py-2 text-[8px] text-text-secondary">Nenhuma entrega registrada</p>
+    );
+  }
+
+  return (
+    <div className="px-3 py-2 space-y-1">
+      <span className="text-[7px] font-black uppercase tracking-widest text-text-secondary">
+        Ultimas entregas
+      </span>
+      {deliveries.map((d) => {
+        const ok = d.status >= 200 && d.status < 300;
+        return (
+          <div key={d.id} className="flex items-center gap-2">
+            <Icon
+              name={ok ? 'check_circle' : 'cancel'}
+              size="xs"
+              className={ok ? 'text-brand-mint' : 'text-accent-red'}
+            />
+            <span className="text-[8px] font-mono text-text-secondary">{relativeTime(d.delivered_at)}</span>
+            <span className={cn('text-[8px] font-mono', ok ? 'text-brand-mint' : 'text-accent-red')}>
+              {d.status}
+            </span>
+            <span className="text-[8px] text-text-secondary truncate flex-1">{d.event}</span>
+            {d.duration_ms != null && (
+              <span className="text-[7px] font-mono text-text-secondary">{d.duration_ms}ms</span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Table header cell ────────────────────────────────────────────────────────
 
 const TH_CLASS = 'text-[8px] font-bold uppercase tracking-widest text-text-secondary text-left py-1.5 px-2';
@@ -121,6 +186,7 @@ const TH_CLASS = 'text-[8px] font-bold uppercase tracking-widest text-text-secon
 export function MCWebhookPanel() {
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
@@ -192,10 +258,12 @@ export function MCWebhookPanel() {
               const healthy = isHealthy(wh.last_status);
               const hasFailures = (wh.failure_count ?? 0) > 0;
 
+              const isExpanded = expandedId === wh.id;
               return (
+                <React.Fragment key={wh.id}>
                 <tr
-                  key={wh.id}
-                  className="border-b border-border-panel last:border-b-0 hover:bg-surface-hover transition-all duration-300 ease-out"
+                  onClick={() => setExpandedId(isExpanded ? null : wh.id)}
+                  className="border-b border-border-panel last:border-b-0 hover:bg-surface-hover transition-all duration-300 ease-out cursor-pointer"
                 >
                   {/* Status dot */}
                   <td className="px-2 py-2">
@@ -252,7 +320,23 @@ export function MCWebhookPanel() {
                     </div>
                   </td>
                 </tr>
-              );
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.tr
+                      key={`${wh.id}-deliveries`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <td colSpan={4} className="bg-bg-base border-b border-border-panel last:border-b-0">
+                        <WebhookDeliveries webhookId={wh.id} />
+                      </td>
+                    </motion.tr>
+                  )}
+                </AnimatePresence>
+              </React.Fragment>
+            );
             })}
           </tbody>
         </table>

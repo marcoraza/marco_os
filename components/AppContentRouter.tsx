@@ -103,8 +103,14 @@ export default function AppContentRouter({
     }
     return <MCAgentsShell onAgentClick={onAgentClick} />;
   }
-  if (currentView === 'agent-detail' && activeAgentId) {
-    return <MCAgentProfile agentId={activeAgentId} onBack={() => onNavigate('agents-overview')} />;
+  // agent-detail is now an overlay inside MCAgentsShell (profileAgentId).
+  // Redirect legacy deep-links back to the shell and open the overlay.
+  if (currentView === 'agent-detail') {
+    if (activeAgentId) {
+      useMissionControlStore.getState().setProfileAgentId(activeAgentId);
+    }
+    onNavigate('agents-overview');
+    return null;
   }
   if (currentView === 'settings') return <Settings />;
   if (currentView === 'mission-detail' && selectedTaskId) {

@@ -198,8 +198,32 @@ export interface MCNotification {
 
 export type MCConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
-/** Main overview tabs (6 tabs — V3 reformulation) */
-export type MCAgentTab = 'painel' | 'tarefas' | 'skills' | 'sistema' | 'cron' | 'relatorios';
+/** Main overview tabs (7 tabs — V2 portage redesign) */
+export type MCAgentTab = 'painel' | 'tarefas' | 'observar' | 'chat' | 'automacao' | 'relatorios' | 'sistema';
+
+/** Sub-tabs for Observar panel */
+export type MCObserveSubTab = 'atividade' | 'sessoes' | 'tokens' | 'logs';
+
+/** Sub-tabs for Automacao panel */
+export type MCAutomacaoSubTab = 'cron' | 'webhooks' | 'alertas';
+
+/** Sub-tabs for Relatorios panel */
+export type MCRelatoriosSubTab = 'dashboard' | 'standup';
+
+/** Sub-tabs for Sistema panel */
+export type MCSistemaSubTab = 'monitor' | 'skills' | 'memoria' | 'config';
+
+/** Alert rule for the Automacao > Alertas sub-tab */
+export interface MCAlertRule {
+  id: string;
+  name: string;
+  condition: 'agent_offline' | 'task_overdue' | 'error_rate' | 'cost_threshold' | 'session_stuck';
+  threshold?: number;
+  channel: 'telegram' | 'email' | 'webhook';
+  enabled: boolean;
+  createdAt: number;
+  lastTriggered?: number;
+}
 
 /** @deprecated Config now lives as preferences, not tabs */
 export type MCConfigTab = 'system' | 'cron' | 'webhooks' | 'skills';
@@ -283,6 +307,26 @@ interface MissionControlState {
   setActiveTab: (tab: MCAgentTab) => void;
   activeDetailTab: MCAgentDetailTab;
   setActiveDetailTab: (tab: MCAgentDetailTab) => void;
+
+  // Sub-tab navigation
+  activeObserveSubTab: MCObserveSubTab;
+  setActiveObserveSubTab: (tab: MCObserveSubTab) => void;
+  activeAutomacaoSubTab: MCAutomacaoSubTab;
+  setActiveAutomacaoSubTab: (tab: MCAutomacaoSubTab) => void;
+  activeRelatoriosSubTab: MCRelatoriosSubTab;
+  setActiveRelatoriosSubTab: (tab: MCRelatoriosSubTab) => void;
+  activeSistemaSubTab: MCSistemaSubTab;
+  setActiveSistemaSubTab: (tab: MCSistemaSubTab) => void;
+
+  // Overlay state
+  profileAgentId: string | null;
+  setProfileAgentId: (id: string | null) => void;
+  taskDetailId: number | null;
+  setTaskDetailId: (id: number | null) => void;
+
+  // Alert rules
+  alertRules: MCAlertRule[];
+  setAlertRules: (rules: MCAlertRule[]) => void;
 
   // V2 redesign state
   focusedAgentId: number | null;
@@ -380,6 +424,26 @@ export const useMissionControlStore = create<MissionControlState>()((set) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
   activeDetailTab: 'overview',
   setActiveDetailTab: (tab) => set({ activeDetailTab: tab }),
+
+  // Sub-tab navigation
+  activeObserveSubTab: 'atividade',
+  setActiveObserveSubTab: (tab) => set({ activeObserveSubTab: tab }),
+  activeAutomacaoSubTab: 'cron',
+  setActiveAutomacaoSubTab: (tab) => set({ activeAutomacaoSubTab: tab }),
+  activeRelatoriosSubTab: 'dashboard',
+  setActiveRelatoriosSubTab: (tab) => set({ activeRelatoriosSubTab: tab }),
+  activeSistemaSubTab: 'monitor',
+  setActiveSistemaSubTab: (tab) => set({ activeSistemaSubTab: tab }),
+
+  // Overlay state
+  profileAgentId: null,
+  setProfileAgentId: (id) => set({ profileAgentId: id }),
+  taskDetailId: null,
+  setTaskDetailId: (id) => set({ taskDetailId: id }),
+
+  // Alert rules
+  alertRules: [],
+  setAlertRules: (rules) => set({ alertRules: rules }),
 
   // V2 redesign state
   focusedAgentId: null,

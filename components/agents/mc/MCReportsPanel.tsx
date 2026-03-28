@@ -1,8 +1,9 @@
 /**
- * MCReportsPanel — Visual reports dashboard replacing the text-based Standup tab.
+ * MCReportsPanel — Sprint 6
  *
- * Layout: 2-column grid filling available space with charts, bars, ring, heatmap.
- * Data sourced from missionControl store (tasks, agents, tokenUsage, cronJobs, activities).
+ * Relatorios tab with 2 sub-tabs: Dashboard | Standup
+ * Dashboard: 2-col grid with charts, bars, ring, heatmap (existing content).
+ * Standup: MCStandupPanel (narrative report).
  */
 import React, { useMemo } from 'react';
 import { cn } from '../../../utils/cn';
@@ -10,7 +11,41 @@ import { Icon } from '../../ui/Icon';
 import { MiniLineAreaChart, MiniDonutChart } from '../../ui/LightweightCharts';
 import { Ring } from '../../ui/Ring';
 import { HeatmapGrid } from '../../ui/HeatmapGrid';
-import { useMissionControlStore } from '../../../store/missionControl';
+import { useMissionControlStore, type MCRelatoriosSubTab } from '../../../store/missionControl';
+import { MCStandupPanel } from './MCStandupPanel';
+
+// ── Sub-tab bar ───────────────────────────────────────────────────────────────
+
+const RELATORIOS_TABS: { id: MCRelatoriosSubTab; label: string; icon: string }[] = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'analytics' },
+  { id: 'standup',   label: 'Standup',   icon: 'summarize' },
+];
+
+function RelatoriosSubTabBar() {
+  const active = useMissionControlStore((s) => s.activeRelatoriosSubTab);
+  const setActive = useMissionControlStore((s) => s.setActiveRelatoriosSubTab);
+
+  return (
+    <div className="flex items-center gap-1 border-b border-border-panel px-3 bg-bg-base">
+      {RELATORIOS_TABS.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => setActive(tab.id)}
+          className={cn(
+            'flex items-center gap-1.5 px-3 py-2 text-[9px] font-bold uppercase tracking-widest transition-colors border-b-2 whitespace-nowrap',
+            'focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none',
+            active === tab.id
+              ? 'text-brand-mint border-brand-mint'
+              : 'text-text-secondary border-transparent hover:text-text-primary',
+          )}
+        >
+          <Icon name={tab.icon} size="xs" />
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -412,11 +447,11 @@ function CronExecutionLog() {
   );
 }
 
-// ── Main Component ───────────────────────────────────────────────────────────
+// ── Dashboard sub-tab ────────────────────────────────────────────────────────
 
-export default function MCReportsPanel() {
+function ReportsDashboard() {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-2 gap-3 p-3">
       <ProductivityChart />
       <CostDistribution />
       <AgentActivityBars />
@@ -424,6 +459,21 @@ export default function MCReportsPanel() {
       <ActivityHeatmap />
       <TasksByStatus />
       <CronExecutionLog />
+    </div>
+  );
+}
+
+// ── Main export ───────────────────────────────────────────────────────────────
+
+export default function MCReportsPanel() {
+  const subTab = useMissionControlStore((s) => s.activeRelatoriosSubTab);
+
+  return (
+    <div className="flex flex-col h-full">
+      <RelatoriosSubTabBar />
+      <div className="flex-1 overflow-y-auto">
+        {subTab === 'dashboard' ? <ReportsDashboard /> : <MCStandupPanel />}
+      </div>
     </div>
   );
 }

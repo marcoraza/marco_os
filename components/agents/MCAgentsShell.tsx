@@ -1,11 +1,12 @@
 /**
- * MCAgentsShell — V3 redesign
+ * MCAgentsShell — V2 portage
  *
  * Mission Control Overview with:
  * - MCMetricBar (sticky top)
  * - AlertBanner (conditional, expandable)
- * - 6 tabs: Painel | Tarefas | Skills | Sistema | Cron | Relatorios
- * - MCRightSidebar (chat + inter-agent + activity feed, xl only)
+ * - 7 tabs: Painel | Tarefas | Observar | Chat | Automacao | Relatorios | Sistema
+ * - MCAgentProfile overlay (click agent → right drawer)
+ * - MCTaskDetailDrawer overlay (click task → right drawer)
  *
  * All store access uses granular selectors to prevent render cascades.
  */
@@ -16,24 +17,27 @@ import { useMissionControlStore, type MCAgentTab, type MCTask } from '../../stor
 import { mcApi } from '../../lib/mcApi';
 import { Icon } from '../ui/Icon';
 import { MCMetricBar } from './mc/MCMetricBar';
-import { MCRightSidebar } from './mc/MCRightSidebar';
+import { MCTaskDetailDrawer } from './mc/MCTaskDetailDrawer';
 
 // Lazy-loaded panels (code-split per tab)
 const MCDashboardPanel = lazy(() => import('./mc/MCOverviewPanel').then((m) => ({ default: m.MCOverviewPanel })));
 const MCAgentKanban = lazy(() => import('./mc/MCTaskBoardPanel'));
-const MCSkillsPanel = lazy(() => import('./mc/MCSkillsPanel').then((m) => ({ default: m.MCSkillsPanel })));
-const MCSystemMonitorPanel = lazy(() => import('./mc/MCSystemMonitorPanel').then((m) => ({ default: m.MCSystemMonitorPanel })));
-const MCCronPanel = lazy(() => import('./mc/MCCronPanel').then((m) => ({ default: m.MCCronPanel })));
 const MCReportsPanel = lazy(() => import('./mc/MCReportsPanel'));
 const MCChatPanel = lazy(() => import('./mc/MCChatPanel').then((m) => ({ default: m.MCChatPanel })));
+const MCObservePanel = lazy(() => import('./mc/MCObservePanel').then((m) => ({ default: m.MCObservePanel })));
+const MCAutomationPanel = lazy(() => import('./mc/MCAutomationPanel').then((m) => ({ default: m.MCAutomationPanel })));
+const MCSystemPanel = lazy(() => import('./mc/MCSystemPanel').then((m) => ({ default: m.MCSystemPanel })));
+const MCChatTabPanel = lazy(() => import('./mc/MCChatTabPanel').then((m) => ({ default: m.MCChatTabPanel })));
+const MCAgentProfile = lazy(() => import('./mc/MCAgentProfile').then((m) => ({ default: m.MCAgentProfile })));
 
 const TABS: { id: MCAgentTab; label: string; icon: string }[] = [
   { id: 'painel',     label: 'Painel',      icon: 'dashboard' },
   { id: 'tarefas',    label: 'Tarefas',     icon: 'task_alt' },
-  { id: 'skills',     label: 'Skills',      icon: 'psychology' },
-  { id: 'sistema',    label: 'Sistema',     icon: 'monitor_heart' },
-  { id: 'cron',       label: 'Cron',        icon: 'schedule' },
+  { id: 'observar',   label: 'Observar',    icon: 'monitoring' },
+  { id: 'chat',       label: 'Chat',        icon: 'forum' },
+  { id: 'automacao',  label: 'Automacao',   icon: 'autoplay' },
   { id: 'relatorios', label: 'Relatorios',  icon: 'analytics' },
+  { id: 'sistema',    label: 'Sistema',     icon: 'settings_suggest' },
 ];
 
 function TabBar() {
@@ -226,6 +230,11 @@ function AlertItem({
   );
 }
 
+// ── Tab Stubs (replaced in Sprints 1-3) ────────────────────────────────────
+
+
+
+
 // ── Active Panel ────────────────────────────────────────────────────────────
 
 function ActivePanel({ onAgentClick }: { onAgentClick?: (agentId: string) => void }) {
@@ -236,10 +245,11 @@ function ActivePanel({ onAgentClick }: { onAgentClick?: (agentId: string) => voi
     switch (activeTab) {
       case 'painel':     return <MCDashboardPanel onAgentClick={onAgentClick} />;
       case 'tarefas':    return <MCAgentKanban />;
-      case 'skills':     return <MCSkillsPanel />;
-      case 'sistema':    return <MCSystemMonitorPanel />;
-      case 'cron':       return <MCCronPanel />;
+      case 'observar':   return <MCObservePanel />;
+      case 'chat':       return <MCChatTabPanel />;
+      case 'automacao':  return <MCAutomationPanel />;
       case 'relatorios': return <MCReportsPanel />;
+      case 'sistema':    return <MCSystemPanel />;
       default:           return null;
     }
   }, [activeTab, onAgentClick]);
@@ -289,6 +299,10 @@ function useMCKeyboardNav(onAgentClick?: (agentId: string) => void) {
   const setActiveTab = useMissionControlStore((s) => s.setActiveTab);
   const showConfigView = useMissionControlStore((s) => s.showConfigView);
   const setShowConfigView = useMissionControlStore((s) => s.setShowConfigView);
+  const profileAgentId = useMissionControlStore((s) => s.profileAgentId);
+  const setProfileAgentId = useMissionControlStore((s) => s.setProfileAgentId);
+  const taskDetailId = useMissionControlStore((s) => s.taskDetailId);
+  const setTaskDetailId = useMissionControlStore((s) => s.setTaskDetailId);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -323,6 +337,20 @@ function useMCKeyboardNav(onAgentClick?: (agentId: string) => void) {
           }
           break;
         }
+        case 'Escape': {
+          // Close overlays in priority order: task detail → agent profile → config view
+          if (taskDetailId != null) {
+            e.preventDefault();
+            setTaskDetailId(null);
+          } else if (profileAgentId != null) {
+            e.preventDefault();
+            setProfileAgentId(null);
+          } else if (showConfigView) {
+            e.preventDefault();
+            setShowConfigView(false);
+          }
+          break;
+        }
         case 'Backspace': {
           if (showConfigView) {
             e.preventDefault();
@@ -332,16 +360,17 @@ function useMCKeyboardNav(onAgentClick?: (agentId: string) => void) {
         }
         case '1': { e.preventDefault(); setActiveTab('painel'); break; }
         case '2': { e.preventDefault(); setActiveTab('tarefas'); break; }
-        case '3': { e.preventDefault(); setActiveTab('skills'); break; }
-        case '4': { e.preventDefault(); setActiveTab('sistema'); break; }
-        case '5': { e.preventDefault(); setActiveTab('cron'); break; }
+        case '3': { e.preventDefault(); setActiveTab('observar'); break; }
+        case '4': { e.preventDefault(); setActiveTab('chat'); break; }
+        case '5': { e.preventDefault(); setActiveTab('automacao'); break; }
         case '6': { e.preventDefault(); setActiveTab('relatorios'); break; }
+        case '7': { e.preventDefault(); setActiveTab('sistema'); break; }
       }
     };
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [agents, focusedAgentId, onAgentClick, setFocusedAgentId, setActiveTab, showConfigView, setShowConfigView]);
+  }, [agents, focusedAgentId, onAgentClick, setFocusedAgentId, setActiveTab, showConfigView, setShowConfigView, profileAgentId, setProfileAgentId, taskDetailId, setTaskDetailId]);
 }
 
 // ── Shell ────────────────────────────────────────────────────────────────────
@@ -351,8 +380,16 @@ interface MCAgentsShellProps {
 }
 
 export default function MCAgentsShell({ onAgentClick }: MCAgentsShellProps) {
-  // Keyboard navigation (j/k/Enter/Backspace/1-6)
-  useMCKeyboardNav(onAgentClick);
+  // Agent clicks open the profile overlay instead of routing to agent-detail
+  const setProfileAgentId = useMissionControlStore((s) => s.setProfileAgentId);
+  const handleAgentClick = useCallback((agentId: string) => {
+    setProfileAgentId(agentId);
+    // Also call external handler if provided (e.g. AppContentRouter analytics)
+    onAgentClick?.(agentId);
+  }, [setProfileAgentId, onAgentClick]);
+
+  // Keyboard navigation (j/k/Enter/Backspace/1-7)
+  useMCKeyboardNav(handleAgentClick);
 
   // One-time health check
   const checked = useRef(false);
@@ -363,11 +400,6 @@ export default function MCAgentsShell({ onAgentClick }: MCAgentsShellProps) {
       useMissionControlStore.getState().setConnectionStatus(ok ? 'connected' : 'disconnected');
     });
   }, []);
-
-  // Chat panel state (granular selectors)
-  const showChatPanel = useMissionControlStore((s) => s.showChatPanel);
-  const chatAgentId = useMissionControlStore((s) => s.chatAgentId);
-  const closeChatPanel = useMissionControlStore((s) => s.closeChatPanel);
 
   return (
     <div className="flex flex-col h-full">
@@ -381,39 +413,59 @@ export default function MCAgentsShell({ onAgentClick }: MCAgentsShellProps) {
           <TabBar />
           <AlertBanner />
           <div className="flex-1 overflow-y-auto p-3">
-            <ActivePanel onAgentClick={onAgentClick} />
+            <ActivePanel onAgentClick={handleAgentClick} />
           </div>
         </div>
 
-        {/* Right sidebar (xl only) */}
-        <MCRightSidebar />
       </div>
 
-      {/* Chat Panel overlay */}
-      {showChatPanel && chatAgentId && (
-        <div className="fixed inset-0 z-50 flex justify-end" onClick={closeChatPanel}>
-          <div className="bg-black/40 absolute inset-0" />
-          <div
-            className="relative w-[400px] h-full bg-bg-base border-l border-border-panel flex flex-col"
+      {/* MCAgentProfile overlay */}
+      <AgentProfileOverlay />
+
+      {/* MCTaskDetailDrawer overlay */}
+      <MCTaskDetailDrawer />
+    </div>
+  );
+}
+
+// ── Agent profile overlay ────────────────────────────────────────────────────
+
+function AgentProfileOverlay() {
+  const profileAgentId = useMissionControlStore((s) => s.profileAgentId);
+  const setProfileAgentId = useMissionControlStore((s) => s.setProfileAgentId);
+  const close = useCallback(() => setProfileAgentId(null), [setProfileAgentId]);
+
+  return (
+    <AnimatePresence>
+      {profileAgentId && (
+        <>
+          <motion.div
+            className="fixed inset-0 z-40 bg-black/40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={close}
+          />
+          <motion.div
+            className="fixed right-0 top-0 h-full w-[480px] z-50 bg-bg-base border-l border-border-panel flex flex-col overflow-y-auto"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border-panel">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Chat</span>
-              <button
-                onClick={closeChatPanel}
-                className="p-1 text-text-secondary hover:text-text-primary transition-colors focus-visible:ring-2 focus-visible:ring-brand-mint/50 focus-visible:outline-none rounded-sm"
-              >
-                <Icon name="close" size="sm" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <Suspense fallback={<div className="p-3"><div className="bg-border-panel animate-pulse rounded-sm h-12" /></div>}>
-                <MCChatPanel agentId={chatAgentId} />
-              </Suspense>
-            </div>
-          </div>
-        </div>
+            <Suspense fallback={
+              <div className="p-4 space-y-2">
+                <div className="bg-border-panel animate-pulse rounded-sm h-12 w-full" />
+                <div className="bg-border-panel animate-pulse rounded-sm h-12 w-full" />
+              </div>
+            }>
+              <MCAgentProfile agentId={profileAgentId} onBack={close} />
+            </Suspense>
+          </motion.div>
+        </>
       )}
-    </div>
+    </AnimatePresence>
   );
 }
