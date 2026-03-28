@@ -1,1 +1,0 @@
-const a="http://localhost:18792",t="placeholder";async function r(o,n){try{return(await fetch(`${a}/api/notion`,{method:"POST",headers:{"Content-Type":"application/json",...t?{Authorization:`Bearer ${t}`}:{}},body:JSON.stringify({command:o,params:n})})).ok}catch{return!1}}export{r as s};
